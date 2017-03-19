@@ -1,0 +1,936 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>538614440</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$PROJ_DIR$\Debug\Obj\os_tmr.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_tmr.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_pend_multi.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_task.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_cpu_c.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_app_hooks.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_time.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_cpu_c.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_app_hooks.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_core.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_int.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_time.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_int.pbi</file>
+      <file>$PROJ_DIR$\Debug\List\&#x3BC;COS-III.map</file>
+      <file>$PROJ_DIR$\..\os_cfg_app.h</file>
+      <file>$PROJ_DIR$\..\..\..\uC-CPU\51-CC2540\IAR\cpu.h</file>
+      <file>$PROJ_DIR$\..\..\..\uC-CPU\51-CC2540\IAR\cpu_a.asm</file>
+      <file>$PROJ_DIR$\..\os_app_hooks.c</file>
+      <file>$PROJ_DIR$\..\includes.h</file>
+      <file>$PROJ_DIR$\..\os_app_hooks.h</file>
+      <file>$PROJ_DIR$\..\lib_cfg.h</file>
+      <file>$PROJ_DIR$\..\os_cfg.h</file>
+      <file>$PROJ_DIR$\..\cpu_cfg.h</file>
+      <file>$PROJ_DIR$\..\..\..\uC-CPU\cpu_core.h</file>
+      <file>$PROJ_DIR$\..\..\..\uC-CPU\cpu_core.c</file>
+      <file>$PROJ_DIR$\..\..\..\uC-CPU\51-CC2540\IAR\cpu_c.c</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_int.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_cpu_c.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_tick.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_math.r51</file>
+      <file>$TOOLKIT_DIR$\inc\clib\math.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_app_hooks.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_stat.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_dbg.pbi</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_ascii.c</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_ascii.h</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_def.h</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_math.c</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_math.h</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_mem.c</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_mem.h</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_str.c</file>
+      <file>$PROJ_DIR$\..\..\..\uC-LIB\lib_str.h</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os.h</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu.h</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_a.s51</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_c.c</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_tmr.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_prio.__cstat.et</file>
+      <file>$TOOLKIT_DIR$\lib\clib\cl-pli-nlxd-1e16x01.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_pend_multi.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\cpu_core.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\app.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_core.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_q.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\bsp.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_mem.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\cpu_core.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_flag.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\bsp.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_var.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_msg.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\bsp.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_task.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\cpu_core.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_time.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_q.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_math.__cstat.et</file>
+      <file>$TOOLKIT_DIR$\config\devices\Texas Instruments\lnk51ew_cc2540F256.xcl</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_mem.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_flag.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_flag.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_math.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdarg.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_prio.r51</file>
+      <file>$PROJ_DIR$\..\app_cfg.h</file>
+      <file>$PROJ_DIR$\..\..\BSP\bsp.h</file>
+      <file>$PROJ_DIR$\..\..\BSP\bsp_inner.h</file>
+      <file>$PROJ_DIR$\..\app.c</file>
+      <file>$PROJ_DIR$\..\..\..\uC-CPU\cpu_def.h</file>
+      <file>$PROJ_DIR$\..\..\BSP\bsp.c</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_sem.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_stat.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_mem.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_var.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_mem.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_core.__cstat.et</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdio.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_ascii.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_ascii.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_stat.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\cpu_a.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_mem.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_dbg.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_prio.pbi</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_cfg_app.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_dbg.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_core.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_flag.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_int.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_sem.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_stat.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_task.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_tick.c</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdlib.h</file>
+      <file>$PROJ_DIR$\Debug\Exe\&#x3BC;COS-III.d51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_msg.__cstat.et</file>
+      <file>$TOOLKIT_DIR$\inc\ioCC2540.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_cfg_app.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_mutex.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_cfg_app.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_dbg.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_tick.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_ascii.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_tick.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_q.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_sem.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_pend_multi.__cstat.et</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_tmr.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_time.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_type.h</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_var.c</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_mutex.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_str.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_var.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_str.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_task.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\app.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_sem.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_mem.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_cfg_app.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_cpu_a.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_mutex.r51</file>
+      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\lib_str.r51</file>
+      <file>$PROJ_DIR$\Debug\Obj\os_msg.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\app.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\&#x3BC;COS-III.pbd</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_msg.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_mem.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_mutex.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_pend_multi.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_prio.c</file>
+      <file>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_q.c</file>
+    </outputs>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uC-CPU\51-CC2540\IAR\cpu_a.asm</name>
+      <outputs>
+        <tool>
+          <name>A8051</name>
+          <file> 91</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\os_app_hooks.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 8</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 5</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 31</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 79 120 21 23 22 19 15 36 44 43 107</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107 19</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uC-CPU\cpu_core.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 57</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 51</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 64</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 15 23 22 36 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 23 15 79 22 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uC-LIB\lib_ascii.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 113</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 89</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 88</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 79 35 36 15 22</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 35 15 79 22 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uC-LIB\lib_math.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 72</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 29</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 67</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 22 15 38 79 23 36</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 38 15 79 22 23 36</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uC-LIB\lib_mem.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 69</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 129</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 92</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 79 36 40 15 23 20 22</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 40 15 79 22 23 36 20</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uC-LIB\lib_str.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 125</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 134</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 123</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 42 36 20 22 15 35 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 42 15 79 22 36 35 20</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_a.s51</name>
+      <outputs>
+        <tool>
+          <name>A8051</name>
+          <file> 131</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_c.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 4</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 27</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 23 22 21 120 79 43 15 36 44 107</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\app.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 136</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 127</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 52</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 35 133 73 36 44 104 76 15 20 40 43 22 23 87 30 38 42 75 79 21 120 107 18</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 18 73 133 87 104 30 15 79 22 36 35 38 23 40 20 42 76 75 43 21 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BSP\bsp.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 59</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 55</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 62</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 107 36 15 22 77 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 77 107 36 79 15 22</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_cfg_app.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 108</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 110</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 130</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 15 44 36 43 22 14 21 23 120 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 14 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_dbg.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 33</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 93</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 111</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36 23 22 43 21 120 15 107 44 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_core.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 53</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 9</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 86</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 21 120 36 23 22 43 15 44 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_flag.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 71</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 58</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 70</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 22 36 15 44 79 43 21 23 120 107</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_int.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 26</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 10</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36 23 22 43 21 120 15 107 44 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_sem.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 128</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 81</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 116</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36 23 22 21 120 15 107 43 44 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_stat.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 82</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 32</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 90</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 120 21 36 23 22 43 15 44 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_task.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 63</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 126</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 3</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 15 44 36 22 43 21 23 120 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_tick.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 114</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 112</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 28</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36 23 22 43 21 120 15 107 44 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\&#x3BC;COS-III.d51</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 13</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 68 127 55 91 51 89 29 129 134 5 110 9 131 4 93 58 26 83 61 132 50 74 115 81 32 126 112 6 47 124 49</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 105 13</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_tmr.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 0</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 47</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 1</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 22 23 36 21 120 15 107 43 44 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_time.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 11</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 6</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 65</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36 15 44 22 43 21 23 120 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_var.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 60</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 124</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 84</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36 22 43 15 44 79 21 23 120 107</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_msg.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 135</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 61</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 106</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 21 120 36 23 22 43 15 44 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_mem.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 85</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 83</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 56</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36 15 44 22 43 21 23 120 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_mutex.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 122</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 132</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 109</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 107 120 15 21 23 22 36 43 44 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_pend_multi.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 2</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 50</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 117</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 23 36 21 120 22 43 15 44 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_prio.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 94</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 74</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 48</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36 15 44 22 43 21 23 120 107 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\uCOS-III\Source\os_q.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 66</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 115</file>
+        </tool>
+        <tool>
+          <name>__cstat</name>
+          <file> 54</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 23 22 36 21 120 15 107 43 44 79</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 43 21 15 79 22 23 36 120 44 107</file>
+        </tool>
+      </inputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs/>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
+    </forcedrebuild>
+  </configuration>
+</project>
+
+

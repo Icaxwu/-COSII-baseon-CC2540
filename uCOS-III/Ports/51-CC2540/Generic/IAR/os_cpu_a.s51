@@ -1,0 +1,390 @@
+
+        NAME SKELETON
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        PUBWEAK IEN2
+        PUBWEAK IP0
+        PUBWEAK IP1
+        PUBLIC OSStartHighRdy
+        PUBWEAK WDCTL
+        PUBWEAK _A_IEN0
+        PUBWEAK _A_IRCON2
+        
+        EXTERN ?XSP
+        EXTERN sysstktop
+        EXTERN ?VB
+        EXTERN OSTCBCurPtr
+        EXTERN OSTCBHighRdyPtr
+        EXTERN OSPrioHighRdy
+        EXTERN OSPrioCur
+        EXTERN OSTaskSwHook
+        
+
+// H:\TI ble环境搭建\工程\9 混合编程\SKELETON.c
+//    1 #include <stdbool.h>
+//    2 #include "skeleton.h"
+
+        ASEGN SFR_AN:DATA:NOROOT,09aH
+// unsigned char volatile __sfr IEN2
+IEN2:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0a8H
+// union <unnamed> volatile __sfr _A_IEN0
+_A_IEN0:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0a9H
+// unsigned char volatile __sfr IP0
+IP0:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0b9H
+// unsigned char volatile __sfr IP1
+IP1:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0c9H
+// unsigned char volatile __sfr WDCTL
+WDCTL:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0e8H
+// union <unnamed> volatile __sfr _A_IRCON2
+_A_IRCON2:
+        DATA8
+        DS 1
+//    3 
+//    4 extern __data bool OSRunning; 
+//    5 
+//    6 #define st(x)      do { x } while (0)
+//    7 #define SWI_WTD_ENABLE()    st(WDCTL = 0x1E; WDTIF = 0; WDTIF = 1;)
+//    8 #define SWI_WTD_DISABLE()   st(WDCTL = 0x00; WDTIF = 0; )
+//    9 
+
+SAVE_ALL MACRO
+        PUSH A
+        MOV A, #-24
+        PUSH  PSW
+        ADD   A,?XSP+0
+        XCH   A,DPL
+        PUSH  A
+        MOV   A,?XSP+1
+        ADDC  A,#0xFF
+        XCH   A,DPH
+        PUSH  A
+        MOV   A,?XSP+0
+        CLR   C
+        SUBB  A,DPL
+        ADD   A,#0xF2
+        JBC   0xa8.7,S_EA_0
+        MOV   ?XSP+1,DPH
+        MOV   ?XSP+0,DPL
+        SJMP  S_EA_1
+S_EA_0:
+        MOV   ?XSP+1,DPH
+        MOV   ?XSP+0,DPL
+        SETB  0xa8.7
+S_EA_1:
+        XCH   A,R0
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R1
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R2
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R3
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   R1,#0x08    //1
+S_cp_vr_loop:
+        MOV   A,@R1
+        INC   R1
+        MOVX  @DPTR,A
+        INC   DPTR
+        DJNZ  R0,S_cp_vr_loop  // 2
+        MOV   A,R4
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R5
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R6
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R7
+        MOVX  @DPTR,A
+        INC   DPTR
+        POP   A
+        MOVX  @DPTR,A
+        INC   DPTR
+        POP   A
+        MOVX  @DPTR,A
+        INC   DPTR
+        POP   A
+        MOVX  @DPTR,A        
+        INC   DPTR
+        MOV   A,?VB
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,B
+        MOVX  @DPTR,A
+        
+        INC   DPTR      // 将A从系统硬件栈移到Xstack
+        POP   A
+        MOVX  @DPTR,A
+        
+        INC   DPTR    // 保存返回地址
+		POP   A
+		MOVX  @DPTR,A
+		INC   DPTR
+		POP   A
+		MOVX  @DPTR,A
+		
+		INC   DPTR
+        
+        ENDM
+        
+RESTORE_ALL MACRO 
+        MOV   A,#22  // 先将PC指针push到系统硬件栈
+        ADD A, ?XSP+0
+        MOV DPL,A
+        CLR A
+        ADDC A, ?XSP+1
+        MOV DPH,A
+		MOVX  A,@DPTR
+        PUSH  A
+        INC DPTR
+		MOVX  A,@DPTR
+        PUSH  A
+		
+		MOV R7, #8
+		MOV   DPH,?XSP+1
+        MOV   DPL,?XSP+0
+        MOVX  A,@DPTR
+        PUSH  A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R1,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R2,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R3,A
+        INC   DPTR
+        MOV   R0,#0x08
+R_cp_vr_loop:
+        MOVX  A,@DPTR
+        MOV   @R0,A
+        INC   R0
+        INC   DPTR
+        DJNZ  R7,R_cp_vr_loop
+        MOVX  A,@DPTR
+        MOV   R4,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R5,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R6,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R7,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        PUSH  A
+        INC   DPTR
+        MOVX  A,@DPTR
+        PUSH  A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   PSW,A        
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   ?VB,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        INC   DPTR
+        MOV   B,A
+        
+        MOVX  A,@DPTR
+        INC   DPTR     // 恢复A
+        XCH   A, R0    // R0保存A的值，A保存R0的无效值
+        
+        INC DPTR      // PC指针在前面已经恢复到硬件栈，这里一定要对DPTR自增，以恢复正确的XSP
+        INC DPTR
+        
+        JBC   0xa8.7,R_EA_0
+        MOV   ?XSP+1,DPH
+        MOV   ?XSP+0,DPL
+        SJMP  R_EA_1
+R_EA_0:
+        MOV   ?XSP+1,DPH
+        MOV   ?XSP+0,DPL
+        SETB  0xa8.7
+R_EA_1:
+        POP   DPL
+        POP   DPH
+        POP   A        // A保存R0的值
+        XCH   A, R0    // 恢复R0、A
+
+        ENDM
+
+
+
+        COMMON INTVEC:CODE:ROOT(0)    
+        ORG 0x8B
+`??WDT_ISR::??INTVEC 8B`:
+        LJMP    (OS_CPU_WTDHandler)
+/*
+OS_CPU_WTDHandler
+1、关中断
+2、SAVE_ALL（包括保存中断返回地址）；OSTCBCur->OSTCBStkPtr = SP。
+OS_CPU_WTDHandler_nosave
+3、调用钩子函数OSTaskSwHook
+4、OSPrioCur = OSPrioHighRdy; OSTCBCur  = OSTCBHighRdy
+5、XSP = OSTCBHighRdy->OSTCBStkPtr
+6、RESTORE_ALL，将保存的中断返回地址push到系统硬件栈中
+7、开中断
+8、reti
+*/
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+OS_CPU_WTDHandler:
+        // SWI_WTD_DISABLE();此处一定要手动清除
+        MOV     0xc9,#0x0
+        CLR     0xe8.4
+        
+        CLR     0xa8.7  // 切换任务期间关闭中断
+        PUSH A
+        MOV A,?XSP+0
+        ORL A,?XSP+1
+        JNZ OS_CPU_WTDHandler_save
+        DEC SP
+        LJMP OS_CPU_WTDHandler_nosave
+OS_CPU_WTDHandler_save:     
+        POP A
+        SAVE_ALL
+        /* TODO:  OSTCBCur->OSTCBStkPtr = XSP */
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,?XSP+0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?XSP+1
+        MOVX    @DPTR,A
+OS_CPU_WTDHandler_nosave:
+        /* TODO: 调用钩子函数OSTaskSwHook */
+        //LCALL OSTaskSwHook
+        /* TODO: OSPrioCur = OSPrioHighRdy; OSTCBCur  = OSTCBHighRdy */
+        MOV     DPTR,#OSPrioHighRdy
+        MOVX    A,@DPTR
+        MOV     DPTR,#OSPrioCur
+        MOVX    @DPTR,A
+        
+        MOV     DPTR,#OSTCBHighRdyPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPTR,#OSTCBCurPtr
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+        /* TODO: XSP = OSTCBHighRdy->OSTCBStkPtr */
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     ?XSP+0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?XSP+1,A
+        
+        RESTORE_ALL
+        SETB    0xa8.7
+        reti
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   10 void OSStartHighRdy(void)
+OSStartHighRdy:
+        CODE
+//   11 {
+        ; Saved register size: 0
+        ; Auto size: 0
+//   12     /* 1、关中断 */
+//   13     EA = 0;
+        CLR     0xa8.7
+//   14     /* 
+//   15         2、设置wtd的中断优先级为最低，并打开wtd中断（此时总中断开关EA不打开）
+//   16         watch dog默认是最低的优先级，此处不显式设置也可以 
+//   17     */
+//   18     IP1 &= ~0x20;
+        ANL     0xb9,#0xdf
+//   19     IP0 &= ~0x20;
+        ANL     0xa9,#0xdf
+//   20     /* Watchdog Timer interrupt enable */
+//   21     IEN2 = 0x20;
+        MOV     0x9a,#0x20
+//   22     
+//   23     /* 3、Initialize the sysstktop to the OS_CPU_ExceptStkBase */
+        MOV     sysstktop+0x0,?XSP+0
+        MOV     sysstktop+0x1,?XSP+1
+//   24     /* 4、Set the XSP to 0 for initial context switch call */
+        CLR A
+        MOV ?XSP+0, A
+        MOV ?XSP+1, A
+//   25     
+//   26     /* 5、触发wtd中断 */
+//   27     SWI_WTD_ENABLE();
+        MOV     0xc9,#0x1e
+        CLR     0xe8.4
+        SETB    0xe8.4
+//   28     
+//   29     /* 6、开中断（立马会进入OS_CPU_WTDHandler） */
+//   30     EA = 1;
+        SETB    0xa8.7
+//   31 }
+        RET
+        REQUIRE _A_IEN0
+        REQUIRE IP1
+        REQUIRE IP0
+        REQUIRE IEN2
+        REQUIRE WDCTL
+        REQUIRE _A_IRCON2
+
+        END
+//   32 
+// 
+// 21 bytes in segment NEAR_CODE
+//  6 bytes in segment SFR_AN
+// 
+// 21 bytes of CODE memory
+//  0 bytes of DATA memory (+ 6 bytes shared)
+//
+//Errors: none
+//Warnings: none
