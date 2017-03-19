@@ -43,7 +43,7 @@
 *                                            LOCAL DEFINES
 *********************************************************************************************************
 */
-__data void * sysstktop;
+
 /*
 *********************************************************************************************************
 *                                                 TCB
@@ -90,9 +90,16 @@ int  main (void)
 {
     OS_ERR  err;
 
-
+    SysClkSet_32M();
+    BSP_LED_Init(); 
+    IRQ_register(SLP_TIMER_INT_NUM, OS_CPU_SysTickHandler);
+    OS_CPU_SysTickInit(OSCfg_TickRate_Cnt);
+#if 0   
+    EA = 1;
+    while (1);
+#endif
     //BSP_IntDisAll();                                            /* Disable all interrupts.                              */
-
+#if 1
     OSInit(&err);                                               /* Init uC/OS-III.                                      */
 
     OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,                /* Create the start task                                */
@@ -110,6 +117,7 @@ int  main (void)
                  (OS_ERR     *)&err);
 
     OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
+#endif
 }
 
 
@@ -134,11 +142,10 @@ static  void  AppTaskStart (void *p_arg)
     OS_ERR      err;
     AppTaskCreate();
     AppObjCreate();
-    BSP_LED_Init();
     while(1)
     {
         BSP_LED_Toggle();
-        OSTimeDlyHMSM(0, 0, 0, 100,
+        OSTimeDlyHMSM(0, 0, 0, 200,
                       OS_OPT_TIME_HMSM_STRICT,
                       &err);
     }

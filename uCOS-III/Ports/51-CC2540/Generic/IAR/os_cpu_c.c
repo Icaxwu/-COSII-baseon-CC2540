@@ -366,16 +366,20 @@ void  OSTimeTickHook (void)
 
 void  OS_CPU_SysTickHandler (void)
 {
+    //P1_0 = ~P1_0;
+#if 1
     CPU_SR_ALLOC();
 
 
     CPU_CRITICAL_ENTER();
     OSIntNestingCtr++;                                      /* Tell uC/OS-III that we are starting an ISR             */
     CPU_CRITICAL_EXIT();
-
+    
     OSTimeTick();                                           /* Call uC/OS-III's OSTimeTick()                          */
 
     OSIntExit();                                            /* Tell uC/OS-III that we are leaving the ISR             */
+#endif  
+    //P1_0 = 0;
 }
 
 
@@ -391,9 +395,18 @@ void  OS_CPU_SysTickHandler (void)
 * Note(s)    : 1) This function MUST be called after OSStart() & after processor initialization.
 *********************************************************************************************************
 */
-
 void  OS_CPU_SysTickInit (CPU_INT32U  cnts)
-{
-    
+{   
+   CPU_INT32U sleepTimer = 0; 
+   sleepTimer |= ST0; 
+   sleepTimer |= (CPU_INT32U)ST1 <<  8; 
+   sleepTimer |= (CPU_INT32U)ST2 << 16; 
+   sleepTimer += cnts; 
+   ST2 = (CPU_INT08U)(sleepTimer >> 16); 
+   ST1 = (CPU_INT08U)(sleepTimer >> 8); 
+   ST0 = (CPU_INT08U) sleepTimer; 
+   
+    STIE = 1;   //SleepTimerinterrupt enable
+    STIF = 0;   //SleepTimerinterrupt flag 还没处理的
 }
 

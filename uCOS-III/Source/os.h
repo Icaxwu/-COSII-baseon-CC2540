@@ -1293,6 +1293,7 @@ extern  CPU_INT32U    const OSCfg_StatTaskStkSizeRAM;
 extern  CPU_STK_SIZE  const OSCfg_StkSizeMin;
 
 extern  OS_RATE_HZ    const OSCfg_TickRate_Hz;
+extern  CPU_INT16U    const  OSCfg_TickRate_Cnt;
 extern  OS_PRIO       const OSCfg_TickTaskPrio;
 extern  CPU_STK     * const OSCfg_TickTaskStkBasePtr;
 extern  CPU_STK_SIZE  const OSCfg_TickTaskStkLimit;

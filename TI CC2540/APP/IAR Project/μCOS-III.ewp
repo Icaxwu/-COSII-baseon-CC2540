@@ -2229,6 +2229,9 @@
       <name>$PROJ_DIR$\..\..\BSP\bsp.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\BSP\bsp_a.s51</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\BSP\bsp_inner.h</name>
     </file>
   </group>

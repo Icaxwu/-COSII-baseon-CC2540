@@ -1,0 +1,336 @@
+
+        NAME BSP_A  
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN __INIT_XDATA_Z
+        EXTERN  ?VB
+        EXTERN int_num
+        EXTERN ?XSP
+        EXTERN sysstktop
+        EXTERN interrupt_main_entry
+
+SAVE_ALL MACRO
+        PUSH A
+        MOV A, #-22
+        PUSH  PSW
+        ADD   A,?XSP+0
+        XCH   A,DPL
+        PUSH  A
+        MOV   A,?XSP+1
+        ADDC  A,#0xFF
+        XCH   A,DPH
+        PUSH  A
+        MOV   A,?XSP+0
+        CLR   C
+        SUBB  A,DPL
+        ADD   A,#0xF2
+        JBC   0xa8.7,S_EA_0
+        MOV   ?XSP+1,DPH
+        MOV   ?XSP+0,DPL
+        SJMP  S_EA_1
+S_EA_0:
+        MOV   ?XSP+1,DPH
+        MOV   ?XSP+0,DPL
+        SETB  0xa8.7
+S_EA_1:
+        XCH   A,R0
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R1
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R2
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R3
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   R1,#0x08    //1
+S_cp_vr_loop:
+        MOV   A,@R1
+        INC   R1
+        MOVX  @DPTR,A
+        INC   DPTR
+        DJNZ  R0,S_cp_vr_loop  // 2
+        MOV   A,R4
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R5
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R6
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,R7
+        MOVX  @DPTR,A
+        INC   DPTR
+        POP   A
+        MOVX  @DPTR,A
+        INC   DPTR
+        POP   A
+        MOVX  @DPTR,A
+        INC   DPTR
+        POP   A
+        MOVX  @DPTR,A        
+        INC   DPTR
+        MOV   A,?VB
+        MOVX  @DPTR,A
+        INC   DPTR
+        MOV   A,B
+        MOVX  @DPTR,A
+        
+        INC   DPTR      // 将A从系统硬件栈移到Xstack
+        POP   A
+        MOVX  @DPTR,A
+        
+        INC   DPTR
+        
+        ENDM
+        
+RESTORE_ALL_AND_RET MACRO 
+        MOV R7, #8
+        MOV   DPH,?XSP+1
+        MOV   DPL,?XSP+0
+        MOVX  A,@DPTR
+        PUSH  A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R1,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R2,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R3,A
+        INC   DPTR
+        MOV   R0,#0x08
+R_cp_vr_loop:
+        MOVX  A,@DPTR
+        MOV   @R0,A
+        INC   R0
+        INC   DPTR
+        DJNZ  R7,R_cp_vr_loop
+        MOVX  A,@DPTR
+        MOV   R4,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R5,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R6,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   R7,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        PUSH  A
+        INC   DPTR
+        MOVX  A,@DPTR
+        PUSH  A
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   PSW,A        
+        INC   DPTR
+        MOVX  A,@DPTR
+        MOV   ?VB,A
+        INC   DPTR
+        MOVX  A,@DPTR
+        INC   DPTR
+        MOV   B,A
+        
+        MOVX  A,@DPTR
+        INC   DPTR     // 恢复A
+        XCH   A, R0    // R0保存A的值，A保存R0的无效值
+        
+        JBC   0xa8.7,R_EA_0
+        MOV   ?XSP+1,DPH
+        MOV   ?XSP+0,DPL
+        SJMP  R_EA_1
+R_EA_0:
+        MOV   ?XSP+1,DPH
+        MOV   ?XSP+0,DPL
+        SETB  0xa8.7
+R_EA_1:
+        POP   DPL
+        POP   DPH
+        POP   A        // A保存R0的值
+        XCH   A, R0    // 恢复R0、A
+
+        RETI
+        ENDM
+
+        COMMON INTVEC:CODE:ROOT(0)
+        ORG 0x03
+`??RFERR_ISR::??INTVEC 03`:
+        CLR    0xa8.7
+        MOV     int_num,#0x00
+        LJMP       (interrupt_main_entry_a)
+        
+        ORG 0x0B
+`??ADC_ISR::??INTVEC 0B`:
+        CLR    0xa8.7
+        MOV     int_num,#0x01
+        LJMP       (interrupt_main_entry_a) 
+ 
+        ORG 0x13
+`??URX0_ISR::??INTVEC 13`:
+        CLR    0xa8.7
+        MOV     int_num,#0x02
+        LJMP       (interrupt_main_entry_a)
+        
+        ORG 0x1B
+`??URX1_ISR::??INTVEC 1B`:
+        CLR    0xa8.7
+        MOV     int_num,#0x03
+        LJMP       (interrupt_main_entry_a)
+
+        ORG 0x23
+`??ENC_ISR::??INTVEC 23`:
+        CLR    0xa8.7
+        MOV     int_num,#0x04
+        LJMP       (interrupt_main_entry_a)
+        
+        ORG 0x2B
+`??ST_ISR::??INTVEC 2B`:
+        CLR    0xa8.7
+        MOV     int_num,#0x05
+        LJMP       (interrupt_main_entry_a)
+
+        ORG 0x33
+`??P2INT_ISR::??INTVEC 33`:
+        CLR    0xa8.7
+        MOV     int_num,#0x06
+        LJMP       (interrupt_main_entry_a)
+        
+        ORG 0x3B
+`??UTX0_ISR::??INTVEC 3B`:
+        CLR    0xa8.7
+        MOV     int_num,#0x07
+        LJMP       (interrupt_main_entry_a)
+
+        ORG 0x43
+`??DMA_ISR::??INTVEC 43`:
+        CLR    0xa8.7
+        MOV     int_num,#0x08
+        LJMP       (interrupt_main_entry_a)
+        
+        ORG 0x4B
+`??T1_ISR::??INTVEC 4B`:
+        CLR    0xa8.7
+        MOV     int_num,#0x09
+        LJMP       (interrupt_main_entry_a)        
+        
+        ORG 0x53
+`??T2_ISR::??INTVEC 53`:
+        CLR    0xa8.7
+        MOV     int_num,#0x0A
+        LJMP       (interrupt_main_entry_a)
+        
+        ORG 0x5B
+`??T3_ISR::??INTVEC 5B`:
+        CLR    0xa8.7
+        MOV     int_num,#0x0B
+        LJMP       (interrupt_main_entry_a)
+
+        ORG 0x63
+`??T4_ISR::??INTVEC 63`:
+        CLR    0xa8.7
+        MOV     int_num,#0x0C
+        LJMP       (interrupt_main_entry_a)
+        
+        ORG 0x6B
+`??P0INT_ISR::??INTVEC 6B`:
+        CLR    0xa8.7
+        MOV     int_num,#0x0d
+        LJMP       (interrupt_main_entry_a)
+
+        ORG 0x73
+`??UTX1_ISR::??INTVEC 73`:
+        CLR    0xa8.7
+        MOV     int_num,#0x0E
+        LJMP       (interrupt_main_entry_a)
+        
+        ORG 0x7B
+`??P1INT_ISR::??INTVEC 7B`:
+        CLR    0xa8.7
+        MOV     int_num,#0x0F
+        LJMP       (interrupt_main_entry_a)
+
+        ORG 0x83
+`??RF_ISR::??INTVEC 83`:
+        CLR    0xa8.7
+        MOV     int_num,#0x10
+        LJMP       (interrupt_main_entry_a)      
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+             
+interrupt_main_entry_a:
+        CODE
+        SAVE_ALL
+//   10     int_nest_deal++;
+        MOV     DPTR,#??int_nest_deal
+        MOVX    A,@DPTR
+        INC     A
+        MOVX    @DPTR,A    
+//   12     if (int_nest_deal == 1)
+        XRL     A,#0x1
+        JNZ     interrupt_main_entry_a_0
+//   14         //3.1、将XSP保存到系统栈顶
+//   15         //3.2、使XSP指向系统栈顶-2。
+        //  *((int *)sysstktop-1) = XSP;
+        MOV     R0,#sysstktop
+        MOV     A,@R0
+        ADD     A,#-0x2
+        MOV     DPL,A
+        INC     R0
+        MOV     A,@R0
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,?XSP+0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?XSP+1
+        MOVX    @DPTR,A        
+        //XSP= (char *)sysstktop - 2;
+        MOV     R0,#sysstktop
+        MOV     A,@R0
+        ADD     A,#-0x2
+        MOV     ?XSP+0, A
+        INC     R0
+        MOV     A,@R0
+        ADDC    A,#-0x1
+        MOV     ?XSP+1,A
+interrupt_main_entry_a_0:
+        ; Setup parameters for call to function interrupt_main_entry
+        LCALL   interrupt_main_entry   
+//   23     if (--int_nest_deal == 0)
+        MOV     DPTR,#??int_nest_deal
+        MOVX    A,@DPTR
+        DEC     A
+        MOVX    @DPTR,A
+        JNZ     interrupt_main_entry_a_1
+//   25         // 恢复XSP使其指向任务栈
+        MOV     DPL,?XSP+0
+        MOV     DPH,?XSP+1
+        MOVX    A,@DPTR
+        MOV     ?XSP+0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?XSP+1,A
+//   27     }
+//   28 }
+interrupt_main_entry_a_1:
+        RESTORE_ALL_AND_RET
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+??int_nest_deal:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        END
