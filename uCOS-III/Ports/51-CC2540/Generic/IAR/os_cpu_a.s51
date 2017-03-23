@@ -263,11 +263,11 @@ OS_CPU_WTDHandler_nosave
 */
         RSEG NEAR_CODE:CODE:NOROOT(0)
 OS_CPU_WTDHandler:
+        CLR     0xa8.7  // 切换任务期间关闭中断
         // SWI_WTD_DISABLE();此处一定要手动清除
         MOV     0xc9,#0x0
         CLR     0xe8.4
         
-        CLR     0xa8.7  // 切换任务期间关闭中断
         PUSH A
         MOV A,?XSP+0
         ORL A,?XSP+1

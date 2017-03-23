@@ -66,6 +66,7 @@ const  CPU_CHAR  *os_cpu_c__c = "$Id: $";
 
 void  OSIdleTaskHook (void)
 {
+    
 #if OS_CFG_APP_HOOKS_EN > 0u
     if (OS_AppIdleTaskHookPtr != (OS_APP_HOOK_VOID)0) {
         (*OS_AppIdleTaskHookPtr)();

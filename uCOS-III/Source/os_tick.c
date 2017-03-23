@@ -67,6 +67,7 @@ void  OS_TickTask (void  *p_arg)
     p_arg = p_arg;                                          /* Prevent compiler warning                               */
 
     while (DEF_ON) {
+      P1_2 = ~P1_2;
         (void)OSTaskSemPend((OS_TICK  )0,
                             (OS_OPT   )OS_OPT_PEND_BLOCKING,
                             (CPU_TS  *)&ts,
