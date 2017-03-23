@@ -366,7 +366,7 @@ void  OSTimeTickHook (void)
 
 void  OS_CPU_SysTickHandler (void)
 {
-    //P1_0 = ~P1_0;
+    P1_1 = ~P1_1;
 #if 1
     CPU_SR_ALLOC();
 
