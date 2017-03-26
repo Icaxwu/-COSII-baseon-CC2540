@@ -49,8 +49,8 @@
 #include<ioCC2540.h>
 
 #define st(x)      do { x } while (0)
-#define  OS_TASK_SW()               st(WDCTL = 0x1E; WDTIF = 0; WDTIF = 1;)
-#define  OSIntCtxSw()               st(WDCTL = 0x1E; WDTIF = 0; WDTIF = 1;)
+#define  OS_TASK_SW()               st(WDCTL = 0x1E; WDTIF = 1;)
+#define  OSIntCtxSw()               st(WDCTL = 0x1E; WDTIF = 1;)
 
 /*
 *********************************************************************************************************

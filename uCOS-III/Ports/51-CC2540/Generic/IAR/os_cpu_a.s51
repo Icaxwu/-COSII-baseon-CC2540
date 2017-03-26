@@ -141,12 +141,14 @@ S_cp_vr_loop:
         POP   A
         MOVX  @DPTR,A
         
-        INC   DPTR    // 保存返回地址
+        // 保存返回地址，注意返回地址低字节与高字节的顺序
+		POP   A 
+        MOV   R0, A    // 高地址 
+        INC   DPTR
 		POP   A
-		MOVX  @DPTR,A
-		INC   DPTR
-		POP   A
-		MOVX  @DPTR,A
+		MOVX  @DPTR,A  // 保存低地址
+        MOV   A, R0
+        MOVX  @DPTR,A  // 保存高地址
 		
 		//INC   DPTR
         
@@ -160,10 +162,10 @@ RESTORE_ALL MACRO
         ADDC A, ?XSP+1
         MOV DPH,A
 		MOVX  A,@DPTR
-        PUSH  A
+        PUSH  A         // 低地址
         INC DPTR
 		MOVX  A,@DPTR
-        PUSH  A
+        PUSH  A         // 高地址
 		
 		MOV R7, #8
         MOV   DPL,?XSP+0

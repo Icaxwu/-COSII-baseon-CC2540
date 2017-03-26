@@ -338,9 +338,9 @@ void  OSIntExit (void)
 #if defined(OS_CFG_TLS_TBL_SIZE) && (OS_CFG_TLS_TBL_SIZE > 0u)
     OS_TLS_TaskSw();
 #endif
-
-    OSIntCtxSw();                                           /* Perform interrupt level ctx switch                     */
     CPU_INT_EN();
+    OSIntCtxSw();                                           /* Perform interrupt level ctx switch                     */
+    //CPU_INT_EN();
 }
 
 /*$PAGE*/
@@ -718,6 +718,7 @@ void  OSStart (OS_ERR  *p_err)
         OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
         OSTCBCurPtr     = OSTCBHighRdyPtr;
         OSRunning       = OS_STATE_OS_RUNNING;
+        P1_4 = 0;
         OSStartHighRdy();                                   /* Execute target specific code to start task             */
        *p_err           = OS_ERR_FATAL_RETURN;              /* OSStart() is not supposed to return                    */
     } else {
@@ -788,6 +789,7 @@ void  OS_IdleTask (void  *p_arg)
 
     while (DEF_ON) {
         CPU_CRITICAL_ENTER();
+        P1_2 = ~P1_2;
         OSIdleTaskCtr++;
 #if OS_CFG_STAT_TASK_EN > 0u
         OSStatTaskCtr++;

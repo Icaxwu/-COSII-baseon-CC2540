@@ -548,7 +548,7 @@ void  OSTimeTick (void)
                 (OS_ERR    *)&err);
 
 #else
-
+    P1_1 = ~P1_1;
    (void)OSTaskSemPost((OS_TCB *)&OSTickTaskTCB,            /* Signal tick task                                       */
                        (OS_OPT  ) OS_OPT_POST_NONE,
                        (OS_ERR *)&err);

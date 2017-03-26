@@ -41,10 +41,12 @@ LED初始化程序
 *****************************/
 void BSP_LED_Init(void)
 {
-  P1DIR |= 0x07;   //P1_0定义为输出
+  P1DIR |= 0x1f;   //P1_0定义为输出
   LED1 = 0;        //LED1灯熄灭  
   P1_1 = 0;
   P1_2 = 0;
+  P1_3 = 0;
+  P1_4 = 1;
 }
 
 void  BSP_LED_Toggle (void)
@@ -87,12 +89,13 @@ void Set_ST_Period(CPU_INT16U cnts)
 void SYS_TICK_ISR_sys(void)
 {
     interrupt_handle_sub_t handle;
-    Set_ST_Period(OSCfg_TickRate_Cnt);  // 32768/OSCfg_TickRate_Hz
-    STIF = 0;          //清标志位
+    STIF = 0;
     EA = 1; // 打开中断
     handle = interrupt_handles[SLP_TIMER_INT_NUM].handle_for_user;
     if (handle)
        handle();  
+    Set_ST_Period(OSCfg_TickRate_Cnt);  // 32768/OSCfg_TickRate_Hz
+    STIF = 0;          //清标志位
 }
 
 
