@@ -42,7 +42,9 @@ LED初始化程序
 void BSP_LED_Init(void)
 {
   P1DIR |= 0x07;   //P1_0定义为输出
-  LED1 = 0;        //LED1灯熄灭     
+  LED1 = 0;        //LED1灯熄灭  
+  P1_1 = 0;
+  P1_2 = 0;
 }
 
 void  BSP_LED_Toggle (void)

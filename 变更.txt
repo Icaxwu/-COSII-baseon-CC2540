@@ -1,0 +1,5 @@
+1、除能 OS_CFG_ISR_STK_SIZE
+
+2、除能统计任务 OS_CFG_STAT_TASK_EN        优先级 11
+
+3、除能定时器任务 OS_CFG_TMR_EN            优先级 11

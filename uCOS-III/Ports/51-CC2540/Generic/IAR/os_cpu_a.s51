@@ -73,29 +73,20 @@ _A_IRCON2:
 //    9 
 
 SAVE_ALL MACRO
+        PUSH  PSW
         PUSH A
         MOV A, #-24
-        PUSH  PSW
         ADD   A,?XSP+0
         XCH   A,DPL
-        PUSH  A
+        PUSH  A         // 先push DPL
         MOV   A,?XSP+1
         ADDC  A,#0xFF
-        XCH   A,DPH
+        XCH   A,DPH     // 再push DPH
         PUSH  A
-        MOV   A,?XSP+0
-        CLR   C
-        SUBB  A,DPL
-        ADD   A,#0xF2
-        JBC   0xa8.7,S_EA_0
+        MOV   A,#8  // 保存8个虚拟寄存器V0-V7
+        // 当前中断肯定是关闭的，所以可以直接对XSP赋值
         MOV   ?XSP+1,DPH
         MOV   ?XSP+0,DPL
-        SJMP  S_EA_1
-S_EA_0:
-        MOV   ?XSP+1,DPH
-        MOV   ?XSP+0,DPL
-        SETB  0xa8.7
-S_EA_1:
         XCH   A,R0
         MOVX  @DPTR,A
         INC   DPTR
@@ -108,7 +99,7 @@ S_EA_1:
         MOV   A,R3
         MOVX  @DPTR,A
         INC   DPTR
-        MOV   R1,#0x08    //1
+        MOV   R1,#0x08          // 1
 S_cp_vr_loop:
         MOV   A,@R1
         INC   R1
@@ -126,23 +117,27 @@ S_cp_vr_loop:
         INC   DPTR
         MOV   A,R7
         MOVX  @DPTR,A
+        
+        INC   DPTR     // 保存DPTR
+        POP   A
+        MOVX  @DPTR,A  // DPH 
         INC   DPTR
         POP   A
-        MOVX  @DPTR,A
-        INC   DPTR
-        POP   A
-        MOVX  @DPTR,A
-        INC   DPTR
-        POP   A
-        MOVX  @DPTR,A        
-        INC   DPTR
+        MOVX  @DPTR,A  // DPL 
+        
+        INC   DPTR     // 保存VB
         MOV   A,?VB
         MOVX  @DPTR,A
-        INC   DPTR
+        
+        INC   DPTR     // 保存B
         MOV   A,B
         MOVX  @DPTR,A
         
-        INC   DPTR      // 将A从系统硬件栈移到Xstack
+        INC   DPTR     // 保存A
+        POP   A
+        MOVX  @DPTR,A 
+        
+        INC   DPTR      // 保存PSW
         POP   A
         MOVX  @DPTR,A
         
@@ -153,7 +148,7 @@ S_cp_vr_loop:
 		POP   A
 		MOVX  @DPTR,A
 		
-		INC   DPTR
+		//INC   DPTR
         
         ENDM
         
@@ -171,8 +166,8 @@ RESTORE_ALL MACRO
         PUSH  A
 		
 		MOV R7, #8
-		MOV   DPH,?XSP+1
         MOV   DPL,?XSP+0
+		MOV   DPH,?XSP+1
         MOVX  A,@DPTR
         PUSH  A
         INC   DPTR
@@ -203,39 +198,39 @@ R_cp_vr_loop:
         INC   DPTR
         MOVX  A,@DPTR
         MOV   R7,A
+        
+        INC   DPTR   // 将DPTR保存到硬件栈中
+        MOVX  A,@DPTR
+        PUSH  A      // DPH
         INC   DPTR
         MOVX  A,@DPTR
-        PUSH  A
-        INC   DPTR
-        MOVX  A,@DPTR
-        PUSH  A
-        INC   DPTR
-        MOVX  A,@DPTR
-        MOV   PSW,A        
-        INC   DPTR
+        PUSH  A      // DPL
+        
+        INC   DPTR   // 恢复VB
         MOVX  A,@DPTR
         MOV   ?VB,A
-        INC   DPTR
+        
+        INC   DPTR   // 恢复B
         MOVX  A,@DPTR
-        INC   DPTR
         MOV   B,A
         
+        INC   DPTR   // 恢复A
         MOVX  A,@DPTR
-        INC   DPTR     // 恢复A
-        XCH   A, R0    // R0保存A的值，A保存R0的无效值
+        XCH   A, R0  // 恢复A R0保存A的值，A保存R0的无效值
+        
+        INC   DPTR  // 恢复PSW
+        MOVX  A,@DPTR
+        MOV   PSW,A  
         
         INC DPTR      // PC指针在前面已经恢复到硬件栈，这里一定要对DPTR自增，以恢复正确的XSP
         INC DPTR
         
-        JBC   0xa8.7,R_EA_0
-        MOV   ?XSP+1,DPH
+        INC   DPTR    // **必须的
+        
+        // 当前中断肯定是关闭的，所以可以直接对XSP赋值
         MOV   ?XSP+0,DPL
-        SJMP  R_EA_1
-R_EA_0:
         MOV   ?XSP+1,DPH
-        MOV   ?XSP+0,DPL
-        SETB  0xa8.7
-R_EA_1:
+
         POP   DPL
         POP   DPH
         POP   A        // A保存R0的值
@@ -311,7 +306,7 @@ OS_CPU_WTDHandler_nosave:
         INC     DPTR
         MOV     A,R1
         MOVX    @DPTR,A
-        /* TODO: XSP = OSTCBHighRdy->OSTCBStkPtr */
+        /* TODO: XSP = OSTCBHighRdyPtr->StkPtr */
         MOV     DPTR,#OSTCBCurPtr
         MOVX    A,@DPTR
         MOV     R0,A
@@ -350,6 +345,7 @@ OSStartHighRdy:
 //   20     /* Watchdog Timer interrupt enable */
 //   21     IEN2 = 0x20;
         MOV     0x9a,#0x20
+  
 //   22     
 //   23     /* 3、Initialize the sysstktop to the OS_CPU_ExceptStkBase */
         MOV     sysstktop+0x0,?XSP+0

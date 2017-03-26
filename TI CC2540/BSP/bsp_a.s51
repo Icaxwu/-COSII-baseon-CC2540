@@ -15,9 +15,9 @@
         EXTERN interrupt_main_entry
 
 SAVE_ALL MACRO
+        PUSH  PSW
         PUSH A
         MOV A, #-22
-        PUSH  PSW
         ADD   A,?XSP+0
         XCH   A,DPL
         PUSH  A
@@ -25,19 +25,12 @@ SAVE_ALL MACRO
         ADDC  A,#0xFF
         XCH   A,DPH
         PUSH  A
-        MOV   A,?XSP+0
-        CLR   C
-        SUBB  A,DPL
-        ADD   A,#0xF2
-        JBC   0xa8.7,S_EA_0
+        
+        MOV   A,#8
+        // 已经关闭中断了，所以可以直接赋值XSP
         MOV   ?XSP+1,DPH
         MOV   ?XSP+0,DPL
-        SJMP  S_EA_1
-S_EA_0:
-        MOV   ?XSP+1,DPH
-        MOV   ?XSP+0,DPL
-        SETB  0xa8.7
-S_EA_1:
+
         XCH   A,R0
         MOVX  @DPTR,A
         INC   DPTR
@@ -68,32 +61,36 @@ S_cp_vr_loop:
         INC   DPTR
         MOV   A,R7
         MOVX  @DPTR,A
-        INC   DPTR
+        
+        INC   DPTR   // 保存DPTR
         POP   A
         MOVX  @DPTR,A
         INC   DPTR
         POP   A
-        MOVX  @DPTR,A
-        INC   DPTR
-        POP   A
-        MOVX  @DPTR,A        
-        INC   DPTR
+        MOVX  @DPTR,A  
+        
+        INC   DPTR   // VB
         MOV   A,?VB
         MOVX  @DPTR,A
-        INC   DPTR
+        
+        INC   DPTR   // B
         MOV   A,B
         MOVX  @DPTR,A
         
-        INC   DPTR      // 将A从系统硬件栈移到Xstack
+        INC   DPTR    // 将A从系统硬件栈移到Xstack
         POP   A
         MOVX  @DPTR,A
         
-        INC   DPTR
+        INC   DPTR   // PSW
+        POP   A
+        MOVX  @DPTR,A 
+        
+        //INC   DPTR
         
         ENDM
         
-RESTORE_ALL_AND_RET MACRO 
-        MOV R7, #8
+RESTORE_ALL MACRO 
+        MOV   R7, #8
         MOV   DPH,?XSP+1
         MOV   DPL,?XSP+0
         MOVX  A,@DPTR
@@ -126,26 +123,31 @@ R_cp_vr_loop:
         INC   DPTR
         MOVX  A,@DPTR
         MOV   R7,A
-        INC   DPTR
+        
+        INC   DPTR     // 将DPTR保存到硬件栈中
         MOVX  A,@DPTR
         PUSH  A
         INC   DPTR
         MOVX  A,@DPTR
         PUSH  A
-        INC   DPTR
-        MOVX  A,@DPTR
-        MOV   PSW,A        
-        INC   DPTR
+        
+        INC   DPTR    // 恢复VB
         MOVX  A,@DPTR
         MOV   ?VB,A
-        INC   DPTR
-        MOVX  A,@DPTR
-        INC   DPTR
-        MOV   B,A
         
+        INC   DPTR    // 恢复B
         MOVX  A,@DPTR
+        MOV   B,A     
+        
         INC   DPTR     // 恢复A
+        MOVX  A,@DPTR
         XCH   A, R0    // R0保存A的值，A保存R0的无效值
+        
+        INC   DPTR     // 恢复PSW
+        MOVX  A,@DPTR
+        MOV   PSW,A 
+        
+        INC   DPTR    // **
         
         JBC   0xa8.7,R_EA_0
         MOV   ?XSP+1,DPH
@@ -161,7 +163,6 @@ R_EA_1:
         POP   A        // A保存R0的值
         XCH   A, R0    // 恢复R0、A
 
-        RETI
         ENDM
 
         COMMON INTVEC:CODE:ROOT(0)
@@ -325,7 +326,8 @@ interrupt_main_entry_a_0:
 //   27     }
 //   28 }
 interrupt_main_entry_a_1:
-        RESTORE_ALL_AND_RET
+        RESTORE_ALL
+        RETI
 
         RSEG XDATA_Z:XDATA:NOROOT(0)
         DATA8
