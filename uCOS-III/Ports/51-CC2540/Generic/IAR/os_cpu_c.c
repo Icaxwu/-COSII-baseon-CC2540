@@ -237,8 +237,12 @@ CPU_STK  *OSTaskStkInit (OS_TASK_PTR    p_task,
 
     p_stk = &p_stk_base[stk_size];                          /* Load stack pointer                                     */
                                                             /* Registers stacked as if auto-saved on exception        */
+    /* 
+        高低存高字节，地地址存低字节
+        跳过开头的5个字节 
+    */
     *--p_stk = (CPU_STK)((CPU_INT16U)p_task >> 8);          /* Entry Point                                                   */
-    *--p_stk = (CPU_STK)((CPU_INT16U)p_task & 0xFF);   
+    *--p_stk = (CPU_STK)(((CPU_INT16U)p_task & 0xFF)+5);   
     *--p_stk = (CPU_STK)0x00;                        /* PSW, 填其他的初始值似乎有问题                      */
     *--p_stk = (CPU_STK)0xaa;                        /* A                                               */
     *--p_stk = (CPU_STK)0xbb;                        /* B                                               */
