@@ -91,11 +91,10 @@ void SYS_TICK_ISR_sys(void)
     interrupt_handle_sub_t handle;
     STIF = 0;
     EA = 1; // 打开中断
+    Set_ST_Period(OSCfg_TickRate_Cnt);  // 32768/OSCfg_TickRate_Hz
     handle = interrupt_handles[SLP_TIMER_INT_NUM].handle_for_user;
     if (handle)
        handle();  
-    Set_ST_Period(OSCfg_TickRate_Cnt);  // 32768/OSCfg_TickRate_Hz
-    STIF = 0;          //清标志位
 }
 
 
