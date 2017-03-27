@@ -67,12 +67,11 @@ void  OS_TickTask (void  *p_arg)
     p_arg = p_arg;                                          /* Prevent compiler warning                               */
 
     while (DEF_ON) {
-        P1_3 = 1;
+        P1_3 = ~P1_3;
         (void)OSTaskSemPend((OS_TICK  )0,
                             (OS_OPT   )OS_OPT_PEND_BLOCKING,
                             (CPU_TS  *)&ts,
                             (OS_ERR  *)&err);               /* Wait for signal from tick interrupt                    */
-         P1_3 = 0;
          if (err == OS_ERR_NONE) {
             if (OSRunning == OS_STATE_OS_RUNNING) {
                 OS_TickListUpdate();                        /* Update all tasks waiting for time                      */

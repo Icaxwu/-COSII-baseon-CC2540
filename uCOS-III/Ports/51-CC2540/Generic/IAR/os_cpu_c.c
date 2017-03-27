@@ -371,7 +371,6 @@ void  OSTimeTickHook (void)
 
 void  OS_CPU_SysTickHandler (void)
 {
-    //P1_1 = ~P1_1;
 #if 1
     CPU_SR_ALLOC();
 
@@ -384,7 +383,6 @@ void  OS_CPU_SysTickHandler (void)
 
     OSIntExit();                                            /* Tell uC/OS-III that we are leaving the ISR             */
 #endif  
-    //P1_0 = 0;
 }
 
 
@@ -411,7 +409,7 @@ void  OS_CPU_SysTickInit (CPU_INT32U  cnts)
    ST1 = (CPU_INT08U)(sleepTimer >> 8); 
    ST0 = (CPU_INT08U) sleepTimer; 
    
-    STIE = 1;   //SleepTimerinterrupt enable
-    STIF = 0;   //SleepTimerinterrupt flag 还没处理的
+   STIE = 1;   //SleepTimerinterrupt enable
+   STIF = 0;   //SleepTimerinterrupt flag 还没处理的
 }
 

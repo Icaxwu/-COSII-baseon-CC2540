@@ -42,16 +42,28 @@ LED初始化程序
 void BSP_LED_Init(void)
 {
   P1DIR |= 0x1f;   //P1_0定义为输出
-  LED1 = 0;        //LED1灯熄灭  
-  P1_1 = 0;
+  LED1_GPIO = 0;        //LED1灯熄灭  
+  LED2_GPIO = 0; 
   P1_2 = 0;
   P1_3 = 0;
   P1_4 = 1;
 }
 
-void  BSP_LED_Toggle (void)
+void  BSP_LED_Toggle (CPU_INT08U led)
 {
-    LED1 = ~LED1;
+    switch (led)
+    {
+        case LED1_ID:
+            LED1_GPIO = ~LED1_GPIO;
+          break;
+          
+        case LED2_ID:
+            LED2_GPIO = ~LED2_GPIO;
+          break;
+          
+        default:
+      
+    }
 }
 
 void interrupt_main_entry(void)  

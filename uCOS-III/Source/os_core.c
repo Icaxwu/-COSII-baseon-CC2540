@@ -789,7 +789,6 @@ void  OS_IdleTask (void  *p_arg)
 
     while (DEF_ON) {
         CPU_CRITICAL_ENTER();
-        P1_2 = ~P1_2;
         OSIdleTaskCtr++;
 #if OS_CFG_STAT_TASK_EN > 0u
         OSStatTaskCtr++;

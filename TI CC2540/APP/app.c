@@ -51,6 +51,7 @@
 */
 
 static  OS_TCB   AppTaskStartTCB;
+static  OS_TCB   AppUartTaskTCB;
 
 
 /*
@@ -60,6 +61,7 @@ static  OS_TCB   AppTaskStartTCB;
 */
 
 static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];
+static  CPU_STK  AppUartTaskStk[APP_UART_TASK_STK_SIZE];
 
 
 /*
@@ -144,13 +146,24 @@ static  void  AppTaskStart (void *p_arg)
     AppObjCreate();
     while(1)
     {
-        BSP_LED_Toggle();
+        BSP_LED_Toggle(LED1_ID);
         OSTimeDlyHMSM(0, 0, 0, 100,
                       OS_OPT_TIME_HMSM_STRICT,
                       &err);
     }
 }
 
+static  void AppUartTask (void *p_arg)
+{
+    OS_ERR      err;
+    while (1)
+    {
+        BSP_LED_Toggle(LED2_ID);
+        OSTimeDlyHMSM(0, 0, 0, 100,
+                      OS_OPT_TIME_HMSM_STRICT,
+                      &err);
+    }
+}
 
 /*
 *********************************************************************************************************
@@ -166,6 +179,20 @@ static  void  AppTaskStart (void *p_arg)
 
 static  void  AppTaskCreate (void)
 {
+   OS_ERR      err;
+   OSTaskCreate((OS_TCB     *)&AppUartTaskTCB,                
+                 (CPU_CHAR   *)"App Uart Task",
+                 (OS_TASK_PTR ) AppUartTask,
+                 (void       *) 0,
+                 (OS_PRIO     ) APP_UART_TASK_PRIO,
+                 (CPU_STK    *)&AppUartTaskStk[0],
+                 (CPU_STK_SIZE) APP_UART_TASK_STK_SIZE / 10,
+                 (CPU_STK_SIZE) APP_UART_TASK_STK_SIZE,
+                 (OS_MSG_QTY  ) 5u,
+                 (OS_TICK     ) 0u,
+                 (void       *) 0,
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                 (OS_ERR     *)&err);
 }
 
 

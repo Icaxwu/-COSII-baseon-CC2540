@@ -7,10 +7,13 @@
 #define P0_INT_NUM                    13
 #define IRQ_NUM_MAX                   18
 
+#define  LED1_ID        1
+#define  LED2_ID        2
+
 typedef void (*interrupt_handle_sub_t)(void);
 
 void BSP_LED_Init(void);
-void BSP_LED_Toggle (void);
+void  BSP_LED_Toggle (CPU_INT08U led);
 void SysClkSet_32M(void);
 void Set_ST_Period(CPU_INT16U cnts);
 CPU_BOOLEAN IRQ_register(unsigned char IRQ_num, interrupt_handle_sub_t handle_entry);
