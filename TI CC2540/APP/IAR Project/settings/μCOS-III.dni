@@ -38,7 +38,7 @@ ShowSource=1
 [Simulator]
 Freq=50000000
 [DebugChecksum]
-Checksum=236089928
+Checksum=495572616
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -54,7 +54,7 @@ Bp0=_ "STD_CODE" "{}.279.1" 0 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "Code:0x2102" 0 0 0 0 "" 0 ""
 Bp2=_ "STD_CODE" "Code:0x1FBD" 0 0 0 0 "" 0 ""
 Bp3=_ "STD_CODE" "Code:0x36EA" 0 0 0 0 "" 0 ""
-Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_a.s51}.294.1" 1 0 0 0 "" 0 ""
+Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\..\..\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_a.s51}.276.1" 1 0 0 0 "" 0 ""
 Count=5
 [ChipconEmu]
 Stop timers on halt=1
