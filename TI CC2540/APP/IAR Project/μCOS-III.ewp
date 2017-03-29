@@ -2234,6 +2234,12 @@
     <file>
       <name>$PROJ_DIR$\..\..\BSP\bsp_inner.h</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BSP\bsp_interrupt.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BSP\bsp_led.c</name>
+    </file>
   </group>
   <group>
     <name>TI CC2540</name>

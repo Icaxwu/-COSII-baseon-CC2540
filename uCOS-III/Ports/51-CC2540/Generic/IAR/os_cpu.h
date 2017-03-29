@@ -124,9 +124,6 @@ OS_CPU_EXT  CPU_STK  *OS_CPU_ExceptStkBase;
 
 void  OSStartHighRdy       (void);
 
-void  OS_CPU_PendSVHandler (void);
-
-
 void  OS_CPU_SysTickHandler(void);
 void  OS_CPU_SysTickInit   (CPU_INT32U  cnts);
 

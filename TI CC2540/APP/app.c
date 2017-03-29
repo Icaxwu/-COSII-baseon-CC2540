@@ -96,12 +96,8 @@ int  main (void)
     BSP_LED_Init(); 
     IRQ_register(SLP_TIMER_INT_NUM, OS_CPU_SysTickHandler);
     OS_CPU_SysTickInit(OSCfg_TickRate_Cnt);
-#if 0   
-    EA = 1;
-    while (1);
-#endif
     //BSP_IntDisAll();                                            /* Disable all interrupts.                              */
-#if 1
+    
     OSInit(&err);                                               /* Init uC/OS-III.                                      */
 
     OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,                /* Create the start task                                */
@@ -119,7 +115,6 @@ int  main (void)
                  (OS_ERR     *)&err);
 
     OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
-#endif
 }
 
 
@@ -147,7 +142,7 @@ static  void  AppTaskStart (void *p_arg)
     while(1)
     {
         BSP_LED_Toggle(LED1_ID);
-        OSTimeDlyHMSM(0, 0, 0, 100,
+        OSTimeDlyHMSM(0, 0, 0, 300,
                       OS_OPT_TIME_HMSM_STRICT,
                       &err);
     }
@@ -159,7 +154,7 @@ static  void AppUartTask (void *p_arg)
     while (1)
     {
         BSP_LED_Toggle(LED2_ID);
-        OSTimeDlyHMSM(0, 0, 0, 100,
+        OSTimeDlyHMSM(0, 0, 0, 300,
                       OS_OPT_TIME_HMSM_STRICT,
                       &err);
     }

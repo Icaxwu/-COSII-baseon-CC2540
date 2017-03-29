@@ -119,12 +119,10 @@ typedef            char        CPU_CHAR;                        /*  8-bit charac
 typedef  unsigned  char        CPU_BOOLEAN;                     /*  8-bit boolean or logical                            */
 typedef  unsigned  char        CPU_INT08U;                      /*  8-bit unsigned integer                              */
 typedef    signed  char        CPU_INT08S;                      /*  8-bit   signed integer                              */
-//typedef  unsigned  short       CPU_INT16U;                      /* 16-bit unsigned integer                              */
-//typedef    signed  short       CPU_INT16S;                      /* 16-bit   signed integer                              */
-typedef  unsigned  int         CPU_INT16U;                      /* 32-bit unsigned integer                              */
-typedef    signed  int         CPU_INT16S;                      /* 32-bit   signed integer                              */
-typedef  unsigned  long        CPU_INT32U;                      /* 64-bit unsigned integer                              */
-typedef    signed  long        CPU_INT32S;                      /* 64-bit   signed integer                              */
+typedef  unsigned  int         CPU_INT16U;                      /* 16-bit unsigned integer                              */
+typedef    signed  int         CPU_INT16S;                      /* 16-bit   signed integer                              */
+typedef  unsigned  long        CPU_INT32U;                      /* 32-bit unsigned integer                              */
+typedef    signed  long        CPU_INT32S;                      /* 32-bit   signed integer                              */
 typedef  unsigned  long long  CPU_INT64U;                      /* 64-bit unsigned integer                              */
 typedef    signed  long long  CPU_INT64S;                      /* 64-bit   signed integer                              */
 
@@ -379,8 +377,8 @@ void        CPU_IntSrcPrioSet(CPU_INT08U  pos,
                               CPU_INT08U  prio);
 
 
-CPU_SR      CPU_SR_Save      (void);
-void        CPU_SR_Restore   (CPU_SR      cpu_sr);
+extern CPU_SR      CPU_SR_Save      (void);
+extern void        CPU_SR_Restore   (CPU_SR      cpu_sr);
 
 
 void        CPU_WaitForInt   (void);

@@ -176,7 +176,6 @@ void  Math_RandSetSeed (RAND_NBR  seed)
 {
     CPU_SR_ALLOC();
 
-
     CPU_CRITICAL_ENTER();
     Math_RandSeedCur = seed;
     CPU_CRITICAL_EXIT();

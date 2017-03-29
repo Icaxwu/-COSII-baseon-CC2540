@@ -328,12 +328,10 @@ OS_CPU_WTDHandler_nosave:
         reti
 
         RSEG NEAR_CODE:CODE:NOROOT(0)
-//   10 void OSStartHighRdy(void)
+
 OSStartHighRdy:
         CODE
-//   11 {
-        ; Saved register size: 0
-        ; Auto size: 0
+
 //   12     /* 1°¢πÿ÷–∂œ */
 //   13     EA = 0;
         CLR     0xa8.7
@@ -350,7 +348,7 @@ OSStartHighRdy:
         MOV     0x9a,#0x20
   
 //   22     
-//   23     /* 3°¢Initialize the sysstktop to the OS_CPU_ExceptStkBase */
+//   23     /* 3°¢Initialize the sysstktop */
         MOV     sysstktop+0x0,?XSP+0
         MOV     sysstktop+0x1,?XSP+1
 //   24     /* 4°¢Set the XSP to 0 for initial context switch call */
