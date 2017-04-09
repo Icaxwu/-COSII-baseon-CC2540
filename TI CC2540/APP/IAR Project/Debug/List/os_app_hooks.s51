@@ -1,0 +1,524 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:02
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\os_app_hooks.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\os_app_hooks.c" -lB "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\TI CC2540\APP\IAR Project\Debug\List\" -o "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\Obj\" -e --no_cse --no_unroll --no_inline
+//        --no_code_motion --no_tbaa --debug --core=plain --dptr=16,1
+//        --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_app_hooks.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_app_hooks
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?XSP
+
+        PUBLIC App_OS_ClrAllHooks
+        PUBLIC App_OS_IdleTaskHook
+        PUBLIC App_OS_InitHook
+        PUBLIC App_OS_SetAllHooks
+        PUBLIC App_OS_StatTaskHook
+        PUBLIC App_OS_TaskCreateHook
+        PUBLIC App_OS_TaskDelHook
+        PUBLIC App_OS_TaskReturnHook
+        PUBLIC App_OS_TaskSwHook
+        PUBLIC App_OS_TimeTickHook
+
+        EXTERN CPU_SR_Restore
+        EXTERN CPU_SR_Save
+        EXTERN OS_AppIdleTaskHookPtr
+        EXTERN OS_AppStatTaskHookPtr
+        EXTERN OS_AppTaskCreateHookPtr
+        EXTERN OS_AppTaskDelHookPtr
+        EXTERN OS_AppTaskReturnHookPtr
+        EXTERN OS_AppTaskSwHookPtr
+        EXTERN OS_AppTimeTickHookPtr
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\os_app_hooks.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                     uC/OS-III
+//    4 *                                                The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2010; Micrium, Inc.; Weston, FL
+//    7 *                          All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                                  APPLICATION HOOKS
+//   10 *
+//   11 * File    : OS_APP_HOOKS.C
+//   12 * By      : JJL
+//   13 * Version : V3.01.2
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *               uC/OS-III is provided in source form to registered licensees ONLY.  It is 
+//   18 *               illegal to distribute this source code to any third party unless you receive 
+//   19 *               written permission by an authorized Micrium representative.  Knowledge of 
+//   20 *               the source code may NOT be used to develop a similar product.
+//   21 *
+//   22 *               Please help us continue to provide the Embedded community with the finest
+//   23 *               software available.  Your honesty is greatly appreciated.
+//   24 *
+//   25 *               You can contact us at www.micrium.com.
+//   26 ************************************************************************************************************************
+//   27 */
+//   28 
+//   29 #include <os.h>
+//   30 #include <os_app_hooks.h>
+//   31 
+//   32 /*$PAGE*/
+//   33 /*
+//   34 ************************************************************************************************************************
+//   35 *                                              SET ALL APPLICATION HOOKS
+//   36 *
+//   37 * Description: Set ALL application hooks.
+//   38 *
+//   39 * Arguments  : none.
+//   40 *
+//   41 * Note(s)    : none
+//   42 ************************************************************************************************************************
+//   43 */
+//   44 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   45 void  App_OS_SetAllHooks (void)
+App_OS_SetAllHooks:
+        CODE
+//   46 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+//   47 #if OS_CFG_APP_HOOKS_EN > 0u
+//   48     CPU_SR_ALLOC();
+        MOV     R6,#0x0
+//   49 
+//   50 
+//   51     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+//   52     OS_AppTaskCreateHookPtr = App_OS_TaskCreateHook;
+        MOV     DPTR,#OS_AppTaskCreateHookPtr
+        MOV     A,#App_OS_TaskCreateHook & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(App_OS_TaskCreateHook >> 8) & 0xff
+        MOVX    @DPTR,A
+//   53     OS_AppTaskDelHookPtr    = App_OS_TaskDelHook;
+        MOV     DPTR,#OS_AppTaskDelHookPtr
+        MOV     A,#App_OS_TaskDelHook & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(App_OS_TaskDelHook >> 8) & 0xff
+        MOVX    @DPTR,A
+//   54     OS_AppTaskReturnHookPtr = App_OS_TaskReturnHook;
+        MOV     DPTR,#OS_AppTaskReturnHookPtr
+        MOV     A,#App_OS_TaskReturnHook & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(App_OS_TaskReturnHook >> 8) & 0xff
+        MOVX    @DPTR,A
+//   55 
+//   56     OS_AppIdleTaskHookPtr   = App_OS_IdleTaskHook;
+        MOV     DPTR,#OS_AppIdleTaskHookPtr
+        MOV     A,#App_OS_IdleTaskHook & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(App_OS_IdleTaskHook >> 8) & 0xff
+        MOVX    @DPTR,A
+//   57     OS_AppStatTaskHookPtr   = App_OS_StatTaskHook;
+        MOV     DPTR,#OS_AppStatTaskHookPtr
+        MOV     A,#App_OS_StatTaskHook & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(App_OS_StatTaskHook >> 8) & 0xff
+        MOVX    @DPTR,A
+//   58     OS_AppTaskSwHookPtr     = App_OS_TaskSwHook;
+        MOV     DPTR,#OS_AppTaskSwHookPtr
+        MOV     A,#App_OS_TaskSwHook & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(App_OS_TaskSwHook >> 8) & 0xff
+        MOVX    @DPTR,A
+//   59     OS_AppTimeTickHookPtr   = App_OS_TimeTickHook;
+        MOV     DPTR,#OS_AppTimeTickHookPtr
+        MOV     A,#App_OS_TimeTickHook & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(App_OS_TimeTickHook >> 8) & 0xff
+        MOVX    @DPTR,A
+//   60     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//   61 #endif
+//   62 }
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+//   63 
+//   64 /*$PAGE*/
+//   65 /*
+//   66 ************************************************************************************************************************
+//   67 *                                             CLEAR ALL APPLICATION HOOKS
+//   68 *
+//   69 * Description: Clear ALL application hooks.
+//   70 *
+//   71 * Arguments  : none.
+//   72 *
+//   73 * Note(s)    : none
+//   74 ************************************************************************************************************************
+//   75 */
+//   76 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   77 void  App_OS_ClrAllHooks (void)
+App_OS_ClrAllHooks:
+        CODE
+//   78 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+//   79 #if OS_CFG_APP_HOOKS_EN > 0u
+//   80     CPU_SR_ALLOC();
+        MOV     R6,#0x0
+//   81 
+//   82 
+//   83     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+//   84     OS_AppTaskCreateHookPtr = (OS_APP_HOOK_TCB)0;
+        MOV     DPTR,#OS_AppTaskCreateHookPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   85     OS_AppTaskDelHookPtr    = (OS_APP_HOOK_TCB)0;
+        MOV     DPTR,#OS_AppTaskDelHookPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   86     OS_AppTaskReturnHookPtr = (OS_APP_HOOK_TCB)0;
+        MOV     DPTR,#OS_AppTaskReturnHookPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   87 
+//   88     OS_AppIdleTaskHookPtr   = (OS_APP_HOOK_VOID)0;
+        MOV     DPTR,#OS_AppIdleTaskHookPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   89     OS_AppStatTaskHookPtr   = (OS_APP_HOOK_VOID)0;
+        MOV     DPTR,#OS_AppStatTaskHookPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   90     OS_AppTaskSwHookPtr     = (OS_APP_HOOK_VOID)0;
+        MOV     DPTR,#OS_AppTaskSwHookPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   91     OS_AppTimeTickHookPtr   = (OS_APP_HOOK_VOID)0;
+        MOV     DPTR,#OS_AppTimeTickHookPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   92     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//   93 #endif
+//   94 }
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+//   95 
+//   96 /*$PAGE*/
+//   97 /*
+//   98 ************************************************************************************************************************
+//   99 *                                            APPLICATION TASK CREATION HOOK
+//  100 *
+//  101 * Description: This function is called when a task is created.
+//  102 *
+//  103 * Arguments  : p_tcb   is a pointer to the task control block of the task being created.
+//  104 *
+//  105 * Note(s)    : none
+//  106 ************************************************************************************************************************
+//  107 */
+//  108 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  109 void  App_OS_TaskCreateHook (OS_TCB  *p_tcb)
+App_OS_TaskCreateHook:
+        CODE
+//  110 {
+        ; Saved register size: 0
+        ; Auto size: 2
+        MOV     A,#-0x2
+        LCALL   ?ALLOC_XSTACK8
+//  111     (void)&p_tcb;
+        MOV     R0,?XSP + 0
+        MOV     R1,?XSP + 1
+//  112 }
+        MOV     A,#0x2
+        LCALL   ?DEALLOC_XSTACK8
+        RET
+//  113 
+//  114 /*$PAGE*/
+//  115 /*
+//  116 ************************************************************************************************************************
+//  117 *                                            APPLICATION TASK DELETION HOOK
+//  118 *
+//  119 * Description: This function is called when a task is deleted.
+//  120 *
+//  121 * Arguments  : p_tcb   is a pointer to the task control block of the task being deleted.
+//  122 *
+//  123 * Note(s)    : none
+//  124 ************************************************************************************************************************
+//  125 */
+//  126 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  127 void  App_OS_TaskDelHook (OS_TCB  *p_tcb)
+App_OS_TaskDelHook:
+        CODE
+//  128 {
+        ; Saved register size: 0
+        ; Auto size: 2
+        MOV     A,#-0x2
+        LCALL   ?ALLOC_XSTACK8
+//  129     (void)&p_tcb;
+        MOV     R0,?XSP + 0
+        MOV     R1,?XSP + 1
+//  130 }
+        MOV     A,#0x2
+        LCALL   ?DEALLOC_XSTACK8
+        RET
+//  131 
+//  132 /*$PAGE*/
+//  133 /*
+//  134 ************************************************************************************************************************
+//  135 *                                             APPLICATION TASK RETURN HOOK
+//  136 *
+//  137 * Description: This function is called if a task accidentally returns.  In other words, a task should either be an
+//  138 *              infinite loop or delete itself when done.
+//  139 *
+//  140 * Arguments  : p_tcb     is a pointer to the OS_TCB of the task that is returning.
+//  141 *
+//  142 * Note(s)    : none
+//  143 ************************************************************************************************************************
+//  144 */
+//  145 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  146 void  App_OS_TaskReturnHook (OS_TCB  *p_tcb)
+App_OS_TaskReturnHook:
+        CODE
+//  147 {
+        ; Saved register size: 0
+        ; Auto size: 2
+        MOV     A,#-0x2
+        LCALL   ?ALLOC_XSTACK8
+//  148     (void)&p_tcb;
+        MOV     R0,?XSP + 0
+        MOV     R1,?XSP + 1
+//  149 }
+        MOV     A,#0x2
+        LCALL   ?DEALLOC_XSTACK8
+        RET
+//  150 
+//  151 /*$PAGE*/
+//  152 /*
+//  153 ************************************************************************************************************************
+//  154 *                                              APPLICATION IDLE TASK HOOK
+//  155 *
+//  156 * Description: This function is called by the idle task.  This hook has been added to allow you to do such things as
+//  157 *              STOP the CPU to conserve power.
+//  158 *
+//  159 * Arguments  : none
+//  160 *
+//  161 * Note(s)    : none
+//  162 ************************************************************************************************************************
+//  163 */
+//  164 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  165 void  App_OS_IdleTaskHook (void)
+App_OS_IdleTaskHook:
+        CODE
+//  166 {
+        ; Saved register size: 0
+        ; Auto size: 0
+//  167 
+//  168 }
+        RET
+//  169 
+//  170 /*$PAGE*/
+//  171 /*
+//  172 ************************************************************************************************************************
+//  173 *                                          APPLICATION OS INITIALIZATION HOOK
+//  174 *
+//  175 * Description: This function is called by OSInit() at the beginning of OSInit().
+//  176 *
+//  177 * Arguments  : none
+//  178 *
+//  179 * Note(s)    : none
+//  180 ************************************************************************************************************************
+//  181 */
+//  182 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  183 void  App_OS_InitHook (void)
+App_OS_InitHook:
+        CODE
+//  184 {
+        ; Saved register size: 0
+        ; Auto size: 0
+//  185 
+//  186 }
+        RET
+//  187 
+//  188 /*$PAGE*/
+//  189 /*
+//  190 ************************************************************************************************************************
+//  191 *                                           APPLICATION STATISTIC TASK HOOK
+//  192 *
+//  193 * Description: This function is called every second by uC/OS-III's statistics task.  This allows your application to add
+//  194 *              functionality to the statistics task.
+//  195 *
+//  196 * Arguments  : none
+//  197 *
+//  198 * Note(s)    : none
+//  199 ************************************************************************************************************************
+//  200 */
+//  201 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  202 void  App_OS_StatTaskHook (void)
+App_OS_StatTaskHook:
+        CODE
+//  203 {
+        ; Saved register size: 0
+        ; Auto size: 0
+//  204 
+//  205 }
+        RET
+//  206 
+//  207 /*$PAGE*/
+//  208 /*
+//  209 ************************************************************************************************************************
+//  210 *                                             APPLICATION TASK SWITCH HOOK
+//  211 *
+//  212 * Description: This function is called when a task switch is performed.  This allows you to perform other operations
+//  213 *              during a context switch.
+//  214 *
+//  215 * Arguments  : none
+//  216 *
+//  217 * Note(s)    : 1) Interrupts are disabled during this call.
+//  218 *              2) It is assumed that the global pointer 'OSTCBHighRdyPtr' points to the TCB of the task that will be
+//  219 *                 'switched in' (i.e. the highest priority task) and, 'OSTCBCurPtr' points to the task being switched out
+//  220 *                 (i.e. the preempted task).
+//  221 ************************************************************************************************************************
+//  222 */
+//  223 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  224 void  App_OS_TaskSwHook (void)
+App_OS_TaskSwHook:
+        CODE
+//  225 {
+        ; Saved register size: 0
+        ; Auto size: 0
+//  226 
+//  227 }
+        RET
+//  228 
+//  229 /*$PAGE*/
+//  230 /*
+//  231 ************************************************************************************************************************
+//  232 *                                                APPLICATION TICK HOOK
+//  233 *
+//  234 * Description: This function is called every tick.
+//  235 *
+//  236 * Arguments  : none
+//  237 *
+//  238 * Note(s)    : 1) This function is assumed to be called from the Tick ISR.
+//  239 ************************************************************************************************************************
+//  240 */
+//  241 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  242 void  App_OS_TimeTickHook (void)
+App_OS_TimeTickHook:
+        CODE
+//  243 {
+        ; Saved register size: 0
+        ; Auto size: 0
+//  244 
+//  245 }
+        RET
+
+        END
+// 
+// 234 bytes in segment NEAR_CODE
+// 
+// 234 bytes of CODE memory
+//
+//Errors: none
+//Warnings: none

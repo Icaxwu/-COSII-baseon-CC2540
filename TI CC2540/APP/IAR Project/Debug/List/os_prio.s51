@@ -1,0 +1,478 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:05
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_prio.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_prio.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_prio.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_prio
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?S_SHL
+        EXTERN __INIT_XDATA_Z
+
+        PUBLIC OSPrioTbl
+        PUBLIC OS_PrioGetHighest
+        PUBLIC OS_PrioInit
+        PUBLIC OS_PrioInsert
+        PUBLIC OS_PrioRemove
+
+        EXTERN CPU_CntLeadZeros
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_prio.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                                 PRIORITY MANAGEMENT
+//   10 *
+//   11 * File    : OS_PRIO.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define  MICRIUM_SOURCE
+//   34 #include <os.h>
+//   35 
+//   36 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   37 const  CPU_CHAR  *os_prio__c = "$Id: $";
+//   38 #endif
+//   39 
+//   40 
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+//   41 CPU_DATA   OSPrioTbl[OS_PRIO_TBL_SIZE];                     /* Declare the array local to this file to allow for  ... */
+OSPrioTbl:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+//   42                                                             /* ... optimization.  In other words, this allows the ... */
+//   43                                                             /* ... table to be located in fast memory                 */
+//   44 
+//   45 /*
+//   46 ************************************************************************************************************************
+//   47 *                                               INITIALIZE THE PRIORITY LIST
+//   48 *
+//   49 * Description: This function is called by uC/OS-III to initialize the list of ready priorities.
+//   50 *
+//   51 * Arguments  : none
+//   52 *
+//   53 * Returns    : none
+//   54 *
+//   55 * Note       : This function is INTERNAL to uC/OS-III and your application should not call it.
+//   56 ************************************************************************************************************************
+//   57 */
+//   58 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   59 void  OS_PrioInit (void)
+OS_PrioInit:
+        CODE
+//   60 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//   61     CPU_DATA  i;
+//   62 
+//   63 
+//   64                                                             /* Clear the bitmap table ... no task is ready            */
+//   65     for (i = 0u; i < OS_PRIO_TBL_SIZE; i++) {
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        SJMP    ??OS_PrioInit_0
+//   66          OSPrioTbl[i] = (CPU_DATA)0;
+??OS_PrioInit_1:
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+        MOV     A,R2
+        MOV     B,#0x2
+        MUL     AB
+        XCH     A,R2
+        MOV     R4,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R4
+        MOV     R4,A
+        MOV     B,#0x2
+        MOV     A,R3
+        MUL     AB
+        ADD     A,R4
+        MOV     R3,A
+        MOV     A,#OSPrioTbl & 0xff
+        ADD     A,R2
+        MOV     DPL,A
+        MOV     A,#(OSPrioTbl >> 8) & 0xff
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   67     }
+        INC     R0
+        MOV     A,R0
+        JNZ     ??OS_PrioInit_0
+        INC     R1
+??OS_PrioInit_0:
+        CLR     C
+        MOV     A,R0
+        SUBB    A,#0x2
+        MOV     A,R1
+        SUBB    A,#0x0
+        JC      ??OS_PrioInit_1
+//   68 }
+        POP     DPH
+        POP     DPL
+        RET
+//   69 
+//   70 /*
+//   71 ************************************************************************************************************************
+//   72 *                                           GET HIGHEST PRIORITY TASK WAITING
+//   73 *
+//   74 * Description: This function is called by other uC/OS-III services to determine the highest priority task
+//   75 *              waiting on the event.
+//   76 *
+//   77 * Arguments  : none
+//   78 *
+//   79 * Returns    : The priority of the Highest Priority Task (HPT) waiting for the event
+//   80 *
+//   81 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//   82 ************************************************************************************************************************
+//   83 */
+//   84 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   85 OS_PRIO  OS_PrioGetHighest (void)
+OS_PrioGetHighest:
+        CODE
+//   86 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+//   87     CPU_DATA  *p_tbl;
+//   88     OS_PRIO    prio;
+//   89 
+//   90 
+//   91     prio  = (OS_PRIO)0;
+        MOV     R6,#0x0
+//   92     p_tbl = &OSPrioTbl[0];
+        MOV     R0,#OSPrioTbl & 0xff
+        MOV     R1,#(OSPrioTbl >> 8) & 0xff
+        SJMP    ??OS_PrioGetHighest_0
+//   93     while (*p_tbl == (CPU_DATA)0) {                         /* Search the bitmap table for the highest priority       */
+//   94         prio += DEF_INT_CPU_NBR_BITS;                       /* Compute the step of each CPU_DATA entry                */
+??OS_PrioGetHighest_1:
+        MOV     A,#0x10
+        ADD     A,R6
+        MOV     R6,A
+//   95         p_tbl++;
+        MOV     A,R0
+        ADD     A,#0x2
+        MOV     R0,A
+        JNC     ??OS_PrioGetHighest_0
+        INC     R1
+//   96     }
+??OS_PrioGetHighest_0:
+        MOV     DPL,R0
+        MOV     DPH,R1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        MOV     A,R2
+        ORL     A,R3
+        JZ      ??OS_PrioGetHighest_1
+//   97     prio += (OS_PRIO)CPU_CntLeadZeros(*p_tbl);              /* Find the position of the first bit set at the entry    */
+        ; Setup parameters for call to function CPU_CntLeadZeros
+        MOV     DPL,R0
+        MOV     DPH,R1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   CPU_CntLeadZeros
+        MOV     A,R2
+        ADD     A,R6
+        MOV     R6,A
+//   98     return (prio);
+        MOV     A,R6
+        MOV     R1,A
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+//   99 }
+//  100 
+//  101 /*
+//  102 ************************************************************************************************************************
+//  103 *                                                  INSERT PRIORITY
+//  104 *
+//  105 * Description: This function is called to insert a priority in the priority table.
+//  106 *
+//  107 * Arguments  : prio     is the priority to insert
+//  108 *
+//  109 * Returns    : none
+//  110 *
+//  111 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  112 ************************************************************************************************************************
+//  113 */
+//  114 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  115 void  OS_PrioInsert (OS_PRIO  prio)
+OS_PrioInsert:
+        CODE
+//  116 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 0
+        MOV     A,R1
+        MOV     R3,A
+//  117     CPU_DATA  bit;
+//  118     CPU_DATA  bit_nbr;
+//  119     OS_PRIO   ix;
+//  120 
+//  121 
+//  122     ix             = prio / DEF_INT_CPU_NBR_BITS;
+        MOV     A,R3
+        SWAP    A
+        ANL     A,#0xf
+        MOV     R2,A
+//  123     bit_nbr        = (CPU_DATA)prio & (DEF_INT_CPU_NBR_BITS - 1u);
+        MOV     A,R3
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R0
+        ANL     A,#0xf
+        MOV     R0,A
+        MOV     A,R1
+        ANL     A,#0x0
+        MOV     R1,A
+//  124     bit            = 1u;
+        MOV     R4,#0x1
+        MOV     R5,#0x0
+//  125     bit          <<= (DEF_INT_CPU_NBR_BITS - 1u) - bit_nbr;
+        MOV     ?V0,R4
+        MOV     ?V1,R5
+        MOV     A,#0xf
+        CLR     C
+        SUBB    A,R0
+        MOV     R0,#?V0
+        LCALL   ?S_SHL
+        MOV     R4,?V0
+        MOV     R5,?V1
+//  126     OSPrioTbl[ix] |= bit;
+        MOV     A,R2
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R0
+        MOV     B,#0x2
+        MUL     AB
+        XCH     A,R0
+        MOV     R2,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R2
+        MOV     R2,A
+        MOV     B,#0x2
+        MOV     A,R1
+        MUL     AB
+        ADD     A,R2
+        MOV     R1,A
+        MOV     A,#OSPrioTbl & 0xff
+        ADD     A,R0
+        MOV     DPL,A
+        MOV     A,#(OSPrioTbl >> 8) & 0xff
+        ADDC    A,R1
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        ORL     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ORL     A,R5
+        MOVX    @DPTR,A
+//  127 }
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+//  128 
+//  129 /*
+//  130 ************************************************************************************************************************
+//  131 *                                                   REMOVE PRIORITY
+//  132 *
+//  133 * Description: This function is called to remove a priority in the priority table.
+//  134 *
+//  135 * Arguments  : prio     is the priority to remove
+//  136 *
+//  137 * Returns    : none
+//  138 *
+//  139 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  140 ************************************************************************************************************************
+//  141 */
+//  142 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  143 void  OS_PrioRemove (OS_PRIO  prio)
+OS_PrioRemove:
+        CODE
+//  144 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 0
+        MOV     A,R1
+        MOV     R3,A
+//  145     CPU_DATA  bit;
+//  146     CPU_DATA  bit_nbr;
+//  147     OS_PRIO   ix;
+//  148 
+//  149 
+//  150     ix             = prio / DEF_INT_CPU_NBR_BITS;
+        MOV     A,R3
+        SWAP    A
+        ANL     A,#0xf
+        MOV     R2,A
+//  151     bit_nbr        = (CPU_DATA)prio & (DEF_INT_CPU_NBR_BITS - 1u);
+        MOV     A,R3
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R0
+        ANL     A,#0xf
+        MOV     R0,A
+        MOV     A,R1
+        ANL     A,#0x0
+        MOV     R1,A
+//  152     bit            = 1u;
+        MOV     R4,#0x1
+        MOV     R5,#0x0
+//  153     bit          <<= (DEF_INT_CPU_NBR_BITS - 1u) - bit_nbr;
+        MOV     ?V0,R4
+        MOV     ?V1,R5
+        MOV     A,#0xf
+        CLR     C
+        SUBB    A,R0
+        MOV     R0,#?V0
+        LCALL   ?S_SHL
+        MOV     R4,?V0
+        MOV     R5,?V1
+//  154     OSPrioTbl[ix] &= ~bit;
+        MOV     A,R4
+        CPL     A
+        MOV     R6,A
+        MOV     A,R5
+        CPL     A
+        MOV     R7,A
+        MOV     A,R2
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R0
+        MOV     B,#0x2
+        MUL     AB
+        XCH     A,R0
+        MOV     R2,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R2
+        MOV     R2,A
+        MOV     B,#0x2
+        MOV     A,R1
+        MUL     AB
+        ADD     A,R2
+        MOV     R1,A
+        MOV     A,#OSPrioTbl & 0xff
+        ADD     A,R0
+        MOV     DPL,A
+        MOV     A,#(OSPrioTbl >> 8) & 0xff
+        ADDC    A,R1
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        ANL     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,R7
+        MOVX    @DPTR,A
+//  155 }
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+
+        END
+// 
+// 320 bytes in segment NEAR_CODE
+//   4 bytes in segment XDATA_Z
+// 
+// 320 bytes of CODE  memory
+//   4 bytes of XDATA memory
+//
+//Errors: none
+//Warnings: none

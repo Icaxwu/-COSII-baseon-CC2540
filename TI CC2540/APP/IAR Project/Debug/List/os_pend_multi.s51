@@ -1,0 +1,1697 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:04
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\os_pend_multi.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\os_pend_multi.c" -lB "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_pend_multi.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_pend_multi
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?L_ADD_TO_X
+        EXTERN ?L_EQ_X
+        EXTERN ?L_MOV_X
+        EXTERN ?PUSH_XSTACK8_X_FOUR
+        EXTERN ?PUSH_XSTACK_I_TWO
+        EXTERN ?US_SWITCH_SPARSE
+        EXTERN ?XLOAD_R0123
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN ?XSTACK_DISP100_8
+        EXTERN ?XSTACK_DISP102_8
+        EXTERN ?XSTORE_R0123
+        EXTERN __INIT_XDATA_I
+
+        PUBLIC OSPendMulti
+        PUBLIC OS_PendMultiGetRdy
+        PUBLIC OS_PendMultiValidate
+        PUBLIC OS_PendMultiWait
+        PUBWEAK __Constant_4553414d
+        PUBWEAK __Constant_55515545
+        PUBWEAK __Constant_ffffffff
+
+        EXTERN CPU_SR_Restore
+        EXTERN CPU_SR_Save
+        EXTERN OSIntNestingCtr
+        EXTERN OSSched
+        EXTERN OSSchedLockNestingCtr
+        EXTERN OSTCBCurPtr
+        EXTERN OS_MsgQGet
+        EXTERN OS_PendListInsertPrio
+        EXTERN OS_TaskBlock
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_pend_multi.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                               PEND ON MULTIPLE OBJECTS
+//   10 *
+//   11 * File    : OS_PEND_MULTI.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define  MICRIUM_SOURCE
+//   34 #include <os.h>
+//   35 
+//   36 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   37 const  CPU_CHAR  *os_pend_multi__c = "$Id: $";
+//   38 #endif
+//   39 
+//   40 
+//   41 #if (((OS_CFG_Q_EN > 0u) || (OS_CFG_SEM_EN > 0u)) && (OS_CFG_PEND_MULTI_EN > 0u))
+//   42 /*
+//   43 ************************************************************************************************************************
+//   44 *                                               PEND ON MULTIPLE OBJECTS
+//   45 *
+//   46 * Description: This function pends on multiple objects.  The objects pended on MUST be either semaphores or message
+//   47 *              queues.  If multiple objects are ready at the start of the pend call, then all available objects that
+//   48 *              are ready will be indicated to the caller.  If the task must pend on the multiple events then, as soon
+//   49 *              as one of the object is either posted, aborted or deleted, the task will be readied.
+//   50 *
+//   51 *              This function only allows you to pend on semaphores and/or message queues.
+//   52 *
+//   53 * Arguments  : p_pend_data_tbl   is a pointer to an array of type OS_PEND_DATA which contains a list of all the
+//   54 *                                objects we will be waiting on.  The caller must declare an array of OS_PEND_DATA
+//   55 *                                and initialize the .PendObjPtr (see below) with a pointer to the object (semaphore or
+//   56 *                                message queue) to pend on.
+//   57 *
+//   58 *                                    OS_PEND_DATA  MyPendArray[?];
+//   59 *
+//   60 *                                The OS_PEND_DATA field are as follows:
+//   61 *
+//   62 *                                    OS_PEND_DATA  *PrevPtr;      Used to link OS_PEND_DATA objects
+//   63 *                                    OS_PEND_DATA  *NextPtr;      Used to link OS_PEND_DATA objects
+//   64 *                                    OS_TCB        *TCBPtr;       Pointer to the TCB that is pending on multiple objects
+//   65 *                                    OS_PEND_OBJ   *PendObjPtr;   USER supplied field which is a pointer to the
+//   66 *                                                                 semaphore or message queue you want to pend on.  When
+//   67 *                                                                 you call OSPendMulti() you MUST fill this field for
+//   68 *                                                                 each of the objects you want to pend on.
+//   69 *                                    OS_PEND_OBJ   *RdyObjPtr;    OSPendMulti() will return the object that was posted,
+//   70 *                                                                 aborted or deleted in this field.
+//   71 *                                    void          *RdyMsgPtr;    OSPendMulti() will fill in this field if the object
+//   72 *                                                                 posted was a message queue.  This corresponds to the
+//   73 *                                                                 message posted.
+//   74 *                                    OS_MSG_SIZE    RdyMsgSize;   OSPendMulti() will fill in this field if the object
+//   75 *                                                                 posted was a message queue.  This corresponds to the
+//   76 *                                                                 size of the message posted.
+//   77 *                                    CPU_TS         RdyTS;        OSPendMulti() will fill in this field if the object
+//   78 *                                                                 was a message queue.  This corresponds to the time
+//   79 *                                                                 stamp when the message was posted.  However, if the
+//   80 *                                                                 object is a semaphore and the object is already ready
+//   81 *                                                                 the this field will be set to (CPU_TS)0 because it's
+//   82 *                                                                 not possible to know when the semaphore was posted.
+//   83 *
+//   84 *              tbl_size      is the size (in number of elements) of the OS_PEND_DATA array passed to this function.  In
+//   85 *                            other words, if the called needs to pend on 4 separate objects (semaphores and/or queues)
+//   86 *                            then you would pass 4 to this call.
+//   87 *
+//   88 *              timeout       is an optional timeout period (in clock ticks).  If non-zero, your task will wait any of
+//   89 *                            the objects up to the amount of time specified by this argument. If you specify 0, however,
+//   90 *                            your task will wait forever for the specified objects or, until an object is posted,
+//   91 *                            aborted or deleted.
+//   92 *
+//   93 *              opt           determines whether the user wants to block if none of the objects are available.
+//   94 *
+//   95 *                                OS_OPT_PEND_BLOCKING
+//   96 *                                OS_OPT_PEND_NON_BLOCKING
+//   97 *
+//   98 *              p_err         is a pointer to where an error message will be deposited.  Possible error messages are:
+//   99 *
+//  100 *                                OS_ERR_NONE              The call was successful and your task owns the resources or,
+//  101 *                                                         the objects you are waiting for occurred. Check the .RdyObjPtr
+//  102 *                                                         fields to know which objects have been posted.
+//  103 *                                OS_ERR_OBJ_TYPE          If any of the .PendPtr is NOT a semaphore or a message queue
+//  104 *                                OS_ERR_OPT_INVALID       If you specified an invalid option for 'opt'
+//  105 *                                OS_ERR_PEND_ABORT        The wait on the events was aborted; check the .RdyObjPtr fields
+//  106 *                                                         for which objects were aborted.
+//  107 *                                OS_ERR_PEND_DEL          The wait on the events was aborted; check the .RdyObjPtr fields
+//  108 *                                                         for which objects were aborted.
+//  109 *                                OS_ERR_PEND_ISR          If you called this function from an ISR
+//  110 *                                OS_ERR_PEND_LOCKED       If you called this function when the scheduler is locked.
+//  111 *                                OS_ERR_PEND_WOULD_BLOCK  If the caller didn't want to block and no object ready
+//  112 *                                OS_ERR_STATUS_INVALID    Invalid pend status
+//  113 *                                OS_ERR_PTR_INVALID       If you passes a NULL pointer of 'p_pend_data_tbl'
+//  114 *                                OS_ERR_TIMEOUT           The objects were not posted within the specified 'timeout'.
+//  115 *
+//  116 * Returns    : >  0          the number of objects returned as ready, aborted or deleted
+//  117 *              == 0          if no events are returned as ready because of timeout or upon error.
+//  118 ************************************************************************************************************************
+//  119 */
+//  120 /*$PAGE*/
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  121 OS_OBJ_QTY  OSPendMulti (OS_PEND_DATA  *p_pend_data_tbl,
+OSPendMulti:
+        CODE
+//  122                          OS_OBJ_QTY     tbl_size,
+//  123                          OS_TICK        timeout,
+//  124                          OS_OPT         opt,
+//  125                          OS_ERR        *p_err)
+//  126 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 4
+        MOV     A,#-0x4
+        LCALL   ?ALLOC_XSTACK8
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     ?V4,R4
+        MOV     ?V5,R5
+//  127     CPU_BOOLEAN   valid;
+//  128     OS_OBJ_QTY    nbr_obj_rdy;
+//  129     CPU_SR_ALLOC();
+        MOV     ?V0,#0x0
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+//  130 
+//  131 
+//  132 
+//  133 #ifdef OS_SAFETY_CRITICAL
+//  134     if (p_err == (OS_ERR *)0) {
+//  135         OS_SAFETY_CRITICAL_EXCEPTION();
+//  136         return ((OS_OBJ_QTY)0);
+//  137     }
+//  138 #endif
+//  139 
+//  140 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  141     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Can't pend from an ISR                                 */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSPendMulti_0
+//  142        *p_err = OS_ERR_PEND_ISR;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x52
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  143         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSPendMulti_1
+//  144     }
+//  145 #endif
+//  146 
+//  147 #if OS_CFG_ARG_CHK_EN > 0u
+//  148     if (p_pend_data_tbl == (OS_PEND_DATA *)0) {             /* Validate 'p_pend_data_tbl'                             */
+??OSPendMulti_0:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSPendMulti_2
+//  149        *p_err = OS_ERR_PTR_INVALID;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x2b
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x62
+        MOVX    @DPTR,A
+//  150         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSPendMulti_1
+//  151     }
+//  152     if (tbl_size == (OS_OBJ_QTY)0) {                        /* Array size must be > 0                                 */
+??OSPendMulti_2:
+        MOV     A,?V4
+        ORL     A,?V5
+        JNZ     ??OSPendMulti_3
+//  153        *p_err = OS_ERR_PTR_INVALID;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x2b
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x62
+        MOVX    @DPTR,A
+//  154         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSPendMulti_1
+//  155     }
+??OSPendMulti_3:
+        MOV     A,#0x15
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V3,A
+//  156     switch (opt) {
+        MOV     ?V0,?V2
+        MOV     ?V1,?V3
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSPendMulti>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSPendMulti_4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSPendMulti_4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSPendMulti_5
+        CODE
+//  157         case OS_OPT_PEND_BLOCKING:
+//  158         case OS_OPT_PEND_NON_BLOCKING:
+//  159              break;
+//  160 
+//  161         default:
+//  162             *p_err = OS_ERR_OPT_INVALID;
+//  163              return ((OS_OBJ_QTY)0);
+//  164     }
+//  165 #endif
+//  166 
+//  167     valid = OS_PendMultiValidate(p_pend_data_tbl,           /* -------- Validate objects to be OS_SEM or OS_Q ------- */
+//  168                                  tbl_size);
+??OSPendMulti_4:
+        ; Setup parameters for call to function OS_PendMultiValidate
+        MOV     R4,?V4
+        MOV     R5,?V5
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_PendMultiValidate
+        MOV     A,R1
+//  169     if (valid == DEF_FALSE) {
+        JNZ     ??OSPendMulti_6
+//  170        *p_err = OS_ERR_OBJ_TYPE;                            /* Invalid, not OS_SEM or OS_Q                            */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  171         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSPendMulti_1
+//  172     }
+??OSPendMulti_5:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSPendMulti_1
+//  173 
+//  174 /*$PAGE*/
+//  175     CPU_CRITICAL_ENTER();
+??OSPendMulti_6:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V0,A
+//  176     nbr_obj_rdy = OS_PendMultiGetRdy(p_pend_data_tbl,       /* --------- SEE IF OBJECT(s) HAVE BEEN POSTED ---------- */
+//  177                                      tbl_size);
+        ; Setup parameters for call to function OS_PendMultiGetRdy
+        MOV     R4,?V4
+        MOV     R5,?V5
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_PendMultiGetRdy
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//  178     if (nbr_obj_rdy > (OS_OBJ_QTY)0) {
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSPendMulti_7
+//  179         CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  180        *p_err = OS_ERR_NONE;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  181         return ((OS_OBJ_QTY)nbr_obj_rdy);
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LJMP    ??OSPendMulti_1
+//  182     }
+//  183 
+//  184     if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) {    /* Caller wants to block if not available?                */
+??OSPendMulti_7:
+        MOV     A,?V2
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,?V3
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSPendMulti_8
+//  185         CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  186        *p_err = OS_ERR_PEND_WOULD_BLOCK;                    /* No                                                     */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x50
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  187         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSPendMulti_1
+//  188     } else {
+//  189         if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {    /* Can't pend when the scheduler is locked                */
+??OSPendMulti_8:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSPendMulti_9
+//  190             CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  191            *p_err = OS_ERR_SCHED_LOCKED;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+//  192             return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSPendMulti_1
+//  193         }
+//  194     }
+//  195                                                             /* Lock the scheduler/re-enable interrupts                */
+//  196     OS_CRITICAL_ENTER_CPU_EXIT();
+//  197                                                             /* ------ NO OBJECT READY, PEND ON MULTIPLE OBJECTS ----- */
+//  198     OS_PendMultiWait(p_pend_data_tbl,                       /* Suspend task until object posted or timeout occurs     */
+//  199                      tbl_size,
+//  200                      timeout);
+??OSPendMulti_9:
+        ; Setup parameters for call to function OS_PendMultiWait
+        MOV     A,#0x11
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     R4,?V4
+        MOV     R5,?V5
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_PendMultiWait
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  201 
+//  202     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  203 
+//  204     OSSched();                                              /* Find next highest priority task ready                  */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  205 
+//  206     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V0,A
+//  207     switch (OSTCBCurPtr->PendStatus) {
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1b
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OSPendMulti_10
+        DEC     A
+        JZ      ??OSPendMulti_11
+        DEC     A
+        JZ      ??OSPendMulti_12
+        DEC     A
+        JZ      ??OSPendMulti_13
+        SJMP    ??OSPendMulti_14
+//  208         case OS_STATUS_PEND_OK:                             /* We got one of the objects posted to                    */
+//  209             *p_err = OS_ERR_NONE;
+??OSPendMulti_10:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  210              break;
+        SJMP    ??OSPendMulti_15
+//  211 
+//  212         case OS_STATUS_PEND_ABORT:                          /* Indicate that the multi-pend was aborted               */
+//  213             *p_err = OS_ERR_PEND_ABORT;
+??OSPendMulti_11:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x57
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  214              break;
+        SJMP    ??OSPendMulti_15
+//  215 
+//  216         case OS_STATUS_PEND_TIMEOUT:                        /* Indicate that we didn't get semaphore within timeout   */
+//  217             *p_err = OS_ERR_TIMEOUT;
+??OSPendMulti_13:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x27
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  218              break;
+        SJMP    ??OSPendMulti_15
+//  219 
+//  220         case OS_STATUS_PEND_DEL:                            /* Indicate that an object pended on has been deleted     */
+//  221             *p_err = OS_ERR_OBJ_DEL;
+??OSPendMulti_12:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x3e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  222             break;
+        SJMP    ??OSPendMulti_15
+//  223 
+//  224         default:
+//  225             *p_err = OS_ERR_STATUS_INVALID;
+??OSPendMulti_14:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x2e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6e
+        MOVX    @DPTR,A
+//  226              break;
+//  227     }
+//  228 
+//  229     OSTCBCurPtr->PendStatus = OS_STATUS_PEND_OK;
+??OSPendMulti_15:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1b
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  230     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  231 
+//  232     return ((OS_OBJ_QTY)1);
+        MOV     R2,#0x1
+        MOV     R3,#0x0
+??OSPendMulti_1:
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+//  233 }
+//  234 
+//  235 /*$PAGE*/
+//  236 /*
+//  237 ************************************************************************************************************************
+//  238 *                                              GET A LIST OF OBJECTS READY
+//  239 *
+//  240 * Description: This function is called by OSPendMulti() to obtain the list of object that are ready.
+//  241 *
+//  242 * Arguments  : p_pend_data_tbl   is a pointer to an array of OS_PEND_DATA
+//  243 *              ---------------
+//  244 *
+//  245 *              tbl_size          is the size of the array
+//  246 *
+//  247 * Returns    :  > 0              the number of objects ready
+//  248 *              == 0              if no object ready
+//  249 *
+//  250 * Note       : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  251 ************************************************************************************************************************
+//  252 */
+//  253 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  254 OS_OBJ_QTY  OS_PendMultiGetRdy (OS_PEND_DATA  *p_pend_data_tbl,
+OS_PendMultiGetRdy:
+        CODE
+//  255                                 OS_OBJ_QTY     tbl_size)
+//  256 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 10
+        MOV     A,#-0xa
+        LCALL   ?ALLOC_XSTACK8
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+//  257     OS_OBJ_QTY   i;
+//  258     OS_OBJ_QTY   nbr_obj_rdy;
+//  259 #if OS_CFG_Q_EN > 0u
+//  260     OS_ERR       err;
+//  261     OS_MSG_SIZE  msg_size;
+//  262     OS_Q        *p_q;
+//  263     void        *p_void;
+//  264     CPU_TS       ts;
+//  265 #endif
+//  266 #if OS_CFG_SEM_EN  > 0u
+//  267     OS_SEM      *p_sem;
+//  268 #endif
+//  269 
+//  270 
+//  271 
+//  272     nbr_obj_rdy = (OS_OBJ_QTY)0;
+        MOV     ?V4,#0x0
+        MOV     ?V5,#0x0
+//  273     for (i = 0u; i < tbl_size; i++) {
+        MOV     ?V6,#0x0
+        MOV     ?V7,#0x0
+        LJMP    ??OS_PendMultiGetRdy_0
+//  274         p_pend_data_tbl->RdyObjPtr  = (OS_PEND_OBJ  *)0;         /* Clear all fields                                  */
+??OS_PendMultiGetRdy_1:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  275         p_pend_data_tbl->RdyMsgPtr  = (void         *)0;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  276         p_pend_data_tbl->RdyMsgSize = (OS_MSG_SIZE   )0;
+        MOV     A,R6
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  277         p_pend_data_tbl->RdyTS      = (CPU_TS        )0;
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  278         p_pend_data_tbl->NextPtr    = (OS_PEND_DATA *)0;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  279         p_pend_data_tbl->PrevPtr    = (OS_PEND_DATA *)0;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  280         p_pend_data_tbl->TCBPtr     = (OS_TCB       *)0;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  281 #if OS_CFG_Q_EN > 0u
+//  282         p_q = (OS_Q *)((void *)p_pend_data_tbl->PendObjPtr);     /* Assume we are pointing to a message queue object  */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+//  283         if (p_q->Type == OS_OBJ_TYPE_Q) {                        /* Is it a message queue?                            */
+        MOV     DPTR,#__Constant_55515545
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JZ      $+5
+        LJMP    ??OS_PendMultiGetRdy_2
+//  284             p_void = OS_MsgQGet(&p_q->MsgQ,                      /* Yes, Any message waiting in the message queue?    */
+//  285                                 &msg_size,
+//  286                                 &ts,
+//  287                                 &err);
+        ; Setup parameters for call to function OS_MsgQGet
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP100_8
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     A,#0x8
+        LCALL   ?XSTACK_DISP100_8
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP102_8
+        MOV     A,R2
+        ADD     A,#0x12
+        MOV     R2,A
+        JNC     ??OS_PendMultiGetRdy_3
+        INC     R3
+??OS_PendMultiGetRdy_3:
+        LCALL   OS_MsgQGet
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     R0,?V0
+        MOV     R1,?V1
+//  288             if (err == OS_ERR_NONE) {
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        MOV     A,R2
+        ORL     A,R3
+        JNZ     ??OS_PendMultiGetRdy_2
+//  289                 p_pend_data_tbl->RdyObjPtr  = p_pend_data_tbl->PendObjPtr;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//  290                 p_pend_data_tbl->RdyMsgPtr  = p_void;            /*      Yes, save the message received               */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  291                 p_pend_data_tbl->RdyMsgSize = msg_size;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R6
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  292                 p_pend_data_tbl->RdyTS      = ts;
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?XLOAD_R0123
+        MOV     A,R6
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+//  293                 nbr_obj_rdy++;
+        INC     ?V4
+        MOV     A,?V4
+        JNZ     ??OS_PendMultiGetRdy_2
+        INC     ?V5
+//  294             }
+//  295         }
+//  296 #endif
+//  297 
+//  298 #if OS_CFG_SEM_EN > 0u
+//  299         p_sem = (OS_SEM *)((void *)p_pend_data_tbl->PendObjPtr); /* Assume we are pointing to a semaphore object      */
+??OS_PendMultiGetRdy_2:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  300         if (p_sem->Type == OS_OBJ_TYPE_SEM) {                    /* Is it a semaphore?                                */
+        MOV     DPTR,#__Constant_4553414d
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_PendMultiGetRdy_4
+//  301             if (p_sem->Ctr > 0u) {                               /* Yes, Semaphore has been signaled?                 */
+        MOV     A,R4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,R0
+        ORL     A,R1
+        ORL     A,R2
+        ORL     A,R3
+        JZ      ??OS_PendMultiGetRdy_4
+//  302                 p_sem->Ctr--;                                    /*      Yes, caller may proceed                      */
+        MOV     DPTR,#__Constant_ffffffff
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,R4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_ADD_TO_X
+//  303                 p_pend_data_tbl->RdyObjPtr  = p_pend_data_tbl->PendObjPtr;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  304                 p_pend_data_tbl->RdyTS      = p_sem->TS;
+        MOV     A,R4
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,R6
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+//  305                 nbr_obj_rdy++;
+        INC     ?V4
+        MOV     A,?V4
+        JNZ     ??OS_PendMultiGetRdy_4
+        INC     ?V5
+//  306             }
+//  307         }
+//  308 #endif
+//  309 
+//  310         p_pend_data_tbl++;
+??OS_PendMultiGetRdy_4:
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     R6,A
+        JNC     ??OS_PendMultiGetRdy_5
+        INC     R7
+//  311     }
+??OS_PendMultiGetRdy_5:
+        INC     ?V6
+        MOV     A,?V6
+        JNZ     ??OS_PendMultiGetRdy_0
+        INC     ?V7
+??OS_PendMultiGetRdy_0:
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        CLR     C
+        MOV     A,?V6
+        SUBB    A,R0
+        MOV     A,?V7
+        SUBB    A,R1
+        JNC     $+5
+        LJMP    ??OS_PendMultiGetRdy_1
+//  312     return (nbr_obj_rdy);
+        MOV     R2,?V4
+        MOV     R3,?V5
+        MOV     A,#0xa
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  313 }
+//  314 
+//  315 /*$PAGE*/
+//  316 /*
+//  317 ************************************************************************************************************************
+//  318 *                                 VERIFY THAT OBJECTS PENDED ON ARE EITHER SEMAPHORES or QUEUES
+//  319 *
+//  320 * Description: This function is called by OSPendMulti() to verify that we are multi-pending on either semaphores or
+//  321 *              message queues.
+//  322 *
+//  323 * Arguments  : p_pend_data_tbl    is a pointer to an array of OS_PEND_DATA
+//  324 *              ---------------
+//  325 *
+//  326 *              tbl_size           is the size of the array
+//  327 *
+//  328 * Returns    : TRUE               if all objects pended on are either semaphores of queues
+//  329 *              FALSE              if at least one object is not a semaphore or queue.
+//  330 *
+//  331 * Note       : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  332 ************************************************************************************************************************
+//  333 */
+//  334 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  335 CPU_BOOLEAN  OS_PendMultiValidate (OS_PEND_DATA  *p_pend_data_tbl,
+OS_PendMultiValidate:
+        CODE
+//  336                                    OS_OBJ_QTY     tbl_size)
+//  337 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     ?V4,R4
+        MOV     ?V5,R5
+//  338     OS_OBJ_QTY  i;
+//  339     OS_OBJ_QTY  ctr;
+//  340 #if OS_CFG_SEM_EN  > 0u
+//  341     OS_SEM      *p_sem;
+//  342 #endif
+//  343 #if OS_CFG_Q_EN > 0u
+//  344     OS_Q        *p_q;
+//  345 #endif
+//  346 
+//  347 
+//  348     for (i = 0u; i < tbl_size; i++) {
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OS_PendMultiValidate_0
+//  349         if (p_pend_data_tbl->PendObjPtr == (OS_PEND_OBJ *)0) {   /* All .PendObjPtr in the table MUST be non NULL     */
+//  350             return (DEF_FALSE);
+//  351         }
+//  352 
+//  353         ctr = 0u;
+//  354 #if OS_CFG_SEM_EN  > 0u
+//  355         p_sem = (OS_SEM *)((void *)p_pend_data_tbl->PendObjPtr); /* All objects to pend on must be of type OS_SEM ... */
+//  356         if (p_sem->Type == OS_OBJ_TYPE_SEM) {
+//  357             ctr++;
+//  358         }
+//  359 #endif
+//  360 
+//  361 #if OS_CFG_Q_EN > 0u
+//  362         p_q = (OS_Q *)((void *)p_pend_data_tbl->PendObjPtr);     /* ... or of type OS_Q                               */
+//  363         if (p_q->Type == OS_OBJ_TYPE_Q) {
+//  364             ctr++;
+//  365         }
+//  366 #endif
+//  367 
+//  368         if (ctr == (OS_OBJ_QTY)0) {
+//  369             return (DEF_FALSE);                                  /* Found at least one invalid object type            */
+//  370         }
+//  371         p_pend_data_tbl++;
+??OS_PendMultiValidate_1:
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     R6,A
+        JNC     ??OS_PendMultiValidate_2
+        INC     R7
+??OS_PendMultiValidate_2:
+        INC     R4
+        MOV     A,R4
+        JNZ     ??OS_PendMultiValidate_0
+        INC     R5
+??OS_PendMultiValidate_0:
+        CLR     C
+        MOV     A,R4
+        SUBB    A,?V4
+        MOV     A,R5
+        SUBB    A,?V5
+        JC      $+5
+        LJMP    ??OS_PendMultiValidate_3
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_PendMultiValidate_4
+        MOV     R1,#0x0
+        SJMP    ??OS_PendMultiValidate_5
+??OS_PendMultiValidate_4:
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     ?V6,R0
+        MOV     ?V7,R1
+        MOV     DPTR,#__Constant_4553414d
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_PendMultiValidate_6
+        INC     R2
+        MOV     A,R2
+        JNZ     ??OS_PendMultiValidate_6
+        INC     R3
+??OS_PendMultiValidate_6:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     ?V6,R0
+        MOV     ?V7,R1
+        MOV     DPTR,#__Constant_55515545
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_PendMultiValidate_7
+        INC     R2
+        MOV     A,R2
+        JNZ     ??OS_PendMultiValidate_7
+        INC     R3
+??OS_PendMultiValidate_7:
+        MOV     A,R2
+        ORL     A,R3
+        JZ      $+5
+        LJMP    ??OS_PendMultiValidate_1
+        MOV     R1,#0x0
+        SJMP    ??OS_PendMultiValidate_5
+//  372     }
+//  373     return (DEF_TRUE);
+??OS_PendMultiValidate_3:
+        MOV     R1,#0x1
+??OS_PendMultiValidate_5:
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  374 }
+//  375 
+//  376 /*$PAGE*/
+//  377 /*
+//  378 ************************************************************************************************************************
+//  379 *                                 MAKE TASK WAIT FOR ANY OF MULTIPLE EVENTS TO OCCUR
+//  380 *
+//  381 * Description: This function is called by OSPendMulti() to suspend a task because any one of multiple objects that have
+//  382 *              not been posted to.
+//  383 *
+//  384 * Arguments  : p_pend_data_tbl    is a pointer to an array of OS_PEND_DATA
+//  385 *              ---------------
+//  386 *
+//  387 *              tbl_size           is the size of the array
+//  388 *
+//  389 *              timeout            is the timeout to wait in case none of the objects become ready
+//  390 *
+//  391 * Returns    : none
+//  392 *
+//  393 * Note       : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  394 ************************************************************************************************************************
+//  395 */
+//  396 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  397 void  OS_PendMultiWait (OS_PEND_DATA  *p_pend_data_tbl,
+OS_PendMultiWait:
+        CODE
+//  398                         OS_OBJ_QTY     tbl_size,
+//  399                         OS_TICK        timeout)
+//  400 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     ?V6,R4
+        MOV     ?V7,R5
+//  401     OS_OBJ_QTY      i;
+//  402     OS_PEND_LIST   *p_pend_list;
+//  403 
+//  404 #if OS_CFG_Q_EN > 0u
+//  405     OS_Q           *p_q;
+//  406 #endif
+//  407 
+//  408 #if OS_CFG_SEM_EN > 0u
+//  409     OS_SEM         *p_sem;
+//  410 #endif
+//  411 
+//  412 
+//  413 
+//  414     OSTCBCurPtr->PendOn             = OS_TASK_PEND_ON_MULTI;   /* Resource not available, wait until it is            */
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1a
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,#0x3
+        MOVX    @DPTR,A
+//  415     OSTCBCurPtr->PendStatus         = OS_STATUS_PEND_OK;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1b
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  416     OSTCBCurPtr->PendDataTblEntries = tbl_size;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x22
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,?V6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V7
+        MOVX    @DPTR,A
+//  417     OSTCBCurPtr->PendDataTblPtr     = p_pend_data_tbl;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x18
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  418 
+//  419     OS_TaskBlock(OSTCBCurPtr,                                  /* Block the task waiting for object to be posted ...  */
+//  420                  timeout);                                     /* ... but with a timeout if not                       */
+        ; Setup parameters for call to function OS_TaskBlock
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_TaskBlock
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  421 
+//  422     for (i = 0u; i < tbl_size; i++) {
+        MOV     ?V4,#0x0
+        MOV     ?V5,#0x0
+        LJMP    ??OS_PendMultiWait_0
+//  423         p_pend_data_tbl->TCBPtr = OSTCBCurPtr;                 /* Every entry points back to the TCB of the task      */
+??OS_PendMultiWait_1:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  424 
+//  425 #if OS_CFG_SEM_EN > 0u
+//  426         p_sem = (OS_SEM *)((void *)p_pend_data_tbl->PendObjPtr);
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+//  427         if (p_sem->Type == OS_OBJ_TYPE_SEM) {
+        MOV     DPTR,#__Constant_4553414d
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_PendMultiWait_2
+//  428             p_pend_list = &p_sem->PendList;
+        MOV     A,R2
+        ADD     A,#0x6
+        MOV     R2,A
+        JNC     ??OS_PendMultiWait_3
+        INC     R3
+//  429             OS_PendListInsertPrio(p_pend_list,
+//  430                                   p_pend_data_tbl);
+??OS_PendMultiWait_3:
+        ; Setup parameters for call to function OS_PendListInsertPrio
+        MOV     A,R6
+        MOV     R4,A
+        MOV     A,R7
+        MOV     R5,A
+        LCALL   OS_PendListInsertPrio
+//  431         }
+//  432 #endif
+//  433 
+//  434 #if OS_CFG_Q_EN > 0u
+//  435         p_q = (OS_Q *)((void *)p_pend_data_tbl->PendObjPtr);
+??OS_PendMultiWait_2:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+//  436         if (p_q->Type == OS_OBJ_TYPE_Q) {
+        MOV     DPTR,#__Constant_55515545
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_PendMultiWait_4
+//  437             p_pend_list = &p_q->PendList;
+        MOV     A,R2
+        ADD     A,#0x6
+        MOV     R2,A
+        JNC     ??OS_PendMultiWait_5
+        INC     R3
+//  438             OS_PendListInsertPrio(p_pend_list,
+//  439                                   p_pend_data_tbl);
+??OS_PendMultiWait_5:
+        ; Setup parameters for call to function OS_PendListInsertPrio
+        MOV     A,R6
+        MOV     R4,A
+        MOV     A,R7
+        MOV     R5,A
+        LCALL   OS_PendListInsertPrio
+//  440         }
+//  441 #endif
+//  442 
+//  443         p_pend_data_tbl++;
+??OS_PendMultiWait_4:
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     R6,A
+        JNC     ??OS_PendMultiWait_6
+        INC     R7
+//  444     }
+??OS_PendMultiWait_6:
+        INC     ?V4
+        MOV     A,?V4
+        JNZ     ??OS_PendMultiWait_0
+        INC     ?V5
+??OS_PendMultiWait_0:
+        CLR     C
+        MOV     A,?V4
+        SUBB    A,?V6
+        MOV     A,?V5
+        SUBB    A,?V7
+        JNC     $+5
+        LJMP    ??OS_PendMultiWait_1
+//  445 }
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_55515545:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_55515545>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_55515545>`:
+        DATA32
+        DD 1431393605
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_4553414d:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_4553414d>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_4553414d>`:
+        DATA32
+        DD 1163084109
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_ffffffff:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_ffffffff>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_ffffffff>`:
+        DATA32
+        DD 4294967295
+
+        END
+//  446 
+//  447 #endif
+// 
+// 1 564 bytes in segment NEAR_CODE
+//    12 bytes in segment XDATA_I
+//    12 bytes in segment XDATA_ID
+// 
+// 1 564 bytes of CODE  memory (+ 12 bytes shared)
+//     0 bytes of XDATA memory (+ 12 bytes shared)
+//
+//Errors: none
+//Warnings: none

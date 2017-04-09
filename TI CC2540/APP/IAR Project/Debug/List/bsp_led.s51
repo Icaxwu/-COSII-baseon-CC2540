@@ -1,0 +1,626 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:00
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\bsp_led.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\bsp_led.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\bsp_led.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME bsp_led
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?S_SHL
+        EXTERN __INIT_XDATA_I
+
+        PUBLIC BSP_LED_Init
+        PUBLIC BSP_LED_OFF
+        PUBLIC BSP_LED_ON
+        PUBLIC BSP_LED_Toggle
+        PUBWEAK P0DIR
+        PUBWEAK P1DIR
+        PUBWEAK P2DIR
+        PUBWEAK _A_P0
+        PUBWEAK _A_P1
+        PUBWEAK _A_P2
+        PUBLIC bsp_leds_cfg
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\bsp_led.c
+//    1 #define BSP_EXT_MODULE
+//    2 #include <bsp_inner.h>
+
+        ASEGN SFR_AN:DATA:NOROOT,080H
+// union <unnamed> volatile __sfr _A_P0
+_A_P0:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,090H
+// union <unnamed> volatile __sfr _A_P1
+_A_P1:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0a0H
+// union <unnamed> volatile __sfr _A_P2
+_A_P2:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0fdH
+// unsigned char volatile __sfr P0DIR
+P0DIR:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0feH
+// unsigned char volatile __sfr P1DIR
+P1DIR:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0ffH
+// unsigned char volatile __sfr P2DIR
+P2DIR:
+        DATA8
+        DS 1
+//    3 #include <bsp.h>
+//    4 
+//    5 typedef enum{
+//    6     PORT_0,
+//    7     PORT_1,
+//    8     PORT_2,
+//    9 } port_e;
+//   10 
+//   11 typedef struct {
+//   12     port_e port;
+//   13     CPU_INT08U pin;
+//   14     CPU_INT08U default_status;  // 0表示关闭， 1表示打开
+//   15 } leds_cfg_t;
+//   16 
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+//   17 const leds_cfg_t bsp_leds_cfg[] = {
+bsp_leds_cfg:
+        DS 6
+        REQUIRE `?<Initializer for bsp_leds_cfg>`
+        REQUIRE __INIT_XDATA_I
+//   18   {PORT_1, 0, 0},  // led1
+//   19   {PORT_1, 1, 1},  // led2
+//   20 };
+//   21 
+//   22 
+//   23 
+//   24 /****************************
+//   25 LED初始化程序
+//   26 *****************************/
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   27 void BSP_LED_Init(void)
+BSP_LED_Init:
+        CODE
+//   28 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 0
+//   29   const leds_cfg_t  *ptr = bsp_leds_cfg;
+        MOV     R2,#bsp_leds_cfg & 0xff
+        MOV     R3,#(bsp_leds_cfg >> 8) & 0xff
+//   30   CPU_INT08U i, led_num = sizeof (bsp_leds_cfg) / sizeof(leds_cfg_t);
+        MOV     R5,#0x2
+//   31   CPU_INT08U val;
+//   32     
+//   33   for (i = 0; i < led_num; i++)
+        MOV     R4,#0x0
+        SJMP    ??BSP_LED_Init_0
+//   34   {
+//   35     val = (1 << ptr->pin);
+//   36     switch (ptr->port)
+//   37     {
+//   38         case PORT_0:
+//   39             P0DIR |= val;
+//   40             if (ptr->default_status)
+//   41             {
+//   42                 P0 |= val;
+//   43             } else {
+//   44                 P0 &= ~val;
+//   45             }
+//   46             break;
+//   47         case PORT_1:
+//   48             P1DIR |= val;
+//   49             if (ptr->default_status)
+//   50             {
+//   51                 P1 |= val;
+//   52             } else {
+//   53                 P1 &= ~val;
+//   54             }
+//   55             break;
+//   56         case PORT_2:
+//   57             P2DIR |= val;
+//   58             if (ptr->default_status)
+//   59             {
+//   60                 P2 |= val;
+//   61             } else {
+//   62                 P2 &= ~val;
+??BSP_LED_Init_1:
+        MOV     A,R0
+        CPL     A
+        ANL     0xa0,A
+//   63             }
+//   64             break;
+//   65         default:
+//   66             ;
+//   67     }
+//   68     ptr++;
+??BSP_LED_Init_2:
+        MOV     A,R2
+        ADD     A,#0x3
+        MOV     R0,A
+        CLR     A
+        ADDC    A,R3
+        MOV     R1,A
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+        INC     R4
+??BSP_LED_Init_0:
+        MOV     A,R4
+        CLR     C
+        SUBB    A,R5
+        JNC     ??BSP_LED_Init_3
+        MOV     ?V0,#0x1
+        MOV     ?V1,#0x0
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,#?V0
+        LCALL   ?S_SHL
+        MOV     A,?V0
+        MOV     R0,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        JZ      ??BSP_LED_Init_4
+        DEC     A
+        JZ      ??BSP_LED_Init_5
+        DEC     A
+        JZ      ??BSP_LED_Init_6
+        SJMP    ??BSP_LED_Init_2
+??BSP_LED_Init_4:
+        MOV     A,R0
+        ORL     0xfd,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        JZ      ??BSP_LED_Init_7
+        MOV     A,R0
+        ORL     0x80,A
+        SJMP    ??BSP_LED_Init_2
+??BSP_LED_Init_7:
+        MOV     A,R0
+        CPL     A
+        ANL     0x80,A
+        SJMP    ??BSP_LED_Init_2
+??BSP_LED_Init_5:
+        MOV     A,R0
+        ORL     0xfe,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        JZ      ??BSP_LED_Init_8
+        MOV     A,R0
+        ORL     0x90,A
+        SJMP    ??BSP_LED_Init_2
+??BSP_LED_Init_8:
+        MOV     A,R0
+        CPL     A
+        ANL     0x90,A
+        SJMP    ??BSP_LED_Init_2
+??BSP_LED_Init_6:
+        MOV     A,R0
+        ORL     0xff,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        JZ      ??BSP_LED_Init_1
+        MOV     A,R0
+        ORL     0xa0,A
+        SJMP    ??BSP_LED_Init_2
+//   69   }
+//   70 }
+??BSP_LED_Init_3:
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE P0DIR
+        REQUIRE _A_P0
+        REQUIRE P1DIR
+        REQUIRE _A_P1
+        REQUIRE P2DIR
+        REQUIRE _A_P2
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   71 void  BSP_LED_Toggle (CPU_INT08U led)
+BSP_LED_Toggle:
+        CODE
+//   72 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 0
+//   73     const leds_cfg_t  *ptr = &bsp_leds_cfg[led];
+        MOV     A,R1
+        MOV     R2,A
+        MOV     R3,#0x0
+        MOV     A,R2
+        MOV     B,#0x3
+        MUL     AB
+        XCH     A,R2
+        MOV     R0,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R0
+        MOV     R0,A
+        MOV     B,#0x3
+        MOV     A,R3
+        MUL     AB
+        ADD     A,R0
+        MOV     R3,A
+        MOV     A,#bsp_leds_cfg & 0xff
+        ADD     A,R2
+        MOV     R2,A
+        MOV     A,#(bsp_leds_cfg >> 8) & 0xff
+        ADDC    A,R3
+        MOV     R3,A
+//   74     CPU_INT08U val = (1 << ptr->pin);
+        MOV     ?V0,#0x1
+        MOV     ?V1,#0x0
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,#?V0
+        LCALL   ?S_SHL
+        MOV     A,?V0
+        MOV     R0,A
+//   75     switch (ptr->port)
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        JZ      ??BSP_LED_Toggle_0
+        DEC     A
+        JZ      ??BSP_LED_Toggle_1
+        DEC     A
+        JZ      ??BSP_LED_Toggle_2
+        SJMP    ??BSP_LED_Toggle_3
+//   76     {
+//   77         case PORT_0:
+//   78             if (P0 & val)
+??BSP_LED_Toggle_0:
+        MOV     A,0x80
+        ANL     A,R0
+        JZ      ??BSP_LED_Toggle_4
+//   79             {
+//   80                 P0 &= ~val;
+        MOV     A,R0
+        CPL     A
+        ANL     0x80,A
+        SJMP    ??BSP_LED_Toggle_3
+//   81             }
+//   82             else
+//   83             {
+//   84                 P0 |= val; 
+??BSP_LED_Toggle_4:
+        MOV     A,R0
+        ORL     0x80,A
+//   85             }
+//   86             break;
+        SJMP    ??BSP_LED_Toggle_3
+//   87         case PORT_1:
+//   88             if (P1 & val)
+??BSP_LED_Toggle_1:
+        MOV     A,0x90
+        ANL     A,R0
+        JZ      ??BSP_LED_Toggle_5
+//   89             {
+//   90                 P1 &= ~val; 
+        MOV     A,R0
+        CPL     A
+        ANL     0x90,A
+        SJMP    ??BSP_LED_Toggle_3
+//   91             }
+//   92             else
+//   93             {
+//   94                 P1 |= val; 
+??BSP_LED_Toggle_5:
+        MOV     A,R0
+        ORL     0x90,A
+//   95             }
+//   96 
+//   97             break;
+        SJMP    ??BSP_LED_Toggle_3
+//   98         case PORT_2:
+//   99             if (P2 & val)
+??BSP_LED_Toggle_2:
+        MOV     A,0xa0
+        ANL     A,R0
+        JZ      ??BSP_LED_Toggle_6
+//  100             {
+//  101                 P2 &= ~val; 
+        MOV     A,R0
+        CPL     A
+        ANL     0xa0,A
+        SJMP    ??BSP_LED_Toggle_3
+//  102             }
+//  103             else
+//  104             {
+//  105                 P2 |= val; 
+??BSP_LED_Toggle_6:
+        MOV     A,R0
+        ORL     0xa0,A
+//  106             }
+//  107 
+//  108             break;
+//  109         default:
+//  110             ;
+//  111     }
+//  112 }
+??BSP_LED_Toggle_3:
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE _A_P0
+        REQUIRE _A_P1
+        REQUIRE _A_P2
+//  113 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  114 void  BSP_LED_ON (CPU_INT08U led)
+BSP_LED_ON:
+        CODE
+//  115 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 0
+//  116     const leds_cfg_t  *ptr = &bsp_leds_cfg[led];
+        MOV     A,R1
+        MOV     R2,A
+        MOV     R3,#0x0
+        MOV     A,R2
+        MOV     B,#0x3
+        MUL     AB
+        XCH     A,R2
+        MOV     R0,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R0
+        MOV     R0,A
+        MOV     B,#0x3
+        MOV     A,R3
+        MUL     AB
+        ADD     A,R0
+        MOV     R3,A
+        MOV     A,#bsp_leds_cfg & 0xff
+        ADD     A,R2
+        MOV     R2,A
+        MOV     A,#(bsp_leds_cfg >> 8) & 0xff
+        ADDC    A,R3
+        MOV     R3,A
+//  117     CPU_INT08U val = (1 << ptr->pin);
+        MOV     ?V0,#0x1
+        MOV     ?V1,#0x0
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,#?V0
+        LCALL   ?S_SHL
+        MOV     A,?V0
+        MOV     R0,A
+//  118     port_e prt = ptr->port;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        MOV     R2,A
+//  119     
+//  120     if (prt == PORT_0)
+        MOV     A,R2
+        JNZ     ??BSP_LED_ON_0
+//  121     {
+//  122         P0 |= val;
+        MOV     A,R0
+        ORL     0x80,A
+        SJMP    ??BSP_LED_ON_1
+//  123     }
+//  124     else if (prt == PORT_1)
+??BSP_LED_ON_0:
+        MOV     A,#0x1
+        XRL     A,R2
+        JNZ     ??BSP_LED_ON_2
+//  125     {
+//  126         P1 |= val;
+        MOV     A,R0
+        ORL     0x90,A
+        SJMP    ??BSP_LED_ON_1
+//  127     }
+//  128     else
+//  129     {
+//  130         P2 |= val;
+??BSP_LED_ON_2:
+        MOV     A,R0
+        ORL     0xa0,A
+//  131     }
+//  132 }
+??BSP_LED_ON_1:
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE _A_P0
+        REQUIRE _A_P1
+        REQUIRE _A_P2
+//  133 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  134 void  BSP_LED_OFF (CPU_INT08U led)
+BSP_LED_OFF:
+        CODE
+//  135 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 0
+//  136     const leds_cfg_t  *ptr = &bsp_leds_cfg[led];
+        MOV     A,R1
+        MOV     R2,A
+        MOV     R3,#0x0
+        MOV     A,R2
+        MOV     B,#0x3
+        MUL     AB
+        XCH     A,R2
+        MOV     R0,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R0
+        MOV     R0,A
+        MOV     B,#0x3
+        MOV     A,R3
+        MUL     AB
+        ADD     A,R0
+        MOV     R3,A
+        MOV     A,#bsp_leds_cfg & 0xff
+        ADD     A,R2
+        MOV     R2,A
+        MOV     A,#(bsp_leds_cfg >> 8) & 0xff
+        ADDC    A,R3
+        MOV     R3,A
+//  137     CPU_INT08U val = (1 << ptr->pin);
+        MOV     ?V0,#0x1
+        MOV     ?V1,#0x0
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,#?V0
+        LCALL   ?S_SHL
+        MOV     A,?V0
+        MOV     R0,A
+//  138     port_e prt = ptr->port;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        MOV     R2,A
+//  139     
+//  140     if (prt == PORT_0)
+        MOV     A,R2
+        JNZ     ??BSP_LED_OFF_0
+//  141     {
+//  142         P0 &= ~val;
+        MOV     A,R0
+        CPL     A
+        ANL     0x80,A
+        SJMP    ??BSP_LED_OFF_1
+//  143     }
+//  144     else if (prt == PORT_1)
+??BSP_LED_OFF_0:
+        MOV     A,#0x1
+        XRL     A,R2
+        JNZ     ??BSP_LED_OFF_2
+//  145     {
+//  146         P1 &= ~val;  
+        MOV     A,R0
+        CPL     A
+        ANL     0x90,A
+        SJMP    ??BSP_LED_OFF_1
+//  147     }
+//  148     else
+//  149     {
+//  150         P2 &= ~val;
+??BSP_LED_OFF_2:
+        MOV     A,R0
+        CPL     A
+        ANL     0xa0,A
+//  151     }
+//  152 }
+??BSP_LED_OFF_1:
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE _A_P0
+        REQUIRE _A_P1
+        REQUIRE _A_P2
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for bsp_leds_cfg>`:
+        DATA8
+        DB 1
+        DB 0
+        DB 0
+        DB 1
+        DB 1
+        DB 1
+
+        END
+// 
+// 446 bytes in segment NEAR_CODE
+//   6 bytes in segment SFR_AN
+//   6 bytes in segment XDATA_I
+//   6 bytes in segment XDATA_ID
+// 
+// 452 bytes of CODE  memory
+//   0 bytes of DATA  memory (+ 6 bytes shared)
+//   6 bytes of XDATA memory
+//
+//Errors: none
+//Warnings: none

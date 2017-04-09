@@ -1,0 +1,662 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  16:04:47
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\app.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\app.c" -lB
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\app.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME app
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?PUSH_XSTACK8_X_FOUR
+        EXTERN ?PUSH_XSTACK_I_TWO
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN ?XSTACK_DISP100_8
+        EXTERN __INIT_XDATA_I
+        EXTERN __INIT_XDATA_Z
+
+        PUBWEAK __Constant_0
+        PUBWEAK __Constant_12c
+        PUBLIC main
+
+        EXTERN BSPInit
+        EXTERN BSPUARTOpenDMA
+        EXTERN BSPUARTWriteISR
+        EXTERN BSP_LED_Toggle
+        EXTERN OSInit
+        EXTERN OSStart
+        EXTERN OSTaskCreate
+        EXTERN OSTimeDlyHMSM
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\app.c
+//    1 /*
+//    2 *********************************************************************************************************
+//    3 *                                              EXAMPLE CODE
+//    4 *
+//    5 *                          (c) Copyright 2003-2013; Micrium, Inc.; Weston, FL
+//    6 *
+//    7 *               All rights reserved.  Protected by international copyright laws.
+//    8 *               Knowledge of the source code may NOT be used to develop a similar product.
+//    9 *               Please help us continue to provide the Embedded community with the finest
+//   10 *               software available.  Your honesty is greatly appreciated.
+//   11 *********************************************************************************************************
+//   12 */
+//   13 
+//   14 /*
+//   15 *********************************************************************************************************
+//   16 *
+//   17 *                                            EXAMPLE CODE
+//   18 *
+//   19 *                                     ST Microelectronics STM32
+//   20 *                                              on the
+//   21 *
+//   22 *                                     Micrium uC-Eval-STM32F107
+//   23 *                                        Evaluation Board
+//   24 *
+//   25 * Filename      : app.c
+//   26 * Version       : V1.00
+//   27 * Programmer(s) : EHS
+//   28 *                 DC
+//   29 *********************************************************************************************************
+//   30 */
+//   31 
+//   32 /*
+//   33 *********************************************************************************************************
+//   34 *                                             INCLUDE FILES
+//   35 *********************************************************************************************************
+//   36 */
+//   37 
+//   38 #include "includes.h"
+//   39 
+//   40 
+//   41 /*
+//   42 *********************************************************************************************************
+//   43 *                                            LOCAL DEFINES
+//   44 *********************************************************************************************************
+//   45 */
+//   46 
+//   47 /*
+//   48 *********************************************************************************************************
+//   49 *                                                 TCB
+//   50 *********************************************************************************************************
+//   51 */
+//   52 
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   53 static  OS_TCB   AppTaskStartTCB;
+AppTaskStartTCB:
+        DS 143
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   54 static  OS_TCB   AppUartTaskTCB;
+AppUartTaskTCB:
+        DS 143
+        REQUIRE __INIT_XDATA_Z
+//   55 
+//   56 
+//   57 /*
+//   58 *********************************************************************************************************
+//   59 *                                                STACKS
+//   60 *********************************************************************************************************
+//   61 */
+//   62 
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   63 static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];
+AppTaskStartStk:
+        DS 128
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   64 static  CPU_STK  AppUartTaskStk[APP_UART_TASK_STK_SIZE];
+AppUartTaskStk:
+        DS 128
+        REQUIRE __INIT_XDATA_Z
+//   65 
+//   66 
+//   67 /*
+//   68 *********************************************************************************************************
+//   69 *                                         FUNCTION PROTOTYPES
+//   70 *********************************************************************************************************
+//   71 */
+//   72 
+//   73 static  void  AppTaskCreate (void);
+//   74 static  void  AppObjCreate  (void);
+//   75 static  void  AppTaskStart  (void *p_arg);
+//   76 
+//   77 
+//   78 /*
+//   79 *********************************************************************************************************
+//   80 *                                                main()
+//   81 *
+//   82 * Description : This is the standard entry point for C code.  It is assumed that your code will call
+//   83 *               main() once you have performed all necessary initialization.
+//   84 *
+//   85 * Arguments   : none
+//   86 *
+//   87 * Returns     : none
+//   88 *********************************************************************************************************
+//   89 */
+//   90 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   91 int  main (void)
+main:
+        CODE
+//   92 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        ; Auto size: 2
+        MOV     A,#-0x2
+        LCALL   ?ALLOC_XSTACK8
+//   93     OS_ERR  err;
+//   94     BSPInit();
+        ; Setup parameters for call to function BSPInit
+        LCALL   BSPInit
+//   95     //BSP_IntDisAll();                                            /* Disable all interrupts.                              */
+//   96     
+//   97     OSInit(&err);                                               /* Init uC/OS-III.                                      */
+        ; Setup parameters for call to function OSInit
+        MOV     R2,?XSP + 0
+        MOV     R3,?XSP + 1
+        LCALL   OSInit
+//   98 
+//   99     OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,                /* Create the start task                                */
+//  100                  (CPU_CHAR   *)"App Task Start",
+//  101                  (OS_TASK_PTR ) AppTaskStart,
+//  102                  (void       *) 0,
+//  103                  (OS_PRIO     ) APP_TASK_START_PRIO,
+//  104                  (CPU_STK    *)&AppTaskStartStk[0],
+//  105                  (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10,
+//  106                  (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
+//  107                  (OS_MSG_QTY  ) 5u,
+//  108                  (OS_TICK     ) 0u,
+//  109                  (void       *) 0,
+//  110                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+//  111                  (OS_ERR     *)&err);
+        ; Setup parameters for call to function OSTaskCreate
+        MOV     R0,?XSP + 0
+        MOV     R1,?XSP + 1
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#0x3
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     DPTR,#__Constant_0
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     ?V0,#0x5
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#-0x80
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#0xc
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#AppTaskStartStk & 0xff
+        MOV     ?V1,#(AppTaskStartStk >> 8) & 0xff
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#AppTaskStart & 0xff
+        MOV     ?V1,#(AppTaskStart >> 8) & 0xff
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R1,#0x2
+        MOV     R4,#`?<Constant "App Task Start">` & 0xff
+        MOV     R5,#(`?<Constant "App Task Start">` >> 8) & 0xff
+        MOV     R2,#AppTaskStartTCB & 0xff
+        MOV     R3,#(AppTaskStartTCB >> 8) & 0xff
+        LCALL   OSTaskCreate
+        MOV     A,#0x16
+        LCALL   ?DEALLOC_XSTACK8
+//  112 
+//  113     OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
+        ; Setup parameters for call to function OSStart
+        MOV     R2,?XSP + 0
+        MOV     R3,?XSP + 1
+        LCALL   OSStart
+//  114 }
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     A,#0x2
+        LCALL   ?DEALLOC_XSTACK8
+        RET
+//  115 
+//  116 
+//  117 /*
+//  118 *********************************************************************************************************
+//  119 *                                          STARTUP TASK
+//  120 *
+//  121 * Description : This is an example of a startup task.  As mentioned in the book's text, you MUST
+//  122 *               initialize the ticker only once multitasking has started.
+//  123 *
+//  124 * Arguments   : p_arg   is the argument passed to 'AppTaskStart()' by 'OSTaskCreate()'.
+//  125 *
+//  126 * Returns     : none
+//  127 *
+//  128 * Notes       : 1) The first line of code is used to prevent a compiler warning because 'p_arg' is not
+//  129 *                  used.  The compiler should not generate any code for this statement.
+//  130 *********************************************************************************************************
+//  131 */
+//  132 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  133 static  void  AppTaskStart (void *p_arg)
+AppTaskStart:
+        CODE
+//  134 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 2
+        MOV     A,#-0x2
+        LCALL   ?ALLOC_XSTACK8
+//  135     OS_ERR      err;
+//  136     AppTaskCreate();
+        ; Setup parameters for call to function AppTaskCreate
+        LCALL   AppTaskCreate
+//  137     AppObjCreate();
+        ; Setup parameters for call to function AppObjCreate
+        LCALL   AppObjCreate
+//  138     while(1)
+//  139     {
+//  140         BSP_LED_Toggle(LED1_ID);
+??AppTaskStart_0:
+        ; Setup parameters for call to function BSP_LED_Toggle
+        MOV     R1,#0x0
+        LCALL   BSP_LED_Toggle
+//  141         OSTimeDlyHMSM(0, 0, 0, 300,
+//  142                       OS_OPT_TIME_HMSM_STRICT,
+//  143                       &err);
+        ; Setup parameters for call to function OSTimeDlyHMSM
+        MOV     R0,?XSP + 0
+        MOV     R1,?XSP + 1
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     DPTR,#__Constant_12c
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LCALL   OSTimeDlyHMSM
+        MOV     A,#0xa
+        LCALL   ?DEALLOC_XSTACK8
+        SJMP    ??AppTaskStart_0
+//  144     }
+//  145 }
+//  146 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  147 static  void AppUartTask (void *p_arg)
+AppUartTask:
+        CODE
+//  148 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 6
+        MOV     A,#-0x6
+        LCALL   ?ALLOC_XSTACK8
+//  149     OS_ERR      err;
+//  150     BSPUARTInfo_t uartInfo;
+//  151     uartInfo.baudRate             = BSP_UART_BR_115200;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,#0x4
+        MOVX    @DPTR,A
+//  152     uartInfo.flowControl          = TRUE;
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+//  153     uartInfo.callBackFunc         = (BSPUARTCBack_t)0;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  154     
+//  155     BSPUARTOpenDMA(&uartInfo);
+        ; Setup parameters for call to function BSPUARTOpenDMA
+        MOV     R2,?XSP + 0
+        MOV     R3,?XSP + 1
+        LCALL   BSPUARTOpenDMA
+//  156 #if 1
+//  157     BSPUARTWriteISR("123456789", 9);
+        ; Setup parameters for call to function BSPUARTWriteISR
+        MOV     R1,#0x9
+        MOV     R2,#`?<Constant "123456789">` & 0xff
+        MOV     R3,#(`?<Constant "123456789">` >> 8) & 0xff
+        LCALL   BSPUARTWriteISR
+        MOV     A,R1
+//  158 #endif
+//  159     while (1)
+//  160     {
+//  161         BSPUARTWriteISR("A", 1);
+??AppUartTask_0:
+        ; Setup parameters for call to function BSPUARTWriteISR
+        MOV     R1,#0x1
+        MOV     R2,#`?<Constant "A">` & 0xff
+        MOV     R3,#(`?<Constant "A">` >> 8) & 0xff
+        LCALL   BSPUARTWriteISR
+        MOV     A,R1
+//  162         BSP_LED_Toggle(LED2_ID);
+        ; Setup parameters for call to function BSP_LED_Toggle
+        MOV     R1,#0x1
+        LCALL   BSP_LED_Toggle
+//  163         OSTimeDlyHMSM(0, 0, 0, 300,
+//  164                       OS_OPT_TIME_HMSM_STRICT,
+//  165                       &err);
+        ; Setup parameters for call to function OSTimeDlyHMSM
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP100_8
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     DPTR,#__Constant_12c
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LCALL   OSTimeDlyHMSM
+        MOV     A,#0xa
+        LCALL   ?DEALLOC_XSTACK8
+        SJMP    ??AppUartTask_0
+//  166     }
+//  167 }
+//  168 
+//  169 /*
+//  170 *********************************************************************************************************
+//  171 *                                      CREATE APPLICATION TASKS
+//  172 *
+//  173 * Description:  This function creates the application tasks.
+//  174 *
+//  175 * Arguments  :  none
+//  176 *
+//  177 * Returns    :  none
+//  178 *********************************************************************************************************
+//  179 */
+//  180 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  181 static  void  AppTaskCreate (void)
+AppTaskCreate:
+        CODE
+//  182 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 2
+        MOV     A,#-0x2
+        LCALL   ?ALLOC_XSTACK8
+//  183    OS_ERR      err;
+//  184    OSTaskCreate((OS_TCB     *)&AppUartTaskTCB,                
+//  185                  (CPU_CHAR   *)"App Uart Task",
+//  186                  (OS_TASK_PTR ) AppUartTask,
+//  187                  (void       *) 0,
+//  188                  (OS_PRIO     ) APP_UART_TASK_PRIO,
+//  189                  (CPU_STK    *)&AppUartTaskStk[0],
+//  190                  (CPU_STK_SIZE) APP_UART_TASK_STK_SIZE / 10,
+//  191                  (CPU_STK_SIZE) APP_UART_TASK_STK_SIZE,
+//  192                  (OS_MSG_QTY  ) 5u,
+//  193                  (OS_TICK     ) 0u,
+//  194                  (void       *) 0,
+//  195                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+//  196                  (OS_ERR     *)&err);
+        ; Setup parameters for call to function OSTaskCreate
+        MOV     R0,?XSP + 0
+        MOV     R1,?XSP + 1
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#0x3
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     DPTR,#__Constant_0
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     ?V0,#0x5
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#-0x80
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#0xc
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#AppUartTaskStk & 0xff
+        MOV     ?V1,#(AppUartTaskStk >> 8) & 0xff
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#AppUartTask & 0xff
+        MOV     ?V1,#(AppUartTask >> 8) & 0xff
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R1,#0x1
+        MOV     R4,#`?<Constant "App Uart Task">` & 0xff
+        MOV     R5,#(`?<Constant "App Uart Task">` >> 8) & 0xff
+        MOV     R2,#AppUartTaskTCB & 0xff
+        MOV     R3,#(AppUartTaskTCB >> 8) & 0xff
+        LCALL   OSTaskCreate
+        MOV     A,#0x16
+        LCALL   ?DEALLOC_XSTACK8
+//  197 }
+        MOV     A,#0x2
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+//  198 
+//  199 
+//  200 /*
+//  201 *********************************************************************************************************
+//  202 *                                      CREATE APPLICATION EVENTS
+//  203 *
+//  204 * Description:  This function creates the application kernel objects.
+//  205 *
+//  206 * Arguments  :  none
+//  207 *
+//  208 * Returns    :  none
+//  209 *********************************************************************************************************
+//  210 */
+//  211 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  212 static  void  AppObjCreate (void)
+AppObjCreate:
+        CODE
+//  213 {
+        ; Saved register size: 0
+        ; Auto size: 0
+//  214 }
+        RET
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant "App Task Start">>`:
+        DB "App Task Start"
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant "123456789">>`:
+        DB "123456789"
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant "A">>`:
+        DB "A"
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant "App Uart Task">>`:
+        DB "App Uart Task"
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_0>`:
+        DATA32
+        DD 0
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_12c>`:
+        DATA32
+        DD 300
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+`?<Constant "App Task Start">`:
+        DS 15
+        REQUIRE `?<Initializer for <Constant "App Task Start">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+`?<Constant "123456789">`:
+        DS 10
+        REQUIRE `?<Initializer for <Constant "123456789">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+`?<Constant "A">`:
+        DS 2
+        REQUIRE `?<Initializer for <Constant "A">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+`?<Constant "App Uart Task">`:
+        DS 14
+        REQUIRE `?<Initializer for <Constant "App Uart Task">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_0:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_0>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_12c:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_12c>`
+        REQUIRE __INIT_XDATA_I
+
+        END
+// 
+// 506 bytes in segment NEAR_CODE
+//  49 bytes in segment XDATA_I
+//  49 bytes in segment XDATA_ID
+// 542 bytes in segment XDATA_Z
+// 
+// 547 bytes of CODE  memory (+ 8 bytes shared)
+// 583 bytes of XDATA memory (+ 8 bytes shared)
+//
+//Errors: none
+//Warnings: none

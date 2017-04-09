@@ -1,0 +1,1999 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:07
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_time.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_time.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_time.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_time
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?L_ADD
+        EXTERN ?L_ADD_X
+        EXTERN ?L_MOV_TO_X
+        EXTERN ?L_MOV_X
+        EXTERN ?L_MUL
+        EXTERN ?PUSH_XSTACK8_X_TWO
+        EXTERN ?PUSH_XSTACK_I_FOUR
+        EXTERN ?PUSH_XSTACK_I_TWO
+        EXTERN ?UL_DIV_MOD
+        EXTERN ?UL_GT_X
+        EXTERN ?US_SWITCH_SPARSE
+        EXTERN ?XLOAD_R0123
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN ?XSTORE_R0123
+        EXTERN __INIT_XDATA_I
+
+        PUBLIC OSTimeDly
+        PUBLIC OSTimeDlyHMSM
+        PUBLIC OSTimeDlyResume
+        PUBLIC OSTimeGet
+        PUBLIC OSTimeSet
+        PUBLIC OSTimeTick
+        PUBWEAK _A_P1
+        PUBWEAK __Constant_3c
+        PUBWEAK __Constant_3e8
+        PUBWEAK __Constant_e10
+
+        EXTERN CPU_SR_Restore
+        EXTERN CPU_SR_Save
+        EXTERN OSCfg_TickRate_Hz
+        EXTERN OSIntNestingCtr
+        EXTERN OSPrioCur
+        EXTERN OSRdyList
+        EXTERN OSSched
+        EXTERN OSSchedLockNestingCtr
+        EXTERN OSTCBCurPtr
+        EXTERN OSTaskSemPost
+        EXTERN OSTickCtr
+        EXTERN OSTickTaskTCB
+        EXTERN OSTimeTickHook
+        EXTERN OS_RdyListInsert
+        EXTERN OS_RdyListRemove
+        EXTERN OS_SchedRoundRobin
+        EXTERN OS_TickListInsert
+        EXTERN OS_TickListRemove
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_time.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                                   TIME MANAGEMENT
+//   10 *
+//   11 * File    : OS_TIME.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define  MICRIUM_SOURCE
+//   34 #include <os.h>
+
+        ASEGN SFR_AN:DATA:NOROOT,090H
+// union <unnamed> volatile __sfr _A_P1
+_A_P1:
+        DATA8
+        DS 1
+//   35 
+//   36 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   37 const  CPU_CHAR  *os_time__c = "$Id: $";
+//   38 #endif
+//   39 
+//   40 /*
+//   41 ************************************************************************************************************************
+//   42 *                                                  DELAY TASK 'n' TICKS
+//   43 *
+//   44 * Description: This function is called to delay execution of the currently running task until the specified number of
+//   45 *              system ticks expires.  This, of course, directly equates to delaying the current task for some time to
+//   46 *              expire.  No delay will result if the specified delay is 0.  If the specified delay is greater than 0
+//   47 *              then, a context switch will result.
+//   48 *
+//   49 * Arguments  : dly       is a value in 'clock ticks' that the task will either delay for or, the target match value
+//   50 *                        of the tick counter (OSTickCtr).  Note that specifying 0 means the task is not to delay.
+//   51 *
+//   52 *                        depending on the option argument, the task will wake up when OSTickCtr reaches:
+//   53 *
+//   54 *                            OS_OPT_TIME_DLY      : OSTickCtr + dly
+//   55 *                            OS_OPT_TIME_TIMEOUT  : OSTickCtr + dly
+//   56 *                            OS_OPT_TIME_MATCH    : dly
+//   57 *                            OS_OPT_TIME_PERIODIC : OSTCBCurPtr->TickCtrPrev + dly
+//   58 *
+//   59 *              opt       specifies whether 'dly' represents absolute or relative time; default option marked with *** :
+//   60 *
+//   61 *                        *** OS_OPT_TIME_DLY        specifies a relative time from the current value of OSTickCtr.
+//   62 *                            OS_OPT_TIME_TIMEOUT    same as OS_OPT_TIME_DLY.
+//   63 *                            OS_OPT_TIME_MATCH      indicates that 'dly' specifies the absolute value that OSTickCtr
+//   64 *                                                   must reach before the task will be resumed.
+//   65 *                            OS_OPT_TIME_PERIODIC   indicates that 'dly' specifies the periodic value that OSTickCtr
+//   66 *                                                   must reach before the task will be resumed.
+//   67 *
+//   68 *              p_err     is a pointer to a variable that will contain an error code from this call.
+//   69 *
+//   70 *                            OS_ERR_NONE            the call was successful and the delay occurred.
+//   71 *                            OS_ERR_OPT_INVALID     if you specified an invalid option for this function.
+//   72 *                            OS_ERR_SCHED_LOCKED    can't delay when the scheduler is locked.
+//   73 *                            OS_ERR_TIME_DLY_ISR    if you called this function from an ISR.
+//   74 *                            OS_ERR_TIME_ZERO_DLY   if you specified a delay of zero.
+//   75 *
+//   76 * Returns    : none
+//   77 ************************************************************************************************************************
+//   78 */
+//   79 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   80 void  OSTimeDly (OS_TICK   dly,
+OSTimeDly:
+        CODE
+//   81                  OS_OPT    opt,
+//   82                  OS_ERR   *p_err)
+//   83 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 0
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     ?V2,R4
+        MOV     ?V3,R5
+//   84     CPU_SR_ALLOC();
+        MOV     ?V4,#0x0
+//   85 
+//   86 
+//   87 
+//   88 #ifdef OS_SAFETY_CRITICAL
+//   89     if (p_err == (OS_ERR *)0) {
+//   90         OS_SAFETY_CRITICAL_EXCEPTION();
+//   91         return;
+//   92     }
+//   93 #endif
+//   94 
+//   95 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//   96     if (OSIntNestingCtr > (OS_NESTING_CTR)0u) {             /* Not allowed to call from an ISR                        */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSTimeDly_0
+//   97        *p_err = OS_ERR_TIME_DLY_ISR;
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x75
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//   98         return;
+        LJMP    ??OSTimeDly_1
+//   99     }
+//  100 #endif
+//  101 
+//  102     if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0u) {       /* Can't delay when the scheduler is locked               */
+??OSTimeDly_0:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSTimeDly_2
+//  103        *p_err = OS_ERR_SCHED_LOCKED;
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+//  104         return;
+        LJMP    ??OSTimeDly_1
+//  105     }
+??OSTimeDly_2:
+        MOV     A,#0xd
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+//  106 
+//  107     switch (opt) {
+        MOV     ?V4,R6
+        MOV     ?V5,R7
+        MOV     R0,#?V4
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSTimeDly>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDly_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDly_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDly_4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        8
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDly_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDly_5
+        CODE
+//  108         case OS_OPT_TIME_DLY:
+//  109         case OS_OPT_TIME_TIMEOUT:
+//  110         case OS_OPT_TIME_PERIODIC:
+//  111              if (dly == (OS_TICK)0u) {                      /* 0 means no delay!                                      */
+??OSTimeDly_3:
+        MOV     A,?V0
+        ORL     A,?V1
+        ORL     A,?V2
+        ORL     A,?V3
+        JNZ     ??OSTimeDly_4
+//  112                 *p_err = OS_ERR_TIME_ZERO_DLY;
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x7e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  113                  return;
+        LJMP    ??OSTimeDly_1
+//  114              }
+//  115              break;
+//  116 
+//  117         case OS_OPT_TIME_MATCH:
+//  118              break;
+//  119 
+//  120         default:
+//  121             *p_err = OS_ERR_OPT_INVALID;
+//  122              return;
+//  123     }
+//  124 
+//  125     OS_CRITICAL_ENTER();
+??OSTimeDly_4:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V4,A
+//  126     OSTCBCurPtr->TaskState = OS_TASK_STATE_DLY;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1c
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+//  127     OS_TickListInsert(OSTCBCurPtr,
+//  128                       dly,
+//  129                       opt,
+//  130                       p_err);
+        ; Setup parameters for call to function OS_TickListInsert
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_TWO
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,R6
+        MOV     R4,A
+        MOV     A,R7
+        MOV     R5,A
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_TickListInsert
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+//  131     if (*p_err != OS_ERR_NONE) {
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSTimeDly_6
+//  132          OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V4
+        LCALL   CPU_SR_Restore
+//  133          return;
+        SJMP    ??OSTimeDly_1
+//  134     }
+??OSTimeDly_5:
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        SJMP    ??OSTimeDly_1
+//  135     OS_RdyListRemove(OSTCBCurPtr);                          /* Remove current task from ready list                    */
+??OSTimeDly_6:
+        ; Setup parameters for call to function OS_RdyListRemove
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_RdyListRemove
+//  136     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V4
+        LCALL   CPU_SR_Restore
+//  137     OSSched();                                              /* Find next task to run!                                 */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  138    *p_err = OS_ERR_NONE;
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  139 }
+??OSTimeDly_1:
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+//  140 
+//  141 /*$PAGE*/
+//  142 /*
+//  143 ************************************************************************************************************************
+//  144 *                                             DELAY TASK FOR SPECIFIED TIME
+//  145 *
+//  146 * Description: This function is called to delay execution of the currently running task until some time expires.  This
+//  147 *              call allows you to specify the delay time in HOURS, MINUTES, SECONDS and MILLISECONDS instead of ticks.
+//  148 *
+//  149 * Arguments  : hours     specifies the number of hours that the task will be delayed (max. is 999 if the tick rate is
+//  150 *                        1000 Hz or less otherwise, a higher value would overflow a 32-bit unsigned counter).
+//  151 *
+//  152 *              minutes   specifies the number of minutes (max. 59 if 'opt' is OS_OPT_TIME_HMSM_STRICT)
+//  153 *
+//  154 *              seconds   specifies the number of seconds (max. 59 if 'opt' is OS_OPT_TIME_HMSM_STRICT)
+//  155 *
+//  156 *              milli     specifies the number of milliseconds (max. 999 if 'opt' is OS_OPT_TIME_HMSM_STRICT)
+//  157 *
+//  158 *              opt       specifies time delay bit-field options logically OR'd; default options marked with *** :
+//  159 *
+//  160 *                        *** OS_OPT_TIME_DLY        specifies a relative time from the current value of OSTickCtr.
+//  161 *                            OS_OPT_TIME_TIMEOUT    same as OS_OPT_TIME_DLY.
+//  162 *                            OS_OPT_TIME_MATCH      indicates that the delay specifies the absolute value that OSTickCtr
+//  163 *                                                   must reach before the task will be resumed.
+//  164 *                            OS_OPT_TIME_PERIODIC   indicates that the delay specifies the periodic value that OSTickCtr
+//  165 *                                                   must reach before the task will be resumed.
+//  166 *
+//  167 *                        *** OS_OPT_TIME_HMSM_STRICT            strictly allow only hours        (0...99)
+//  168 *                                                                                   minutes      (0...59)
+//  169 *                                                                                   seconds      (0...59)
+//  170 *                                                                                   milliseconds (0...999)
+//  171 *                            OS_OPT_TIME_HMSM_NON_STRICT        allow any value of  hours        (0...999)
+//  172 *                                                                                   minutes      (0...9999)
+//  173 *                                                                                   seconds      (0...65535)
+//  174 *                                                                                   milliseconds (0...4294967295)
+//  175 *
+//  176 *              p_err     is a pointer to a variable that will receive an error code from this call.
+//  177 *
+//  178 *                            OS_ERR_NONE                        If the function returns from the desired delay
+//  179 *                            OS_ERR_OPT_INVALID                 If you specified an invalid option for 'opt'
+//  180 *                            OS_ERR_SCHED_LOCKED                Can't delay when the scheduler is locked
+//  181 *                            OS_ERR_TIME_DLY_ISR                If called from an ISR
+//  182 *                            OS_ERR_TIME_INVALID_HOURS          If you didn't specify a valid value for 'hours'
+//  183 *                            OS_ERR_TIME_INVALID_MINUTES        If you didn't specify a valid value for 'minutes'
+//  184 *                            OS_ERR_TIME_INVALID_SECONDS        If you didn't specify a valid value for 'seconds'
+//  185 *                            OS_ERR_TIME_INVALID_MILLISECONDS   If you didn't specify a valid value for 'milli'
+//  186 *                            OS_ERR_TIME_ZERO_DLY               If hours, minutes, seconds and milli are all 0
+//  187 *
+//  188 * Returns    : none
+//  189 *
+//  190 * Note(s)    : 1) The resolution on the milliseconds depends on the tick rate.  For example, you can't do a 10 mS delay
+//  191 *                 if the ticker interrupts every 100 mS.  In this case, the delay would be set to 0.  The actual delay
+//  192 *                 is rounded to the nearest tick.
+//  193 *
+//  194 *              2) Although this function allows you to delay a task for many, many hours, it's not recommended to put
+//  195 *                 a task to sleep for that long.
+//  196 ************************************************************************************************************************
+//  197 */
+//  198 
+//  199 #if OS_CFG_TIME_DLY_HMSM_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  200 void  OSTimeDlyHMSM (CPU_INT16U   hours,
+OSTimeDlyHMSM:
+        CODE
+//  201                      CPU_INT16U   minutes,
+//  202                      CPU_INT16U   seconds,
+//  203                      CPU_INT32U   milli,
+//  204                      OS_OPT       opt,
+//  205                      OS_ERR      *p_err)
+//  206 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 4
+        MOV     A,#-0x4
+        LCALL   ?ALLOC_XSTACK8
+        MOV     ?V4,R2
+        MOV     ?V5,R3
+//  207 #if OS_CFG_ARG_CHK_EN > 0u
+//  208     CPU_BOOLEAN  opt_invalid;
+//  209     CPU_BOOLEAN  opt_non_strict;
+//  210 #endif
+//  211     OS_OPT       opt_time;
+//  212     OS_RATE_HZ   tick_rate;
+//  213     OS_TICK      ticks;
+//  214     CPU_SR_ALLOC();
+        MOV     ?V0,#0x0
+//  215 
+//  216 
+//  217 
+//  218 #ifdef OS_SAFETY_CRITICAL
+//  219     if (p_err == (OS_ERR *)0) {
+//  220         OS_SAFETY_CRITICAL_EXCEPTION();
+//  221         return;
+//  222     }
+//  223 #endif
+//  224 
+//  225 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  226     if (OSIntNestingCtr > (OS_NESTING_CTR)0u) {             /* Not allowed to call from an ISR                        */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSTimeDlyHMSM_0
+//  227        *p_err = OS_ERR_TIME_DLY_ISR;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x75
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  228         return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  229     }
+//  230 #endif
+//  231 
+//  232     if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0u) {       /* Can't delay when the scheduler is locked               */
+??OSTimeDlyHMSM_0:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSTimeDlyHMSM_2
+//  233        *p_err = OS_ERR_SCHED_LOCKED;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+//  234         return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  235     }
+??OSTimeDlyHMSM_2:
+        MOV     A,#0x19
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V3,A
+//  236 
+//  237     opt_time = opt & OS_OPT_TIME_MASK;                      /* Retrieve time options only.                            */
+        MOV     A,?V2
+        ANL     A,#0xe
+        MOV     R6,A
+        MOV     A,?V3
+        ANL     A,#0x0
+        MOV     R7,A
+//  238     switch (opt_time) {
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSTimeDlyHMSM>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDlyHMSM_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDlyHMSM_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDlyHMSM_4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        8
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDlyHMSM_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSTimeDlyHMSM_5
+        CODE
+//  239         case OS_OPT_TIME_DLY:
+//  240         case OS_OPT_TIME_TIMEOUT:
+//  241         case OS_OPT_TIME_PERIODIC:
+//  242              if (milli == (CPU_INT32U)0u) {                 /* Make sure we didn't specify a 0 delay                  */
+??OSTimeDlyHMSM_3:
+        MOV     A,#0x15
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?XLOAD_R0123
+        MOV     A,R0
+        ORL     A,R1
+        ORL     A,R2
+        ORL     A,R3
+        JNZ     ??OSTimeDlyHMSM_4
+//  243                  if (seconds == (CPU_INT16U)0u) {
+        MOV     A,#0x13
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSTimeDlyHMSM_4
+//  244                      if (minutes == (CPU_INT16U)0u) {
+        MOV     A,R4
+        ORL     A,R5
+        JNZ     ??OSTimeDlyHMSM_4
+//  245                          if (hours == (CPU_INT16U)0u) {
+        MOV     A,?V4
+        ORL     A,?V5
+        JNZ     ??OSTimeDlyHMSM_4
+//  246                             *p_err = OS_ERR_TIME_ZERO_DLY;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x7e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  247                              return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  248                          }
+//  249                      }
+//  250                  }
+//  251              }
+//  252              break;
+//  253 
+//  254         case OS_OPT_TIME_MATCH:
+//  255              break;
+//  256 
+//  257         default:
+//  258             *p_err = OS_ERR_OPT_INVALID;
+//  259              return;
+//  260     }
+//  261 
+//  262 #if OS_CFG_ARG_CHK_EN > 0u                                  /* Validate arguments to be within range                  */
+//  263     opt_invalid = DEF_BIT_IS_SET_ANY(opt, ~OS_OPT_TIME_OPTS_MASK);
+??OSTimeDlyHMSM_4:
+        MOV     A,?V2
+        ANL     A,#0xe1
+        MOV     R0,A
+        MOV     A,?V3
+        ANL     A,#0xff
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSTimeDlyHMSM_6
+        MOV     R0,#0x0
+        SJMP    ??OSTimeDlyHMSM_7
+??OSTimeDlyHMSM_5:
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        LJMP    ??OSTimeDlyHMSM_1
+??OSTimeDlyHMSM_6:
+        MOV     R0,#0x1
+//  264     if (opt_invalid == DEF_YES) {
+??OSTimeDlyHMSM_7:
+        MOV     A,#0x1
+        XRL     A,R0
+        JNZ     ??OSTimeDlyHMSM_8
+//  265        *p_err = OS_ERR_OPT_INVALID;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+//  266         return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  267     }
+//  268 
+//  269     opt_non_strict = DEF_BIT_IS_SET(opt, OS_OPT_TIME_HMSM_NON_STRICT);
+??OSTimeDlyHMSM_8:
+        MOV     A,?V2
+        ANL     A,#0x10
+        JZ      ??OSTimeDlyHMSM_9
+        SETB    B.0
+        SJMP    ??OSTimeDlyHMSM_10
+??OSTimeDlyHMSM_9:
+        CLR     B.0
+??OSTimeDlyHMSM_10:
+        MOV     C,B.0
+        CLR     A
+        RLC     A
+        MOV     R0,A
+//  270     if (opt_non_strict != DEF_YES) {
+        MOV     A,#0x1
+        XRL     A,R0
+        JNZ     $+5
+        LJMP    ??OSTimeDlyHMSM_11
+//  271          if (milli   > (CPU_INT32U)999u) {
+        MOV     DPTR,#__Constant_3e8
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,#0x15
+        LCALL   ?XSTACK_DISP0_8
+        MOV     R0,#?V0
+        LCALL   ?UL_GT_X
+        JC      ??OSTimeDlyHMSM_12
+//  272             *p_err = OS_ERR_TIME_INVALID_MILLISECONDS;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x7b
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  273              return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  274          }
+//  275          if (seconds > (CPU_INT16U)59u) {
+??OSTimeDlyHMSM_12:
+        MOV     A,#0x13
+        LCALL   ?XSTACK_DISP0_8
+        CLR     C
+        MOVX    A,@DPTR
+        SUBB    A,#0x3c
+        INC     DPTR
+        MOVX    A,@DPTR
+        SUBB    A,#0x0
+        JC      ??OSTimeDlyHMSM_13
+//  276             *p_err = OS_ERR_TIME_INVALID_SECONDS;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x7a
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  277              return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  278          }
+//  279          if (minutes > (CPU_INT16U)59u) {
+??OSTimeDlyHMSM_13:
+        CLR     C
+        MOV     A,R4
+        SUBB    A,#0x3c
+        MOV     A,R5
+        SUBB    A,#0x0
+        JC      ??OSTimeDlyHMSM_14
+//  280             *p_err = OS_ERR_TIME_INVALID_MINUTES;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x79
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  281              return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  282          }
+//  283          if (hours   > (CPU_INT16U)99u) {
+??OSTimeDlyHMSM_14:
+        CLR     C
+        MOV     A,?V4
+        SUBB    A,#0x64
+        MOV     A,?V5
+        SUBB    A,#0x0
+        JC      ??OSTimeDlyHMSM_15
+//  284             *p_err = OS_ERR_TIME_INVALID_HOURS;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x78
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  285              return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  286          }
+//  287     } else {
+//  288          if (minutes > (CPU_INT16U)9999u) {
+??OSTimeDlyHMSM_11:
+        CLR     C
+        MOV     A,R4
+        SUBB    A,#0x10
+        MOV     A,R5
+        SUBB    A,#0x27
+        JC      ??OSTimeDlyHMSM_16
+//  289             *p_err = OS_ERR_TIME_INVALID_MINUTES;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x79
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  290              return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  291          }
+//  292          if (hours   > (CPU_INT16U)999u) {
+??OSTimeDlyHMSM_16:
+        CLR     C
+        MOV     A,?V4
+        SUBB    A,#-0x18
+        MOV     A,?V5
+        SUBB    A,#0x3
+        JC      ??OSTimeDlyHMSM_15
+//  293             *p_err = OS_ERR_TIME_INVALID_HOURS;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x78
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  294              return;
+        LJMP    ??OSTimeDlyHMSM_1
+//  295          }
+//  296     }
+//  297 #endif
+//  298 
+//  299                                                             /* Compute the total number of clock ticks required..     */
+//  300                                                             /* .. (rounded to the nearest tick)                       */
+//  301     tick_rate = OSCfg_TickRate_Hz;
+??OSTimeDlyHMSM_15:
+        MOV     DPTR,#OSCfg_TickRate_Hz
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        LCALL   ?XSTORE_R0123
+//  302     ticks     = ((OS_TICK)hours * (OS_TICK)3600u + (OS_TICK)minutes * (OS_TICK)60u + (OS_TICK)seconds) * tick_rate
+//  303               + (tick_rate * ((OS_TICK)milli + (OS_TICK)500u / tick_rate)) / (OS_TICK)1000u;
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        CLR     A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     DPTR,#__Constant_e10
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_MUL
+        PUSH    ?V0
+        PUSH    ?V1
+        PUSH    ?V2
+        PUSH    ?V3
+        MOV     ?V4,R4
+        MOV     ?V5,R5
+        CLR     A
+        MOV     ?V6,A
+        MOV     ?V7,A
+        MOV     DPTR,#__Constant_3c
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_MUL
+        POP     ?V3
+        POP     ?V2
+        POP     ?V1
+        POP     ?V0
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_ADD
+        MOV     A,#0x13
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V5,A
+        CLR     A
+        MOV     ?V6,A
+        MOV     ?V7,A
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_ADD
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_MUL
+        PUSH    ?V0
+        PUSH    ?V1
+        PUSH    ?V2
+        PUSH    ?V3
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        PUSH    ?V0
+        PUSH    ?V1
+        PUSH    ?V2
+        PUSH    ?V3
+        MOV     A,#0x15
+        LCALL   ?XSTACK_DISP0_8
+        PUSH    DPL
+        PUSH    DPH
+        MOV     ?V4,#-0xc
+        MOV     ?V5,#0x1
+        MOV     ?V6,#0x0
+        MOV     ?V7,#0x0
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?UL_DIV_MOD
+        POP     DPH
+        POP     DPL
+        MOV     R0,#?V4
+        LCALL   ?L_ADD_X
+        POP     ?V3
+        POP     ?V2
+        POP     ?V1
+        POP     ?V0
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_MUL
+        MOV     DPTR,#__Constant_3e8
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?UL_DIV_MOD
+        POP     ?V7
+        POP     ?V6
+        POP     ?V5
+        POP     ?V4
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_ADD
+//  304 
+//  305     if (ticks > (OS_TICK)0u) {
+        MOV     A,?V4
+        ORL     A,?V5
+        ORL     A,?V6
+        ORL     A,?V7
+        JNZ     $+5
+        LJMP    ??OSTimeDlyHMSM_17
+//  306         OS_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V0,A
+//  307         OSTCBCurPtr->TaskState = OS_TASK_STATE_DLY;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1c
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+//  308         OS_TickListInsert(OSTCBCurPtr,
+//  309                           ticks,
+//  310                           opt_time,
+//  311                           p_err);
+        ; Setup parameters for call to function OS_TickListInsert
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_TWO
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,R6
+        MOV     R4,A
+        MOV     A,R7
+        MOV     R5,A
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_TickListInsert
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+//  312         if (*p_err != OS_ERR_NONE) {
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSTimeDlyHMSM_18
+//  313              OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  314              return;
+        SJMP    ??OSTimeDlyHMSM_1
+//  315         }
+//  316         OS_RdyListRemove(OSTCBCurPtr);                      /* Remove current task from ready list                    */
+??OSTimeDlyHMSM_18:
+        ; Setup parameters for call to function OS_RdyListRemove
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_RdyListRemove
+//  317         OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  318         OSSched();                                          /* Find next task to run!                                 */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  319        *p_err = OS_ERR_NONE;
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OSTimeDlyHMSM_1
+//  320     } else {
+//  321        *p_err = OS_ERR_TIME_ZERO_DLY;
+??OSTimeDlyHMSM_17:
+        MOV     A,#0x1b
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x7e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  322     }
+//  323 }
+??OSTimeDlyHMSM_1:
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  324 #endif
+//  325 /*$PAGE*/
+//  326 /*
+//  327 ************************************************************************************************************************
+//  328 *                                                RESUME A DELAYED TASK
+//  329 *
+//  330 * Description: This function is used resume a task that has been delayed through a call to either OSTimeDly() or
+//  331 *              OSTimeDlyHMSM().  Note that cannot call this function to resume a task that is waiting for an event
+//  332 *              with timeout.
+//  333 *
+//  334 * Arguments  : p_tcb    is a pointer to the TCB of the task to resume.
+//  335 *
+//  336 *              p_err    is a pointer to a variable that will receive an error code
+//  337 *
+//  338 *                           OS_ERR_NONE                  Task has been resumed
+//  339 *                           OS_ERR_STATE_INVALID         Task is in an invalid state
+//  340 *                           OS_ERR_TIME_DLY_RESUME_ISR   If called from an ISR
+//  341 *                           OS_ERR_TIME_NOT_DLY          Task is not waiting for time to expire
+//  342 *                           OS_ERR_TASK_SUSPENDED        Task cannot be resumed, it was suspended by OSTaskSuspend()
+//  343 *
+//  344 * Note(s)    : none
+//  345 ************************************************************************************************************************
+//  346 */
+//  347 
+//  348 #if OS_CFG_TIME_DLY_RESUME_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  349 void  OSTimeDlyResume (OS_TCB  *p_tcb,
+OSTimeDlyResume:
+        CODE
+//  350                        OS_ERR  *p_err)
+//  351 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        MOV     A,#-0xa
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 10
+        ; Auto size: 0
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     A,R4
+        MOV     R6,A
+        MOV     A,R5
+        MOV     R7,A
+//  352     CPU_SR_ALLOC();
+        MOV     ?V2,#0x0
+//  353 
+//  354 
+//  355 
+//  356 #ifdef OS_SAFETY_CRITICAL
+//  357     if (p_err == (OS_ERR *)0) {
+//  358         OS_SAFETY_CRITICAL_EXCEPTION();
+//  359         return;
+//  360     }
+//  361 #endif
+//  362 
+//  363 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  364     if (OSIntNestingCtr > (OS_NESTING_CTR)0u) {             /* Not allowed to call from an ISR                        */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSTimeDlyResume_0
+//  365        *p_err = OS_ERR_TIME_DLY_RESUME_ISR;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x76
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  366         return;
+        LJMP    ??OSTimeDlyResume_1
+//  367     }
+//  368 #endif
+//  369 
+//  370 #if OS_CFG_ARG_CHK_EN > 0u
+//  371     if (p_tcb == (OS_TCB *)0) {                             /* Not possible for the running task to be delayed!       */
+??OSTimeDlyResume_0:
+        MOV     A,?V0
+        ORL     A,?V1
+        JNZ     ??OSTimeDlyResume_2
+//  372        *p_err = OS_ERR_TASK_NOT_DLY;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x51
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  373         return;
+        LJMP    ??OSTimeDlyResume_1
+//  374     }
+//  375 #endif
+//  376 
+//  377     CPU_CRITICAL_ENTER();
+??OSTimeDlyResume_2:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V2,A
+//  378     if (p_tcb == OSTCBCurPtr) {                             /* Not possible for the running task to be delayed!       */
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,?V0
+        XRL     A,R0
+        JNZ     ??OSTimeDlyResume_3
+        MOV     A,?V1
+        XRL     A,R1
+??OSTimeDlyResume_3:
+        JNZ     ??OSTimeDlyResume_4
+//  379        *p_err = OS_ERR_TASK_NOT_DLY;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x51
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  380         CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  381         return;
+        LJMP    ??OSTimeDlyResume_1
+//  382     }
+//  383 
+//  384     switch (p_tcb->TaskState) {
+??OSTimeDlyResume_4:
+        MOV     A,?V0
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V1
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OSTimeDlyResume_5
+        DEC     A
+        JZ      ??OSTimeDlyResume_6
+        DEC     A
+        JZ      ??OSTimeDlyResume_7
+        DEC     A
+        JZ      ??OSTimeDlyResume_8
+        DEC     A
+        JZ      ??OSTimeDlyResume_9
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSTimeDlyResume_10
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSTimeDlyResume_11
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSTimeDlyResume_12
+        LJMP    ??OSTimeDlyResume_13
+//  385         case OS_TASK_STATE_RDY:                             /* Cannot Abort delay if task is ready                    */
+//  386              CPU_CRITICAL_EXIT();
+??OSTimeDlyResume_5:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  387             *p_err = OS_ERR_TASK_NOT_DLY;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x51
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  388              break;
+        LJMP    ??OSTimeDlyResume_14
+//  389 
+//  390         case OS_TASK_STATE_DLY:
+//  391              OS_CRITICAL_ENTER_CPU_EXIT();
+//  392              p_tcb->TaskState = OS_TASK_STATE_RDY;
+??OSTimeDlyResume_6:
+        MOV     A,?V0
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V1
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  393              OS_TickListRemove(p_tcb);                      /* Remove task from tick list                             */
+        ; Setup parameters for call to function OS_TickListRemove
+        MOV     R2,?V0
+        MOV     R3,?V1
+        LCALL   OS_TickListRemove
+//  394              OS_RdyListInsert(p_tcb);                       /* Add to ready list                                      */
+        ; Setup parameters for call to function OS_RdyListInsert
+        MOV     R2,?V0
+        MOV     R3,?V1
+        LCALL   OS_RdyListInsert
+//  395              OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  396             *p_err = OS_ERR_NONE;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  397              break;
+        LJMP    ??OSTimeDlyResume_14
+//  398 
+//  399         case OS_TASK_STATE_PEND:
+//  400              CPU_CRITICAL_EXIT();
+??OSTimeDlyResume_7:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  401             *p_err = OS_ERR_TASK_NOT_DLY;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x51
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  402              break;
+        SJMP    ??OSTimeDlyResume_14
+//  403 
+//  404         case OS_TASK_STATE_PEND_TIMEOUT:
+//  405              CPU_CRITICAL_EXIT();
+??OSTimeDlyResume_8:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  406             *p_err = OS_ERR_TASK_NOT_DLY;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x51
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  407              break;
+        SJMP    ??OSTimeDlyResume_14
+//  408 
+//  409         case OS_TASK_STATE_SUSPENDED:
+//  410              CPU_CRITICAL_EXIT();
+??OSTimeDlyResume_9:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  411             *p_err = OS_ERR_TASK_NOT_DLY;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x51
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  412              break;
+        SJMP    ??OSTimeDlyResume_14
+//  413 
+//  414         case OS_TASK_STATE_DLY_SUSPENDED:
+//  415              OS_CRITICAL_ENTER_CPU_EXIT();
+//  416              p_tcb->TaskState = OS_TASK_STATE_SUSPENDED;
+??OSTimeDlyResume_10:
+        MOV     A,?V0
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V1
+        MOV     DPH,A
+        MOV     A,#0x4
+        MOVX    @DPTR,A
+//  417              OS_TickListRemove(p_tcb);                      /* Remove task from tick list                             */
+        ; Setup parameters for call to function OS_TickListRemove
+        MOV     R2,?V0
+        MOV     R3,?V1
+        LCALL   OS_TickListRemove
+//  418              OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  419             *p_err            = OS_ERR_TASK_SUSPENDED;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x5a
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  420              break;
+        SJMP    ??OSTimeDlyResume_14
+//  421 
+//  422         case OS_TASK_STATE_PEND_SUSPENDED:
+//  423              CPU_CRITICAL_EXIT();
+??OSTimeDlyResume_11:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  424             *p_err = OS_ERR_TASK_NOT_DLY;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x51
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  425              break;
+        SJMP    ??OSTimeDlyResume_14
+//  426 
+//  427         case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+//  428              CPU_CRITICAL_EXIT();
+??OSTimeDlyResume_12:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  429             *p_err = OS_ERR_TASK_NOT_DLY;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x51
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  430              break;
+        SJMP    ??OSTimeDlyResume_14
+//  431 
+//  432         default:
+//  433              CPU_CRITICAL_EXIT();
+??OSTimeDlyResume_13:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  434             *p_err = OS_ERR_STATE_INVALID;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x2d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6e
+        MOVX    @DPTR,A
+//  435              break;
+//  436     }
+//  437 
+//  438     OSSched();
+??OSTimeDlyResume_14:
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  439 }
+??OSTimeDlyResume_1:
+        MOV     R7,#0x3
+        LJMP    ?FUNC_LEAVE_XDATA
+//  440 #endif
+//  441 /*$PAGE*/
+//  442 /*
+//  443 ************************************************************************************************************************
+//  444 *                                               GET CURRENT SYSTEM TIME
+//  445 *
+//  446 * Description: This function is used by your application to obtain the current value of the counter which keeps track of
+//  447 *              the number of clock ticks.
+//  448 *
+//  449 * Arguments  : p_err    is a pointer to a variable that will receive an error code
+//  450 *
+//  451 *                           OS_ERR_NONE           If the call was successful
+//  452 *
+//  453 * Returns    : The current value of OSTickCtr
+//  454 ************************************************************************************************************************
+//  455 */
+//  456 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  457 OS_TICK  OSTimeGet (OS_ERR  *p_err)
+OSTimeGet:
+        CODE
+//  458 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 0
+        MOV     ?V4,R2
+        MOV     ?V5,R3
+//  459     OS_TICK  ticks;
+//  460     CPU_SR_ALLOC();
+        MOV     R6,#0x0
+//  461 
+//  462 
+//  463 
+//  464 #ifdef OS_SAFETY_CRITICAL
+//  465     if (p_err == (OS_ERR *)0) {
+//  466         OS_SAFETY_CRITICAL_EXCEPTION();
+//  467         return ((OS_TICK)0);
+//  468     }
+//  469 #endif
+//  470 
+//  471     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+//  472     ticks = OSTickCtr;
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+//  473     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  474    *p_err = OS_ERR_NONE;
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  475     return (ticks);
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+//  476 }
+//  477 
+//  478 /*
+//  479 ************************************************************************************************************************
+//  480 *                                                   SET SYSTEM CLOCK
+//  481 *
+//  482 * Description: This function sets the counter which keeps track of the number of clock ticks.
+//  483 *
+//  484 * Arguments  : ticks    is the desired tick value
+//  485 *
+//  486 *              p_err    is a pointer to a variable that will receive an error code
+//  487 *
+//  488 *                           OS_ERR_NONE           If the call was successful
+//  489 *
+//  490 * Returns    : none
+//  491 ************************************************************************************************************************
+//  492 */
+//  493 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  494 void  OSTimeSet (OS_TICK   ticks,
+OSTimeSet:
+        CODE
+//  495                  OS_ERR   *p_err)
+//  496 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        MOV     A,#-0xb
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 11
+        ; Auto size: 0
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     ?V2,R4
+        MOV     ?V3,R5
+//  497     CPU_SR_ALLOC();
+        MOV     R6,#0x0
+//  498 
+//  499 
+//  500 
+//  501 #ifdef OS_SAFETY_CRITICAL
+//  502     if (p_err == (OS_ERR *)0) {
+//  503         OS_SAFETY_CRITICAL_EXCEPTION();
+//  504         return;
+//  505     }
+//  506 #endif
+//  507 
+//  508     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+//  509     OSTickCtr = ticks;
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+//  510     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  511    *p_err     = OS_ERR_NONE;
+        MOV     A,#0xb
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  512 }
+        MOV     R7,#0x4
+        LJMP    ?FUNC_LEAVE_XDATA
+//  513 
+//  514 /*$PAGE*/
+//  515 /*
+//  516 ************************************************************************************************************************
+//  517 *                                                 PROCESS SYSTEM TICK
+//  518 *
+//  519 * Description: This function is used to signal to uC/OS-III the occurrence of a 'system tick' (also known as a
+//  520 *              'clock tick').  This function should be called by the tick ISR.
+//  521 *
+//  522 * Arguments  : none
+//  523 *
+//  524 * Returns    : none
+//  525 ************************************************************************************************************************
+//  526 */
+//  527 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  528 void  OSTimeTick (void)
+OSTimeTick:
+        CODE
+//  529 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        MOV     A,#-0xb
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 11
+        ; Auto size: 2
+        MOV     A,#-0x2
+        LCALL   ?ALLOC_XSTACK8
+//  530     OS_ERR  err;
+//  531 #if OS_CFG_ISR_POST_DEFERRED_EN > 0u
+//  532     CPU_TS  ts;
+//  533 #endif
+//  534 
+//  535 
+//  536     OSTimeTickHook();                                       /* Call user definable hook                               */
+        ; Setup parameters for call to function OSTimeTickHook
+        LCALL   OSTimeTickHook
+//  537 
+//  538 #if OS_CFG_ISR_POST_DEFERRED_EN > 0u
+//  539 
+//  540     ts = OS_TS_GET();                                       /* Get timestamp                                          */
+//  541     OS_IntQPost((OS_OBJ_TYPE) OS_OBJ_TYPE_TICK,             /* Post to ISR queue                                      */
+//  542                 (void      *)&OSRdyList[OSPrioCur],
+//  543                 (void      *) 0,
+//  544                 (OS_MSG_SIZE) 0u,
+//  545                 (OS_FLAGS   ) 0u,
+//  546                 (OS_OPT     ) 0u,
+//  547                 (CPU_TS     ) ts,
+//  548                 (OS_ERR    *)&err);
+//  549 
+//  550 #else
+//  551     P1_2 = ~P1_2;
+        MOV     C,0x90.2
+        CLR     A
+        RLC     A
+        CPL     A
+        MOV     R6,A
+        SETB    B.0
+        MOV     C,0x90.2
+        JNB     B.0,??OSTimeTick_0
+        CPL     C
+??OSTimeTick_0:
+        MOV     0x90.2,C
+//  552    (void)OSTaskSemPost((OS_TCB *)&OSTickTaskTCB,            /* Signal tick task                                       */
+//  553                        (OS_OPT  ) OS_OPT_POST_NONE,
+//  554                        (OS_ERR *)&err);
+        ; Setup parameters for call to function OSTaskSemPost
+        MOV     R0,?XSP + 0
+        MOV     R1,?XSP + 1
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R2,#OSTickTaskTCB & 0xff
+        MOV     R3,#(OSTickTaskTCB >> 8) & 0xff
+        LCALL   OSTaskSemPost
+        MOV     A,#0x2
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     ?V2,R4
+        MOV     ?V3,R5
+//  555 
+//  556 
+//  557 #if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u
+//  558     OS_SchedRoundRobin(&OSRdyList[OSPrioCur]);
+        ; Setup parameters for call to function OS_SchedRoundRobin
+        MOV     DPTR,#OSPrioCur
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R0
+        MOV     B,#0x6
+        MUL     AB
+        XCH     A,R0
+        MOV     R2,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R2
+        MOV     R2,A
+        MOV     B,#0x6
+        MOV     A,R1
+        MUL     AB
+        ADD     A,R2
+        MOV     R1,A
+        MOV     A,#OSRdyList & 0xff
+        ADD     A,R0
+        MOV     R2,A
+        MOV     A,#(OSRdyList >> 8) & 0xff
+        ADDC    A,R1
+        MOV     R3,A
+        LCALL   OS_SchedRoundRobin
+//  559 #endif
+//  560 
+//  561 #if OS_CFG_TMR_EN > 0u
+//  562     OSTmrUpdateCtr--;
+//  563     if (OSTmrUpdateCtr == (OS_CTR)0u) {
+//  564         OSTmrUpdateCtr = OSTmrUpdateCnt;
+//  565         OSTaskSemPost((OS_TCB *)&OSTmrTaskTCB,              /* Signal timer task                                      */
+//  566                       (OS_OPT  ) OS_OPT_POST_NONE,
+//  567                       (OS_ERR *)&err);
+//  568     }
+//  569 #endif
+//  570 
+//  571 #endif
+//  572 }
+        MOV     A,#0x2
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x4
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE _A_P1
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_3e8:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_3e8>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_3e8>`:
+        DATA32
+        DD 1000
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_e10:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_e10>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_e10>`:
+        DATA32
+        DD 3600
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_3c:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_3c>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_3c>`:
+        DATA32
+        DD 60
+
+        END
+// 
+// 1 815 bytes in segment NEAR_CODE
+//     1 byte  in segment SFR_AN
+//    12 bytes in segment XDATA_I
+//    12 bytes in segment XDATA_ID
+// 
+// 1 815 bytes of CODE  memory (+ 12 bytes shared)
+//     0 bytes of DATA  memory (+  1 byte  shared)
+//     0 bytes of XDATA memory (+ 12 bytes shared)
+//
+//Errors: none
+//Warnings: none

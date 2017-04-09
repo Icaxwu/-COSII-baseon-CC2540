@@ -1,0 +1,3748 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:05
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_sem.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_sem.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_sem.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_sem
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V1
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?L_ADD_TO_X
+        EXTERN ?L_EQ_X
+        EXTERN ?L_MOV_TO_X
+        EXTERN ?L_MOV_X
+        EXTERN ?PUSH_XSTACK8_X_FOUR
+        EXTERN ?PUSH_XSTACK_I_FOUR
+        EXTERN ?PUSH_XSTACK_I_TWO
+        EXTERN ?US_SWITCH_DENSE
+        EXTERN ?US_SWITCH_SPARSE
+        EXTERN ?XLOAD_R0123
+        EXTERN ?XLOAD_R4567
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN ?XSTACK_DISP101_8
+        EXTERN ?XSTORE_R0123
+        EXTERN __INIT_XDATA_I
+
+        PUBLIC OSSemCreate
+        PUBLIC OSSemDel
+        PUBLIC OSSemPend
+        PUBLIC OSSemPendAbort
+        PUBLIC OSSemPost
+        PUBLIC OSSemSet
+        PUBLIC OS_SemClr
+        PUBLIC OS_SemDbgListAdd
+        PUBLIC OS_SemDbgListRemove
+        PUBLIC OS_SemInit
+        PUBLIC OS_SemPost
+        PUBWEAK __Constant_1
+        PUBWEAK __Constant_4553414d
+        PUBWEAK __Constant_ffffffff
+
+        EXTERN CPU_SR_Restore
+        EXTERN CPU_SR_Save
+        EXTERN OSIntNestingCtr
+        EXTERN OSSched
+        EXTERN OSSchedLockNestingCtr
+        EXTERN OSSemDbgListPtr
+        EXTERN OSSemQty
+        EXTERN OSTCBCurPtr
+        EXTERN OS_Pend
+        EXTERN OS_PendAbort
+        EXTERN OS_PendListInit
+        EXTERN OS_PendObjDel
+        EXTERN OS_Post
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_sem.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                                 SEMAPHORE MANAGEMENT
+//   10 *
+//   11 * File    : OS_SEM.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define  MICRIUM_SOURCE
+//   34 #include <os.h>
+//   35 
+//   36 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   37 const  CPU_CHAR  *os_sem__c = "$Id: $";
+//   38 #endif
+//   39 
+//   40 
+//   41 #if OS_CFG_SEM_EN > 0u
+//   42 /*
+//   43 ************************************************************************************************************************
+//   44 *                                                  CREATE A SEMAPHORE
+//   45 *
+//   46 * Description: This function creates a semaphore.
+//   47 *
+//   48 * Arguments  : p_sem         is a pointer to the semaphore to initialize.  Your application is responsible for
+//   49 *                            allocating storage for the semaphore.
+//   50 *
+//   51 *              p_name        is a pointer to the name you would like to give the semaphore.
+//   52 *
+//   53 *              cnt           is the initial value for the semaphore.
+//   54 *                            If used to share resources, you should initialize to the number of resources available.
+//   55 *                            If used to signal the occurrence of event(s) then you should initialize to 0.
+//   56 *
+//   57 *              p_err         is a pointer to a variable that will contain an error code returned by this function.
+//   58 *
+//   59 *                                OS_ERR_NONE                    if the call was successful
+//   60 *                                OS_ERR_CREATE_ISR              if you called this function from an ISR
+//   61 *                                OS_ERR_ILLEGAL_CREATE_RUN_TIME if you are trying to create the semaphore after you
+//   62 *                                                                 called OSSafetyCriticalStart().
+//   63 *                                OS_ERR_NAME                    if 'p_name' is a NULL pointer
+//   64 *                                OS_ERR_OBJ_CREATED             if the semaphore has already been created
+//   65 *                                OS_ERR_OBJ_PTR_NULL            if 'p_sem'  is a NULL pointer
+//   66 *                                OS_ERR_OBJ_TYPE                if 'p_sem' has already been initialized to a different
+//   67 *                                                               object type
+//   68 *
+//   69 * Returns    : none
+//   70 ************************************************************************************************************************
+//   71 */
+//   72 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   73 void  OSSemCreate (OS_SEM      *p_sem,
+OSSemCreate:
+        CODE
+//   74                    CPU_CHAR    *p_name,
+//   75                    OS_SEM_CTR   cnt,
+//   76                    OS_ERR      *p_err)
+//   77 {
+        REQUIRE ?V0
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     ?V4,R4
+        MOV     ?V5,R5
+//   78     CPU_SR_ALLOC();
+        MOV     ?V0,#0x0
+        MOV     A,#0x11
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V3,A
+//   79 
+//   80 
+//   81 
+//   82 #ifdef OS_SAFETY_CRITICAL
+//   83     if (p_err == (OS_ERR *)0) {
+//   84         OS_SAFETY_CRITICAL_EXCEPTION();
+//   85         return;
+//   86     }
+//   87 #endif
+//   88 
+//   89 #ifdef OS_SAFETY_CRITICAL_IEC61508
+//   90     if (OSSafetyCriticalStartFlag == DEF_TRUE) {
+//   91        *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME;
+//   92         return;
+//   93     }
+//   94 #endif
+//   95 
+//   96 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//   97     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Not allowed to be called from an ISR                   */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSSemCreate_0
+//   98        *p_err = OS_ERR_CREATE_ISR;
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        MOV     A,#-0x1f
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x2e
+        MOVX    @DPTR,A
+//   99         return;
+        LJMP    ??OSSemCreate_1
+//  100     }
+//  101 #endif
+//  102 
+//  103 #if OS_CFG_ARG_CHK_EN > 0u
+//  104     if (p_sem == (OS_SEM *)0) {                             /* Validate 'p_sem'                                       */
+??OSSemCreate_0:
+        MOV     A,R6
+        ORL     A,R7
+        JNZ     ??OSSemCreate_2
+//  105        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  106         return;
+        LJMP    ??OSSemCreate_1
+//  107     }
+//  108 #endif
+//  109 
+//  110     OS_CRITICAL_ENTER();
+??OSSemCreate_2:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V0,A
+//  111     p_sem->Type    = OS_OBJ_TYPE_SEM;                       /* Mark the data structure as a semaphore                 */
+        MOV     R2,#0x4d
+        MOV     R3,#0x41
+        MOV     R4,#0x53
+        MOV     R5,#0x45
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  112     p_sem->Ctr     = cnt;                                   /* Set semaphore value                                    */
+        MOV     A,#0xd
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?XLOAD_R0123
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+//  113     p_sem->TS      = (CPU_TS)0;
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  114     p_sem->NamePtr = p_name;                                /* Save the name of the semaphore                         */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,?V4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V5
+        MOVX    @DPTR,A
+//  115     OS_PendListInit(&p_sem->PendList);                      /* Initialize the waiting list                            */
+        ; Setup parameters for call to function OS_PendListInit
+        MOV     A,R6
+        ADD     A,#0x6
+        MOV     R2,A
+        CLR     A
+        ADDC    A,R7
+        MOV     R3,A
+        LCALL   OS_PendListInit
+//  116 
+//  117 #if OS_CFG_DBG_EN > 0u
+//  118     OS_SemDbgListAdd(p_sem);
+        ; Setup parameters for call to function OS_SemDbgListAdd
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_SemDbgListAdd
+//  119 #endif
+//  120     OSSemQty++;
+        MOV     DPTR,#OSSemQty
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  121 
+//  122     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  123    *p_err = OS_ERR_NONE;
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  124 }
+??OSSemCreate_1:
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+//  125 
+//  126 /*$PAGE*/
+//  127 /*
+//  128 ************************************************************************************************************************
+//  129 *                                                  DELETE A SEMAPHORE
+//  130 *
+//  131 * Description: This function deletes a semaphore.
+//  132 *
+//  133 * Arguments  : p_sem         is a pointer to the semaphore to delete
+//  134 *
+//  135 *              opt           determines delete options as follows:
+//  136 *
+//  137 *                                OS_OPT_DEL_NO_PEND          Delete semaphore ONLY if no task pending
+//  138 *                                OS_OPT_DEL_ALWAYS           Deletes the semaphore even if tasks are waiting.
+//  139 *                                                            In this case, all the tasks pending will be readied.
+//  140 *
+//  141 *              p_err         is a pointer to a variable that will contain an error code returned by this function.
+//  142 *
+//  143 *                                OS_ERR_NONE                 The call was successful and the semaphore was deleted
+//  144 *                                OS_ERR_DEL_ISR              If you attempted to delete the semaphore from an ISR
+//  145 *                                OS_ERR_OBJ_PTR_NULL         If 'p_sem' is a NULL pointer.
+//  146 *                                OS_ERR_OBJ_TYPE             If 'p_sem' is not pointing at a semaphore
+//  147 *                                OS_ERR_OPT_INVALID          An invalid option was specified
+//  148 *                                OS_ERR_TASK_WAITING         One or more tasks were waiting on the semaphore
+//  149 *
+//  150 * Returns    : == 0          if no tasks were waiting on the semaphore, or upon error.
+//  151 *              >  0          if one or more tasks waiting on the semaphore are now readied and informed.
+//  152 *
+//  153 * Note(s)    : 1) This function must be used with care.  Tasks that would normally expect the presence of the semaphore
+//  154 *                 MUST check the return code of OSSemPend().
+//  155 *              2) OSSemAccept() callers will not know that the intended semaphore has been deleted.
+//  156 *              3) Because ALL tasks pending on the semaphore will be readied, you MUST be careful in applications where
+//  157 *                 the semaphore is used for mutual exclusion because the resource(s) will no longer be guarded by the
+//  158 *                 semaphore.
+//  159 ************************************************************************************************************************
+//  160 */
+//  161 
+//  162 #if OS_CFG_SEM_DEL_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  163 OS_OBJ_QTY  OSSemDel (OS_SEM  *p_sem,
+OSSemDel:
+        CODE
+//  164                       OS_OPT   opt,
+//  165                       OS_ERR  *p_err)
+//  166 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 8
+        MOV     A,#-0x8
+        LCALL   ?ALLOC_XSTACK8
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     ?V0,R4
+        MOV     ?V1,R5
+//  167     OS_OBJ_QTY     cnt;
+//  168     OS_OBJ_QTY     nbr_tasks;
+//  169     OS_PEND_DATA  *p_pend_data;
+//  170     OS_PEND_LIST  *p_pend_list;
+//  171     OS_TCB        *p_tcb;
+//  172     CPU_TS         ts;
+//  173     CPU_SR_ALLOC();
+        MOV     R6,#0x0
+//  174 
+//  175 
+//  176 
+//  177 #ifdef OS_SAFETY_CRITICAL
+//  178     if (p_err == (OS_ERR *)0) {
+//  179         OS_SAFETY_CRITICAL_EXCEPTION();
+//  180         return ((OS_OBJ_QTY)0);
+//  181     }
+//  182 #endif
+//  183 
+//  184 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  185     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Not allowed to delete a semaphore from an ISR          */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSSemDel_0
+//  186        *p_err = OS_ERR_DEL_ISR;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x37
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x32
+        MOVX    @DPTR,A
+//  187         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemDel_1
+//  188     }
+//  189 #endif
+//  190 
+//  191 #if OS_CFG_ARG_CHK_EN > 0u
+//  192     if (p_sem == (OS_SEM *)0) {                             /* Validate 'p_sem'                                       */
+??OSSemDel_0:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSSemDel_2
+//  193        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  194         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemDel_1
+//  195     }
+//  196     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSSemDel_2:
+        MOV     ?V2,?V0
+        MOV     ?V3,?V1
+        MOV     R0,#?V2
+        LCALL   ?US_SWITCH_DENSE
+`?<Jumptable for OSSemDel>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA8
+        DATA
+        DATA8
+        DB        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemDel_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemDel_4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemDel_4
+        CODE
+//  197         case OS_OPT_DEL_NO_PEND:
+//  198         case OS_OPT_DEL_ALWAYS:
+//  199              break;
+//  200 
+//  201         default:
+//  202             *p_err = OS_ERR_OPT_INVALID;
+//  203              return ((OS_OBJ_QTY)0);
+//  204     }
+//  205 #endif
+//  206 
+//  207 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  208     if (p_sem->Type != OS_OBJ_TYPE_SEM) {                   /* Make sure semaphore was created                        */
+??OSSemDel_4:
+        MOV     DPTR,#__Constant_4553414d
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     R0,#?V4
+        LCALL   ?L_EQ_X
+        JZ      $+5
+        LJMP    ??OSSemDel_5
+//  209        *p_err = OS_ERR_OBJ_TYPE;
+//  210         return ((OS_OBJ_QTY)0);
+//  211     }
+//  212 #endif
+//  213 
+//  214     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+//  215     p_pend_list = &p_sem->PendList;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        ADD     A,#0x6
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOV     R1,A
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  216     cnt         = p_pend_list->NbrEntries;
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  217     nbr_tasks   = cnt;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  218     switch (opt) {
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_DENSE
+`?<Jumptable for OSSemDel>_1`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA8
+        DATA
+        DATA8
+        DB        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemDel_6
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemDel_7
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemDel_8
+        CODE
+//  219         case OS_OPT_DEL_NO_PEND:                            /* Delete semaphore only if no task waiting               */
+//  220              if (nbr_tasks == (OS_OBJ_QTY)0) {
+??OSSemDel_7:
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSSemDel_9
+//  221 #if OS_CFG_DBG_EN > 0u
+//  222                  OS_SemDbgListRemove(p_sem);
+        ; Setup parameters for call to function OS_SemDbgListRemove
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_SemDbgListRemove
+//  223 #endif
+//  224                  OSSemQty--;
+        MOV     DPTR,#OSSemQty
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  225                  OS_SemClr(p_sem);
+        ; Setup parameters for call to function OS_SemClr
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_SemClr
+//  226                  CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  227                 *p_err = OS_ERR_NONE;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OSSemDel_10
+//  228              } else {
+??OSSemDel_3:
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemDel_1
+??OSSemDel_5:
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemDel_1
+//  229                  CPU_CRITICAL_EXIT();
+??OSSemDel_9:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  230                 *p_err = OS_ERR_TASK_WAITING;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x5f
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  231              }
+//  232              break;
+??OSSemDel_10:
+        LJMP    ??OSSemDel_11
+//  233 
+//  234         case OS_OPT_DEL_ALWAYS:                             /* Always delete the semaphore                            */
+//  235              OS_CRITICAL_ENTER_CPU_EXIT();
+//  236              ts = OS_TS_GET();                              /* Get local time stamp so all tasks get the same time    */
+??OSSemDel_8:
+        MOV     ?V0,#0x0
+        MOV     ?V1,#0x0
+        MOV     ?V2,#0x0
+        MOV     ?V3,#0x0
+        SJMP    ??OSSemDel_12
+//  237              while (cnt > 0u) {                             /* Remove all tasks on the pend list                      */
+//  238                  p_pend_data = p_pend_list->HeadPtr;
+??OSSemDel_13:
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R0
+        MOV     DPH,R1
+//  239                  p_tcb       = p_pend_data->TCBPtr;
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  240                  OS_PendObjDel((OS_PEND_OBJ *)((void *)p_sem),
+//  241                                p_tcb,
+//  242                                ts);
+        ; Setup parameters for call to function OS_PendObjDel
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_PendObjDel
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  243                  cnt--;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  244              }
+??OSSemDel_12:
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSSemDel_13
+//  245 #if OS_CFG_DBG_EN > 0u
+//  246              OS_SemDbgListRemove(p_sem);
+        ; Setup parameters for call to function OS_SemDbgListRemove
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_SemDbgListRemove
+//  247 #endif
+//  248              OSSemQty--;
+        MOV     DPTR,#OSSemQty
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  249              OS_SemClr(p_sem);
+        ; Setup parameters for call to function OS_SemClr
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_SemClr
+//  250              OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  251              OSSched();                                     /* Find highest priority task ready to run                */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  252             *p_err = OS_ERR_NONE;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  253              break;
+        SJMP    ??OSSemDel_11
+//  254 
+//  255         default:
+//  256              CPU_CRITICAL_EXIT();
+??OSSemDel_6:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  257             *p_err = OS_ERR_OPT_INVALID;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+//  258              break;
+//  259     }
+//  260     return ((OS_OBJ_QTY)nbr_tasks);
+??OSSemDel_11:
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+??OSSemDel_1:
+        MOV     A,#0x8
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  261 }
+//  262 #endif
+//  263 
+//  264 /*$PAGE*/
+//  265 /*
+//  266 ************************************************************************************************************************
+//  267 *                                                  PEND ON SEMAPHORE
+//  268 *
+//  269 * Description: This function waits for a semaphore.
+//  270 *
+//  271 * Arguments  : p_sem         is a pointer to the semaphore
+//  272 *
+//  273 *              timeout       is an optional timeout period (in clock ticks).  If non-zero, your task will wait for the
+//  274 *                            resource up to the amount of time (in 'ticks') specified by this argument.  If you specify
+//  275 *                            0, however, your task will wait forever at the specified semaphore or, until the resource
+//  276 *                            becomes available (or the event occurs).
+//  277 *
+//  278 *              opt           determines whether the user wants to block if the semaphore is not available or not:
+//  279 *
+//  280 *                                OS_OPT_PEND_BLOCKING
+//  281 *                                OS_OPT_PEND_NON_BLOCKING
+//  282 *
+//  283 *              p_ts          is a pointer to a variable that will receive the timestamp of when the semaphore was posted
+//  284 *                            or pend aborted or the semaphore deleted.  If you pass a NULL pointer (i.e. (CPU_TS*)0)
+//  285 *                            then you will not get the timestamp.  In other words, passing a NULL pointer is valid
+//  286 *                            and indicates that you don't need the timestamp.
+//  287 *
+//  288 *              p_err         is a pointer to a variable that will contain an error code returned by this function.
+//  289 *
+//  290 *                                OS_ERR_NONE               The call was successful and your task owns the resource
+//  291 *                                                          or, the event you are waiting for occurred.
+//  292 *                                OS_ERR_OBJ_DEL            If 'p_sem' was deleted
+//  293 *                                OS_ERR_OBJ_PTR_NULL       If 'p_sem' is a NULL pointer.
+//  294 *                                OS_ERR_OBJ_TYPE           If 'p_sem' is not pointing at a semaphore
+//  295 *                                OS_ERR_OPT_INVALID        If you specified an invalid value for 'opt'
+//  296 *                                OS_ERR_PEND_ABORT         If the pend was aborted by another task
+//  297 *                                OS_ERR_PEND_ISR           If you called this function from an ISR and the result
+//  298 *                                                          would lead to a suspension.
+//  299 *                                OS_ERR_PEND_WOULD_BLOCK   If you specified non-blocking but the semaphore was not
+//  300 *                                                          available.
+//  301 *                                OS_ERR_SCHED_LOCKED       If you called this function when the scheduler is locked
+//  302 *                                OS_ERR_STATUS_INVALID     Pend status is invalid
+//  303 *                                OS_ERR_TIMEOUT            The semaphore was not received within the specified
+//  304 *                                                          timeout.
+//  305 *
+//  306 *
+//  307 * Returns    : The current value of the semaphore counter or 0 if not available.
+//  308 ************************************************************************************************************************
+//  309 */
+//  310 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  311 OS_SEM_CTR  OSSemPend (OS_SEM   *p_sem,
+OSSemPend:
+        CODE
+//  312                        OS_TICK   timeout,
+//  313                        OS_OPT    opt,
+//  314                        CPU_TS   *p_ts,
+//  315                        OS_ERR   *p_err)
+//  316 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 20
+        MOV     A,#-0x14
+        LCALL   ?ALLOC_XSTACK8
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     A,R4
+        MOV     R6,A
+        MOV     A,R5
+        MOV     R7,A
+//  317     OS_SEM_CTR    ctr;
+//  318     OS_PEND_DATA  pend_data;
+//  319     CPU_SR_ALLOC();
+        MOV     ?V0,#0x0
+//  320 
+//  321 
+//  322 
+//  323 #ifdef OS_SAFETY_CRITICAL
+//  324     if (p_err == (OS_ERR *)0) {
+//  325         OS_SAFETY_CRITICAL_EXCEPTION();
+//  326         return ((OS_SEM_CTR)0);
+//  327     }
+//  328 #endif
+//  329 
+//  330 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  331     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Not allowed to call from an ISR                        */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSSemPend_0
+//  332        *p_err = OS_ERR_PEND_ISR;
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x52
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  333         return ((OS_SEM_CTR)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSSemPend_1
+//  334     }
+//  335 #endif
+//  336 
+//  337 #if OS_CFG_ARG_CHK_EN > 0u
+//  338     if (p_sem == (OS_SEM *)0) {                             /* Validate 'p_sem'                                       */
+??OSSemPend_0:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSSemPend_2
+//  339        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  340         return ((OS_SEM_CTR)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSSemPend_1
+//  341     }
+//  342     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSSemPend_2:
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSSemPend>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPend_4
+        CODE
+//  343         case OS_OPT_PEND_BLOCKING:
+//  344         case OS_OPT_PEND_NON_BLOCKING:
+//  345              break;
+//  346 
+//  347         default:
+//  348             *p_err = OS_ERR_OPT_INVALID;
+//  349              return ((OS_SEM_CTR)0);
+//  350     }
+//  351 #endif
+//  352 
+//  353 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  354     if (p_sem->Type != OS_OBJ_TYPE_SEM) {                   /* Make sure semaphore was created                        */
+??OSSemPend_3:
+        MOV     DPTR,#__Constant_4553414d
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JZ      $+5
+        LJMP    ??OSSemPend_5
+        MOV     A,#0x27
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V3,A
+//  355        *p_err = OS_ERR_OBJ_TYPE;
+//  356         return ((OS_SEM_CTR)0);
+//  357     }
+//  358 #endif
+//  359 
+//  360     if (p_ts != (CPU_TS *)0) {
+        MOV     A,?V2
+        ORL     A,?V3
+        JZ      ??OSSemPend_6
+//  361        *p_ts  = (CPU_TS)0;                                  /* Initialize the returned timestamp                      */
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  362     }
+//  363     CPU_CRITICAL_ENTER();
+??OSSemPend_6:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V0,A
+//  364     if (p_sem->Ctr > (OS_SEM_CTR)0) {                       /* Resource available?                                    */
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,R0
+        ORL     A,R1
+        ORL     A,R2
+        ORL     A,R3
+        JNZ     $+5
+        LJMP    ??OSSemPend_7
+//  365         p_sem->Ctr--;                                       /* Yes, caller may proceed                                */
+        MOV     DPTR,#__Constant_ffffffff
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_ADD_TO_X
+//  366         if (p_ts != (CPU_TS *)0) {
+        MOV     A,?V2
+        ORL     A,?V3
+        JZ      ??OSSemPend_8
+//  367            *p_ts  = p_sem->TS;                              /*      get timestamp of last post                        */
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x16
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        LCALL   ?XSTORE_R0123
+//  368         }
+//  369         ctr   = p_sem->Ctr;
+??OSSemPend_8:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+//  370         CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  371        *p_err = OS_ERR_NONE;
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  372         return (ctr);
+        MOV     R2,?V4
+        MOV     R3,?V5
+        MOV     R4,?V6
+        MOV     R5,?V7
+        LJMP    ??OSSemPend_1
+//  373     }
+??OSSemPend_4:
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSSemPend_1
+??OSSemPend_5:
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSSemPend_1
+//  374 
+//  375     if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) {    /* Caller wants to block if not available?                */
+??OSSemPend_7:
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSSemPend_9
+//  376         ctr   = p_sem->Ctr;                                 /* No                                                     */
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+//  377         CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  378        *p_err = OS_ERR_PEND_WOULD_BLOCK;
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x50
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  379         return (ctr);
+        MOV     R2,?V4
+        MOV     R3,?V5
+        MOV     R4,?V6
+        MOV     R5,?V7
+        LJMP    ??OSSemPend_1
+//  380     } else {                                                /* Yes                                                    */
+//  381         if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {    /* Can't pend when the scheduler is locked                */
+??OSSemPend_9:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSSemPend_10
+//  382             CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  383            *p_err = OS_ERR_SCHED_LOCKED;
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+//  384             return ((OS_SEM_CTR)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSSemPend_1
+//  385         }
+//  386     }
+//  387                                                             /* Lock the scheduler/re-enable interrupts                */
+//  388     OS_CRITICAL_ENTER_CPU_EXIT();
+//  389     OS_Pend(&pend_data,                                     /* Block task pending on Semaphore                        */
+//  390             (OS_PEND_OBJ *)((void *)p_sem),
+//  391             OS_TASK_PEND_ON_SEM,
+//  392             timeout);
+??OSSemPend_10:
+        ; Setup parameters for call to function OS_Pend
+        MOV     A,#0x23
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     R1,#0x6
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP101_8
+        LCALL   OS_Pend
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  393 
+//  394     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  395 
+//  396     OSSched();                                              /* Find the next highest priority task ready to run       */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  397 
+//  398     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V0,A
+//  399     switch (OSTCBCurPtr->PendStatus) {
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1b
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OSSemPend_11
+        DEC     A
+        JZ      ??OSSemPend_12
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSSemPend_13
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSSemPend_14
+        LJMP    ??OSSemPend_15
+//  400         case OS_STATUS_PEND_OK:                             /* We got the semaphore                                   */
+//  401              if (p_ts != (CPU_TS *)0) {
+??OSSemPend_11:
+        MOV     A,?V2
+        ORL     A,?V3
+        JZ      ??OSSemPend_16
+//  402                 *p_ts  =  OSTCBCurPtr->TS;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        LCALL   ?XSTORE_R0123
+//  403              }
+//  404             *p_err = OS_ERR_NONE;
+??OSSemPend_16:
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  405              break;
+//  406 
+//  407         case OS_STATUS_PEND_ABORT:                          /* Indicate that we aborted                               */
+//  408              if (p_ts != (CPU_TS *)0) {
+//  409                 *p_ts  =  OSTCBCurPtr->TS;
+//  410              }
+//  411             *p_err = OS_ERR_PEND_ABORT;
+//  412              break;
+//  413 
+//  414         case OS_STATUS_PEND_TIMEOUT:                        /* Indicate that we didn't get semaphore within timeout   */
+//  415              if (p_ts != (CPU_TS *)0) {
+//  416                 *p_ts  = (CPU_TS  )0;
+//  417              }
+//  418             *p_err = OS_ERR_TIMEOUT;
+//  419              break;
+//  420 
+//  421         case OS_STATUS_PEND_DEL:                            /* Indicate that object pended on has been deleted        */
+//  422              if (p_ts != (CPU_TS *)0) {
+//  423                 *p_ts  =  OSTCBCurPtr->TS;
+//  424              }
+//  425             *p_err = OS_ERR_OBJ_DEL;
+//  426              break;
+//  427 
+//  428         default:
+//  429             *p_err = OS_ERR_STATUS_INVALID;
+//  430              CPU_CRITICAL_EXIT();
+//  431              return ((OS_SEM_CTR)0);
+//  432     }
+//  433     ctr = p_sem->Ctr;
+??OSSemPend_17:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+//  434     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  435     return (ctr);
+        MOV     R2,?V4
+        MOV     R3,?V5
+        MOV     R4,?V6
+        MOV     R5,?V7
+??OSSemPend_1:
+        MOV     A,#0x14
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+??OSSemPend_12:
+        MOV     A,?V2
+        ORL     A,?V3
+        JZ      ??OSSemPend_18
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        LCALL   ?XSTORE_R0123
+??OSSemPend_18:
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x57
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+        SJMP    ??OSSemPend_17
+??OSSemPend_14:
+        MOV     A,?V2
+        ORL     A,?V3
+        JZ      ??OSSemPend_19
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+??OSSemPend_19:
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x27
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+        LJMP    ??OSSemPend_17
+??OSSemPend_13:
+        MOV     A,?V2
+        ORL     A,?V3
+        JZ      ??OSSemPend_20
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        LCALL   ?XSTORE_R0123
+??OSSemPend_20:
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        LJMP    ??OSSemPend_17
+??OSSemPend_15:
+        MOV     A,#0x29
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x2e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6e
+        MOVX    @DPTR,A
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSSemPend_1
+//  436 }
+//  437 
+//  438 /*$PAGE*/
+//  439 /*
+//  440 ************************************************************************************************************************
+//  441 *                                             ABORT WAITING ON A SEMAPHORE
+//  442 *
+//  443 * Description: This function aborts & readies any tasks currently waiting on a semaphore.  This function should be used
+//  444 *              to fault-abort the wait on the semaphore, rather than to normally signal the semaphore via OSSemPost().
+//  445 *
+//  446 * Arguments  : p_sem     is a pointer to the semaphore
+//  447 *
+//  448 *              opt       determines the type of ABORT performed:
+//  449 *
+//  450 *                            OS_OPT_PEND_ABORT_1          ABORT wait for a single task (HPT) waiting on the semaphore
+//  451 *                            OS_OPT_PEND_ABORT_ALL        ABORT wait for ALL tasks that are  waiting on the semaphore
+//  452 *                            OS_OPT_POST_NO_SCHED         Do not call the scheduler
+//  453 *
+//  454 *              p_err     is a pointer to a variable that will contain an error code returned by this function.
+//  455 *
+//  456 *                            OS_ERR_NONE                  At least one task waiting on the semaphore was readied and
+//  457 *                                                         informed of the aborted wait; check return value for the
+//  458 *                                                         number of tasks whose wait on the semaphore was aborted.
+//  459 *                            OS_ERR_OBJ_PTR_NULL          If 'p_sem' is a NULL pointer.
+//  460 *                            OS_ERR_OBJ_TYPE              If 'p_sem' is not pointing at a semaphore
+//  461 *                            OS_ERR_OPT_INVALID           If you specified an invalid option
+//  462 *                            OS_ERR_PEND_ABORT_ISR        If you called this function from an ISR
+//  463 *                            OS_ERR_PEND_ABORT_NONE       No task were pending
+//  464 *
+//  465 * Returns    : == 0          if no tasks were waiting on the semaphore, or upon error.
+//  466 *              >  0          if one or more tasks waiting on the semaphore are now readied and informed.
+//  467 ************************************************************************************************************************
+//  468 */
+//  469 
+//  470 #if OS_CFG_SEM_PEND_ABORT_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  471 OS_OBJ_QTY  OSSemPendAbort (OS_SEM  *p_sem,
+OSSemPendAbort:
+        CODE
+//  472                             OS_OPT   opt,
+//  473                             OS_ERR  *p_err)
+//  474 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 6
+        MOV     A,#-0x6
+        LCALL   ?ALLOC_XSTACK8
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     A,R4
+        MOV     R6,A
+        MOV     A,R5
+        MOV     R7,A
+//  475     OS_PEND_LIST  *p_pend_list;
+//  476     OS_TCB        *p_tcb;
+//  477     CPU_TS         ts;
+//  478     OS_OBJ_QTY     nbr_tasks;
+//  479     CPU_SR_ALLOC();
+        MOV     ?V4,#0x0
+        MOV     A,#0x15
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V7,A
+//  480 
+//  481 
+//  482 
+//  483 #ifdef OS_SAFETY_CRITICAL
+//  484     if (p_err == (OS_ERR *)0) {
+//  485         OS_SAFETY_CRITICAL_EXCEPTION();
+//  486         return ((OS_OBJ_QTY)0u);
+//  487     }
+//  488 #endif
+//  489 
+//  490 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  491     if (OSIntNestingCtr > (OS_NESTING_CTR)0u) {             /* Not allowed to Pend Abort from an ISR                  */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSSemPendAbort_0
+//  492        *p_err =  OS_ERR_PEND_ABORT_ISR;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x56
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  493         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemPendAbort_1
+//  494     }
+//  495 #endif
+//  496 
+//  497 #if OS_CFG_ARG_CHK_EN > 0u
+//  498     if (p_sem == (OS_SEM *)0) {                             /* Validate 'p_sem'                                       */
+??OSSemPendAbort_0:
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSSemPendAbort_2
+//  499        *p_err =  OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  500         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemPendAbort_1
+//  501     }
+//  502     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSSemPendAbort_2:
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSSemPendAbort>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        256
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        33024
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPendAbort_4
+        CODE
+//  503         case OS_OPT_PEND_ABORT_1:
+//  504         case OS_OPT_PEND_ABORT_ALL:
+//  505         case OS_OPT_PEND_ABORT_1   | OS_OPT_POST_NO_SCHED:
+//  506         case OS_OPT_PEND_ABORT_ALL | OS_OPT_POST_NO_SCHED:
+//  507              break;
+//  508 
+//  509         default:
+//  510             *p_err =  OS_ERR_OPT_INVALID;
+//  511              return ((OS_OBJ_QTY)0u);
+//  512     }
+//  513 #endif
+//  514 
+//  515 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  516     if (p_sem->Type != OS_OBJ_TYPE_SEM) {                   /* Make sure semaphore was created                        */
+??OSSemPendAbort_3:
+        MOV     DPTR,#__Constant_4553414d
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OSSemPendAbort_5
+//  517        *p_err =  OS_ERR_OBJ_TYPE;
+//  518         return ((OS_OBJ_QTY)0u);
+//  519     }
+//  520 #endif
+//  521 
+//  522     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V4,A
+//  523     p_pend_list = &p_sem->PendList;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#0x6
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOV     R1,A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  524     if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0u) {        /* Any task waiting on semaphore?                         */
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSSemPendAbort_6
+//  525         CPU_CRITICAL_EXIT();                                /* No                                                     */
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V4
+        LCALL   CPU_SR_Restore
+//  526        *p_err =  OS_ERR_PEND_ABORT_NONE;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x55
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  527         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemPendAbort_1
+//  528     }
+??OSSemPendAbort_4:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemPendAbort_1
+??OSSemPendAbort_5:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSSemPendAbort_1
+//  529 
+//  530     OS_CRITICAL_ENTER_CPU_EXIT();
+//  531     nbr_tasks = 0u;
+??OSSemPendAbort_6:
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  532     ts        = OS_TS_GET();                                /* Get local time stamp so all tasks get the same time    */
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     ?V2,R2
+        MOV     ?V3,R3
+//  533     while (p_pend_list->NbrEntries > (OS_OBJ_QTY)0u) {
+??OSSemPendAbort_7:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSSemPendAbort_8
+//  534         p_tcb = p_pend_list->HeadPtr->TCBPtr;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  535         OS_PendAbort((OS_PEND_OBJ *)((void *)p_sem),
+//  536                      p_tcb,
+//  537                      ts);
+        ; Setup parameters for call to function OS_PendAbort
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_PendAbort
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  538         nbr_tasks++;
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  539         if (opt != OS_OPT_PEND_ABORT_ALL) {                 /* Pend abort all tasks waiting?                          */
+        MOV     A,#0x0
+        XRL     A,R6
+        JNZ     ??OSSemPendAbort_9
+        MOV     A,#0x1
+        XRL     A,R7
+??OSSemPendAbort_9:
+        JZ      ??OSSemPendAbort_7
+//  540             break;                                          /* No                                                     */
+//  541         }
+//  542     }
+//  543     OS_CRITICAL_EXIT_NO_SCHED();
+??OSSemPendAbort_8:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V4
+        LCALL   CPU_SR_Restore
+//  544 
+//  545     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0u) {
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSSemPendAbort_10
+//  546         OSSched();                                          /* Run the scheduler                                      */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  547     }
+//  548 
+//  549    *p_err = OS_ERR_NONE;
+??OSSemPendAbort_10:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  550     return (nbr_tasks);
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+??OSSemPendAbort_1:
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  551 }
+//  552 #endif
+//  553 
+//  554 /*$PAGE*/
+//  555 /*
+//  556 ************************************************************************************************************************
+//  557 *                                                 POST TO A SEMAPHORE
+//  558 *
+//  559 * Description: This function signals a semaphore
+//  560 *
+//  561 * Arguments  : p_sem    is a pointer to the semaphore
+//  562 *
+//  563 *              opt      determines the type of POST performed:
+//  564 *
+//  565 *                           OS_OPT_POST_1            POST and ready only the highest priority task waiting on semaphore
+//  566 *                                                    (if tasks are waiting).
+//  567 *                           OS_OPT_POST_ALL          POST to ALL tasks that are waiting on the semaphore
+//  568 *
+//  569 *                           OS_OPT_POST_NO_SCHED     Do not call the scheduler
+//  570 *
+//  571 *                           Note(s): 1) OS_OPT_POST_NO_SCHED can be added with one of the other options.
+//  572 *
+//  573 *              p_err    is a pointer to a variable that will contain an error code returned by this function.
+//  574 *
+//  575 *                           OS_ERR_NONE          The call was successful and the semaphore was signaled.
+//  576 *                           OS_ERR_OBJ_PTR_NULL  If 'p_sem' is a NULL pointer.
+//  577 *                           OS_ERR_OBJ_TYPE      If 'p_sem' is not pointing at a semaphore
+//  578 *                           OS_ERR_SEM_OVF       If the post would cause the semaphore count to overflow.
+//  579 *
+//  580 * Returns    : The current value of the semaphore counter or 0 upon error.
+//  581 ************************************************************************************************************************
+//  582 */
+//  583 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  584 OS_SEM_CTR  OSSemPost (OS_SEM  *p_sem,
+OSSemPost:
+        CODE
+//  585                        OS_OPT   opt,
+//  586                        OS_ERR  *p_err)
+//  587 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     A,#0xd
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V5,A
+//  588     OS_SEM_CTR  ctr;
+//  589     CPU_TS      ts;
+//  590 
+//  591 
+//  592 
+//  593 #ifdef OS_SAFETY_CRITICAL
+//  594     if (p_err == (OS_ERR *)0) {
+//  595         OS_SAFETY_CRITICAL_EXCEPTION();
+//  596         return ((OS_SEM_CTR)0);
+//  597     }
+//  598 #endif
+//  599 
+//  600 #if OS_CFG_ARG_CHK_EN > 0u
+//  601     if (p_sem == (OS_SEM *)0) {                             /* Validate 'p_sem'                                       */
+        MOV     A,R6
+        ORL     A,R7
+        JNZ     ??OSSemPost_0
+//  602        *p_err  = OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  603         return ((OS_SEM_CTR)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OSSemPost_1
+//  604     }
+//  605     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSSemPost_0:
+        MOV     ?V0,R4
+        MOV     ?V1,R5
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSSemPost>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPost_2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        512
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPost_2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPost_2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        33280
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPost_2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSSemPost_3
+        CODE
+//  606         case OS_OPT_POST_1:
+//  607         case OS_OPT_POST_ALL:
+//  608         case OS_OPT_POST_1   | OS_OPT_POST_NO_SCHED:
+//  609         case OS_OPT_POST_ALL | OS_OPT_POST_NO_SCHED:
+//  610              break;
+//  611 
+//  612         default:
+//  613             *p_err =  OS_ERR_OPT_INVALID;
+//  614              return ((OS_SEM_CTR)0u);
+//  615     }
+//  616 #endif
+//  617 
+//  618 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  619     if (p_sem->Type != OS_OBJ_TYPE_SEM) {                   /* Make sure semaphore was created                        */
+??OSSemPost_2:
+        MOV     DPTR,#__Constant_4553414d
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OSSemPost_4
+//  620        *p_err = OS_ERR_OBJ_TYPE;
+//  621         return ((OS_SEM_CTR)0);
+//  622     }
+//  623 #endif
+//  624 
+//  625     ts = OS_TS_GET();                                       /* Get timestamp                                          */
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     ?V2,R2
+        MOV     ?V3,R3
+//  626 
+//  627 #if OS_CFG_ISR_POST_DEFERRED_EN > 0u
+//  628     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* See if called from an ISR                              */
+//  629         OS_IntQPost((OS_OBJ_TYPE)OS_OBJ_TYPE_SEM,           /* Post to ISR queue                                      */
+//  630                     (void      *)p_sem,
+//  631                     (void      *)0,
+//  632                     (OS_MSG_SIZE)0,
+//  633                     (OS_FLAGS   )0,
+//  634                     (OS_OPT     )opt,
+//  635                     (CPU_TS     )ts,
+//  636                     (OS_ERR    *)p_err);
+//  637         return ((OS_SEM_CTR)0);
+//  638     }
+//  639 #endif
+//  640 
+//  641     ctr = OS_SemPost(p_sem,                                 /* Post to semaphore                                      */
+//  642                      opt,
+//  643                      ts,
+//  644                      p_err);
+        ; Setup parameters for call to function OS_SemPost
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_SemPost
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     ?V2,R4
+        MOV     ?V3,R5
+//  645 
+//  646     return (ctr);
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+??OSSemPost_1:
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+??OSSemPost_3:
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OSSemPost_1
+??OSSemPost_4:
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OSSemPost_1
+//  647 }
+//  648 
+//  649 /*$PAGE*/
+//  650 /*
+//  651 ************************************************************************************************************************
+//  652 *                                                    SET SEMAPHORE
+//  653 *
+//  654 * Description: This function sets the semaphore count to the value specified as an argument.  Typically, this value
+//  655 *              would be 0 but of course, we can set the semaphore to any value.
+//  656 *
+//  657 *              You would typically use this function when a semaphore is used as a signaling mechanism
+//  658 *              and, you want to reset the count value.
+//  659 *
+//  660 * Arguments  : p_sem     is a pointer to the semaphore
+//  661 *
+//  662 *              cnt       is the new value for the semaphore count.  You would pass 0 to reset the semaphore count.
+//  663 *
+//  664 *              p_err     is a pointer to a variable that will contain an error code returned by this function.
+//  665 *
+//  666 *                            OS_ERR_NONE           The call was successful and the semaphore value was set.
+//  667 *                            OS_ERR_OBJ_PTR_NULL   If 'p_sem' is a NULL pointer.
+//  668 *                            OS_ERR_OBJ_TYPE       If 'p_sem' is not pointing to a semaphore.
+//  669 *                            OS_ERR_TASK_WAITING   If tasks are waiting on the semaphore.
+//  670 *
+//  671 * Returns    : None
+//  672 ************************************************************************************************************************
+//  673 */
+//  674 
+//  675 #if OS_CFG_SEM_SET_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  676 void  OSSemSet (OS_SEM      *p_sem,
+OSSemSet:
+        CODE
+//  677                 OS_SEM_CTR   cnt,
+//  678                 OS_ERR      *p_err)
+//  679 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 0
+        MOV     ?V4,R2
+        MOV     ?V5,R3
+        MOV     ?V6,R4
+        MOV     ?V7,R5
+//  680     OS_PEND_LIST  *p_pend_list;
+//  681     CPU_SR_ALLOC();
+        MOV     R1,#0x0
+//  682 
+//  683 
+//  684 
+//  685 #ifdef OS_SAFETY_CRITICAL
+//  686     if (p_err == (OS_ERR *)0) {
+//  687         OS_SAFETY_CRITICAL_EXCEPTION();
+//  688         return;
+//  689     }
+//  690 #endif
+//  691 
+//  692 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  693     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Can't call this function from an ISR                   */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSSemSet_0
+//  694        *p_err = OS_ERR_SET_ISR;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3a
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+//  695         return;
+        LJMP    ??OSSemSet_1
+//  696     }
+//  697 #endif
+//  698 
+//  699 #if OS_CFG_ARG_CHK_EN > 0u
+//  700     if (p_sem == (OS_SEM *)0) {                             /* Validate 'p_sem'                                       */
+??OSSemSet_0:
+        MOV     A,?V4
+        ORL     A,?V5
+        JNZ     ??OSSemSet_2
+//  701        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  702         return;
+        LJMP    ??OSSemSet_1
+//  703     }
+//  704 #endif
+//  705 
+//  706 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  707     if (p_sem->Type != OS_OBJ_TYPE_SEM) {                   /* Make sure semaphore was created                        */
+??OSSemSet_2:
+        MOV     DPTR,#__Constant_4553414d
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JZ      ??OSSemSet_3
+//  708        *p_err = OS_ERR_OBJ_TYPE;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  709         return;
+        SJMP    ??OSSemSet_1
+//  710     }
+//  711 #endif
+//  712 
+//  713    *p_err = OS_ERR_NONE;
+??OSSemSet_3:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  714     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R1,A
+        MOV     A,#0xf
+        LCALL   ?XSTACK_DISP0_8
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+//  715     if (p_sem->Ctr > (OS_SEM_CTR)0) {                       /* See if semaphore already has a count                   */
+        MOV     A,?V4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        LCALL   ?XLOAD_R4567
+        MOV     A,R4
+        ORL     A,R5
+        ORL     A,R6
+        ORL     A,R7
+        JZ      ??OSSemSet_4
+//  716         p_sem->Ctr = cnt;                                   /* Yes, set it to the new value specified.                */
+        MOV     A,?V4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        SJMP    ??OSSemSet_5
+//  717     } else {
+//  718         p_pend_list = &p_sem->PendList;                     /* No                                                     */
+??OSSemSet_4:
+        MOV     A,?V4
+        ADD     A,#0x6
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+//  719         if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0) {     /*      See if task(s) waiting?                           */
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        MOV     A,R2
+        ORL     A,R3
+        JNZ     ??OSSemSet_6
+//  720             p_sem->Ctr = cnt;                               /*      No, OK to set the value                           */
+        MOV     A,?V4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        SJMP    ??OSSemSet_5
+//  721         } else {
+//  722            *p_err      = OS_ERR_TASK_WAITING;
+??OSSemSet_6:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x5f
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  723         }
+//  724     }
+//  725     CPU_CRITICAL_EXIT();
+??OSSemSet_5:
+        ; Setup parameters for call to function CPU_SR_Restore
+        LCALL   CPU_SR_Restore
+//  726 }
+??OSSemSet_1:
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  727 #endif
+//  728 
+//  729 /*$PAGE*/
+//  730 /*
+//  731 ************************************************************************************************************************
+//  732 *                                           CLEAR THE CONTENTS OF A SEMAPHORE
+//  733 *
+//  734 * Description: This function is called by OSSemDel() to clear the contents of a semaphore
+//  735 *
+//  736 
+//  737 * Argument(s): p_sem      is a pointer to the semaphore to clear
+//  738 *              -----
+//  739 *
+//  740 * Returns    : none
+//  741 *
+//  742 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  743 ************************************************************************************************************************
+//  744 */
+//  745 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  746 void  OS_SemClr (OS_SEM  *p_sem)
+OS_SemClr:
+        CODE
+//  747 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+//  748     p_sem->Type    = OS_OBJ_TYPE_NONE;                      /* Mark the data structure as a NONE                      */
+        MOV     R4,#0x4e
+        MOV     R5,#0x45
+        MOV     R6,#0x4e
+        MOV     R7,#0x4f
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  749     p_sem->Ctr     = (OS_SEM_CTR)0;                         /* Set semaphore value                                    */
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     A,R2
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  750     p_sem->TS      = (CPU_TS    )0;                         /* Clear the time stamp                                   */
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     A,R2
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  751     p_sem->NamePtr = (CPU_CHAR *)((void *)"?SEM");
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#`?<Constant "?SEM">` & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(`?<Constant "?SEM">` >> 8) & 0xff
+        MOVX    @DPTR,A
+//  752     OS_PendListInit(&p_sem->PendList);                      /* Initialize the waiting list                            */
+        ; Setup parameters for call to function OS_PendListInit
+        MOV     A,R2
+        ADD     A,#0x6
+        MOV     R2,A
+        JNC     ??OS_SemClr_0
+        INC     R3
+??OS_SemClr_0:
+        LCALL   OS_PendListInit
+//  753 }
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+//  754 
+//  755 /*$PAGE*/
+//  756 /*
+//  757 ************************************************************************************************************************
+//  758 *                                        ADD/REMOVE SEMAPHORE TO/FROM DEBUG LIST
+//  759 *
+//  760 * Description: These functions are called by uC/OS-III to add or remove a semaphore to/from the debug list.
+//  761 *
+//  762 * Arguments  : p_sem     is a pointer to the semaphore to add/remove
+//  763 *
+//  764 * Returns    : none
+//  765 *
+//  766 * Note(s)    : These functions are INTERNAL to uC/OS-III and your application should not call it.
+//  767 ************************************************************************************************************************
+//  768 */
+//  769 
+//  770 
+//  771 #if OS_CFG_DBG_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  772 void  OS_SemDbgListAdd (OS_SEM  *p_sem)
+OS_SemDbgListAdd:
+        CODE
+//  773 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  774     p_sem->DbgNamePtr               = (CPU_CHAR *)((void *)" ");
+        MOV     A,R2
+        ADD     A,#0x10
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#`?<Constant " ">` & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(`?<Constant " ">` >> 8) & 0xff
+        MOVX    @DPTR,A
+//  775     p_sem->DbgPrevPtr               = (OS_SEM   *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  776     if (OSSemDbgListPtr == (OS_SEM *)0) {
+        MOV     DPTR,#OSSemDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_SemDbgListAdd_0
+//  777         p_sem->DbgNextPtr           = (OS_SEM   *)0;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_SemDbgListAdd_1
+//  778     } else {
+//  779         p_sem->DbgNextPtr           =  OSSemDbgListPtr;
+??OS_SemDbgListAdd_0:
+        MOV     DPTR,#OSSemDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  780         OSSemDbgListPtr->DbgPrevPtr =  p_sem;
+        MOV     DPTR,#OSSemDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0xc
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//  781     }
+//  782     OSSemDbgListPtr                 =  p_sem;
+??OS_SemDbgListAdd_1:
+        MOV     DPTR,#OSSemDbgListPtr
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//  783 }
+        POP     DPH
+        POP     DPL
+        RET
+//  784 
+//  785 
+//  786 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  787 void  OS_SemDbgListRemove (OS_SEM  *p_sem)
+OS_SemDbgListRemove:
+        CODE
+//  788 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  789     OS_SEM  *p_sem_next;
+//  790     OS_SEM  *p_sem_prev;
+//  791 
+//  792 
+//  793     p_sem_prev = p_sem->DbgPrevPtr;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+//  794     p_sem_next = p_sem->DbgNextPtr;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  795 
+//  796     if (p_sem_prev == (OS_SEM *)0) {
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_SemDbgListRemove_0
+//  797         OSSemDbgListPtr = p_sem_next;
+        MOV     DPTR,#OSSemDbgListPtr
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  798         if (p_sem_next != (OS_SEM *)0) {
+        MOV     A,R4
+        ORL     A,R5
+        JZ      ??OS_SemDbgListRemove_1
+//  799             p_sem_next->DbgPrevPtr = (OS_SEM *)0;
+        MOV     A,R4
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  800         }
+//  801         p_sem->DbgNextPtr = (OS_SEM *)0;
+??OS_SemDbgListRemove_1:
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_SemDbgListRemove_2
+//  802 
+//  803     } else if (p_sem_next == (OS_SEM *)0) {
+??OS_SemDbgListRemove_0:
+        MOV     A,R4
+        ORL     A,R5
+        JNZ     ??OS_SemDbgListRemove_3
+//  804         p_sem_prev->DbgNextPtr = (OS_SEM *)0;
+        MOV     A,R0
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R1
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  805         p_sem->DbgPrevPtr      = (OS_SEM *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_SemDbgListRemove_2
+//  806 
+//  807     } else {
+//  808         p_sem_prev->DbgNextPtr =  p_sem_next;
+??OS_SemDbgListRemove_3:
+        MOV     A,R0
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R1
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  809         p_sem_next->DbgPrevPtr =  p_sem_prev;
+        MOV     A,R4
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  810         p_sem->DbgNextPtr      = (OS_SEM *)0;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  811         p_sem->DbgPrevPtr      = (OS_SEM *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  812     }
+//  813 }
+??OS_SemDbgListRemove_2:
+        POP     DPH
+        POP     DPL
+        RET
+//  814 #endif
+//  815 
+//  816 /*$PAGE*/
+//  817 /*
+//  818 ************************************************************************************************************************
+//  819 *                                                SEMAPHORE INITIALIZATION
+//  820 *
+//  821 * Description: This function is called by OSInit() to initialize the semaphore management.
+//  822 *
+//  823 
+//  824 * Argument(s): p_err        is a pointer to a variable that will contain an error code returned by this function.
+//  825 *
+//  826 *                                OS_ERR_NONE     the call was successful
+//  827 *
+//  828 * Returns    : none
+//  829 *
+//  830 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  831 ************************************************************************************************************************
+//  832 */
+//  833 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  834 void  OS_SemInit (OS_ERR  *p_err)
+OS_SemInit:
+        CODE
+//  835 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  836 #ifdef OS_SAFETY_CRITICAL
+//  837     if (p_err == (OS_ERR *)0) {
+//  838         OS_SAFETY_CRITICAL_EXCEPTION();
+//  839         return;
+//  840     }
+//  841 #endif
+//  842 
+//  843 #if OS_CFG_DBG_EN > 0u
+//  844     OSSemDbgListPtr = (OS_SEM *)0;
+        MOV     DPTR,#OSSemDbgListPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  845 #endif
+//  846 
+//  847     OSSemQty        = (OS_OBJ_QTY)0;
+        MOV     DPTR,#OSSemQty
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  848    *p_err           = OS_ERR_NONE;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  849 }
+        POP     DPH
+        POP     DPL
+        RET
+//  850 
+//  851 /*$PAGE*/
+//  852 /*
+//  853 ************************************************************************************************************************
+//  854 *                                                 POST TO A SEMAPHORE
+//  855 *
+//  856 * Description: This function signals a semaphore
+//  857 *
+//  858 * Arguments  : p_sem    is a pointer to the semaphore
+//  859 *
+//  860 *              opt      determines the type of POST performed:
+//  861 *
+//  862 *                           OS_OPT_POST_1            POST to a single waiting task
+//  863 *                           OS_OPT_POST_ALL          POST to ALL tasks that are waiting on the semaphore
+//  864 *
+//  865 *                           OS_OPT_POST_NO_SCHED     Do not call the scheduler
+//  866 *
+//  867 *                           Note(s): 1) OS_OPT_POST_NO_SCHED can be added with one of the other options.
+//  868 *
+//  869 *              ts       is a timestamp indicating when the post occurred.
+//  870 *
+//  871 *              p_err    is a pointer to a variable that will contain an error code returned by this function.
+//  872 *
+//  873 *                           OS_ERR_NONE          The call was successful and the semaphore was signaled.
+//  874 *                           OS_ERR_OBJ_PTR_NULL  If 'p_sem' is a NULL pointer.
+//  875 *                           OS_ERR_OBJ_TYPE      If 'p_sem' is not pointing at a semaphore
+//  876 *                           OS_ERR_SEM_OVF       If the post would cause the semaphore count to overflow.
+//  877 *
+//  878 * Returns    : The current value of the semaphore counter or 0 upon error.
+//  879 *
+//  880 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  881 ************************************************************************************************************************
+//  882 */
+//  883 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  884 OS_SEM_CTR  OS_SemPost (OS_SEM  *p_sem,
+OS_SemPost:
+        CODE
+//  885                         OS_OPT   opt,
+//  886                         CPU_TS   ts,
+//  887                         OS_ERR  *p_err)
+//  888 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 5
+        MOV     A,#-0x5
+        LCALL   ?ALLOC_XSTACK8
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  889     OS_OBJ_QTY     cnt;
+//  890     OS_SEM_CTR     ctr;
+//  891     OS_PEND_LIST  *p_pend_list;
+//  892     OS_PEND_DATA  *p_pend_data;
+//  893     OS_PEND_DATA  *p_pend_data_next;
+//  894     OS_TCB        *p_tcb;
+//  895     CPU_SR_ALLOC();
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  896 
+//  897 
+//  898 
+//  899     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        PUSH    A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        POP     A
+        MOVX    @DPTR,A
+//  900     p_pend_list = &p_sem->PendList;
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#0x6
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOV     R1,A
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+//  901     if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0) {         /* Any task waiting on semaphore?                         */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      $+5
+        LJMP    ??OS_SemPost_0
+//  902         switch (sizeof(OS_SEM_CTR)) {
+//  903             case 1u:
+//  904                  if (p_sem->Ctr == DEF_INT_08U_MAX_VAL) {
+//  905                      CPU_CRITICAL_EXIT();
+//  906                     *p_err = OS_ERR_SEM_OVF;
+//  907                      return ((OS_SEM_CTR)0);
+//  908                  }
+//  909                  break;
+//  910 
+//  911             case 2u:
+//  912                  if (p_sem->Ctr == DEF_INT_16U_MAX_VAL) {
+//  913                      CPU_CRITICAL_EXIT();
+//  914                     *p_err = OS_ERR_SEM_OVF;
+//  915                      return ((OS_SEM_CTR)0);
+//  916                  }
+//  917                  break;
+//  918 
+//  919             case 4u:
+//  920                  if (p_sem->Ctr == DEF_INT_32U_MAX_VAL) {
+        MOV     DPTR,#__Constant_ffffffff
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_SemPost_1
+//  921                      CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  922                     *p_err = OS_ERR_SEM_OVF;
+        MOV     A,#0x18
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3b
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+//  923                      return ((OS_SEM_CTR)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OS_SemPost_2
+//  924                  }
+//  925                  break;
+//  926 
+//  927             default:
+//  928                  break;
+//  929         }
+//  930         p_sem->Ctr++;                                       /* No                                                     */
+??OS_SemPost_1:
+        MOV     DPTR,#__Constant_1
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_ADD_TO_X
+//  931         ctr       = p_sem->Ctr;
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+//  932         p_sem->TS = ts;                                     /* Save timestamp in semaphore control block              */
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x16
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+//  933         CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  934        *p_err     = OS_ERR_NONE;
+        MOV     A,#0x18
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  935         return (ctr);
+        MOV     R2,?V4
+        MOV     R3,?V5
+        MOV     R4,?V6
+        MOV     R5,?V7
+        LJMP    ??OS_SemPost_2
+//  936     }
+//  937 
+//  938     OS_CRITICAL_ENTER_CPU_EXIT();
+//  939     if ((opt & OS_OPT_POST_ALL) != (OS_OPT)0) {             /* Post message to all tasks waiting?                     */
+??OS_SemPost_0:
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ANL     A,#0x0
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0x2
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OS_SemPost_3
+//  940         cnt = p_pend_list->NbrEntries;                      /* Yes                                                    */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+        SJMP    ??OS_SemPost_4
+//  941     } else {
+//  942         cnt = (OS_OBJ_QTY)1;                                /* No                                                     */
+??OS_SemPost_3:
+        MOV     R6,#0x1
+        MOV     R7,#0x0
+//  943     }
+//  944     p_pend_data = p_pend_list->HeadPtr;
+??OS_SemPost_4:
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        MOV     ?V6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V7,A
+        SJMP    ??OS_SemPost_5
+//  945     while (cnt > 0u) {
+//  946         p_tcb            = p_pend_data->TCBPtr;
+??OS_SemPost_6:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  947         p_pend_data_next = p_pend_data->NextPtr;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V7,A
+//  948         OS_Post((OS_PEND_OBJ *)((void *)p_sem),
+//  949                 p_tcb,
+//  950                 (void      *)0,
+//  951                 (OS_MSG_SIZE)0,
+//  952                 ts);
+        ; Setup parameters for call to function OS_Post
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        CLR     A
+        MOV     ?V4,A
+        MOV     ?V5,A
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V4,A
+        MOV     ?V5,A
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     A,#0x9
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_Post
+        MOV     A,#0x8
+        LCALL   ?DEALLOC_XSTACK8
+//  953         p_pend_data = p_pend_data_next;
+//  954         cnt--;
+        MOV     A,R6
+        ADD     A,#-0x1
+        MOV     R6,A
+        MOV     A,R7
+        ADDC    A,#-0x1
+        MOV     R7,A
+//  955     }
+??OS_SemPost_5:
+        MOV     A,R6
+        ORL     A,R7
+        JNZ     ??OS_SemPost_6
+//  956     ctr = p_sem->Ctr;
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+//  957     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  958     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0) {
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ANL     A,#0x0
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_SemPost_7
+//  959         OSSched();                                          /* Run the scheduler                                      */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  960     }
+//  961    *p_err = OS_ERR_NONE;
+??OS_SemPost_7:
+        MOV     A,#0x18
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  962     return (ctr);
+        MOV     R2,?V4
+        MOV     R3,?V5
+        MOV     R4,?V6
+        MOV     R5,?V7
+??OS_SemPost_2:
+        MOV     A,#0x5
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  963 }
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant "?SEM">>`:
+        DB "?SEM"
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant " ">>`:
+        DB " "
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_4553414d>`:
+        DATA32
+        DD 1163084109
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_ffffffff>`:
+        DATA32
+        DD 4294967295
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_1>`:
+        DATA32
+        DD 1
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+`?<Constant "?SEM">`:
+        DS 5
+        REQUIRE `?<Initializer for <Constant "?SEM">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+`?<Constant " ">`:
+        DS 2
+        REQUIRE `?<Initializer for <Constant " ">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_4553414d:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_4553414d>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_ffffffff:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_ffffffff>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_1:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_1>`
+        REQUIRE __INIT_XDATA_I
+
+        END
+//  964 
+//  965 #endif
+// 
+// 3 672 bytes in segment NEAR_CODE
+//    19 bytes in segment XDATA_I
+//    19 bytes in segment XDATA_ID
+// 
+// 3 679 bytes of CODE  memory (+ 12 bytes shared)
+//     7 bytes of XDATA memory (+ 12 bytes shared)
+//
+//Errors: none
+//Warnings: none

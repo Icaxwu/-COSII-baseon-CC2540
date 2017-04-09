@@ -154,7 +154,7 @@ static  void AppUartTask (void *p_arg)
     
     BSPUARTOpenDMA(&uartInfo);
 #if 1
-    BSPUARTWriteISR("A", 1);
+    BSPUARTWriteISR("123456789", 9);
 #endif
     while (1)
     {

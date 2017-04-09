@@ -1,0 +1,511 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:00
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\BSP\bsp_interrupt.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\BSP\bsp_interrupt.c" -lB "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\TI CC2540\APP\IAR Project\Debug\List\" -o "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\Obj\" -e --no_cse --no_unroll --no_inline
+//        --no_code_motion --no_tbaa --debug --core=plain --dptr=16,1
+//        --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\bsp_interrupt.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME bsp_interrupt
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?CALL_IND
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?L_ADD
+        EXTERN ?L_IOR
+        EXTERN ?L_SHL
+        EXTERN ?UL_SHR
+        EXTERN __INIT_DATA_Z
+        EXTERN __INIT_XDATA_I
+
+        PUBLIC IRQ_register
+        PUBWEAK ST0
+        PUBWEAK ST1
+        PUBWEAK ST2
+        PUBLIC SYS_TICK_ISR_sys
+        PUBLIC Set_ST_Period
+        PUBLIC UART0_TX_ISR_sys
+        PUBWEAK _A_IEN0
+        PUBWEAK _A_IRCON
+        PUBLIC int_num
+        PUBLIC interrupt_handles
+        PUBLIC interrupt_main_entry
+
+        EXTERN OSCfg_TickRate_Cnt
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\bsp_interrupt.c
+//    1 #define BSP_EXT_MODULE
+//    2 #include <bsp_inner.h>
+
+        ASEGN SFR_AN:DATA:NOROOT,095H
+// unsigned char volatile __sfr ST0
+ST0:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,096H
+// unsigned char volatile __sfr ST1
+ST1:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,097H
+// unsigned char volatile __sfr ST2
+ST2:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0a8H
+// union <unnamed> volatile __sfr _A_IEN0
+_A_IEN0:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0c0H
+// union <unnamed> volatile __sfr _A_IRCON
+_A_IRCON:
+        DATA8
+        DS 1
+//    3 #include <bsp.h>
+
+        RSEG DATA_Z:DATA:NOROOT(0)
+        DATA8
+//    4 __data unsigned char int_num;
+int_num:
+        DS 1
+        REQUIRE __INIT_DATA_Z
+//    5 
+//    6 void SYS_TICK_ISR_sys(void);
+//    7 void UART0_TX_ISR_sys(void);
+//    8 struct interrupt_handle_t {
+//    9     interrupt_handle_sub_t  handle_for_user;
+//   10     interrupt_handle_sub_t  handle_for_sys;
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+//   11 }  interrupt_handles[18] = { { 0, 0 },         //  0 
+interrupt_handles:
+        DATA8
+        DS 72
+        REQUIRE `?<Initializer for interrupt_handles>`
+        REQUIRE __INIT_XDATA_I
+//   12                              { 0, 0 },         //  1 
+//   13                              { 0, 0 },         //  2 
+//   14                              { 0, 0 },         //  3 
+//   15                              { 0, 0 },         //  4 
+//   16                              { 0, SYS_TICK_ISR_sys },         //  5 
+//   17                              { 0, 0 },         //  6 
+//   18                              { 0, UART0_TX_ISR_sys },         //  7 
+//   19                              { 0, 0 },         //  8 
+//   20                              { 0, 0 },         //  9 
+//   21                              { 0, 0 },         //  10 
+//   22                              { 0, 0 },         //  11 
+//   23                              { 0, 0 },         //  12 
+//   24                              { 0, 0 },         //  13
+//   25                              { 0, 0 },         //  14 
+//   26                              { 0, 0 },         //  15 
+//   27                              { 0, 0 },         //  16 
+//   28                              { 0, 0 },         //  17 
+//   29 };
+//   30 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   31 void interrupt_main_entry(void)  
+interrupt_main_entry:
+        CODE
+//   32 { 
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//   33     interrupt_handle_sub_t handle;
+//   34     
+//   35     handle = interrupt_handles[int_num].handle_for_sys;
+        MOV     A,int_num
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R0
+        MOV     B,#0x4
+        MUL     AB
+        XCH     A,R0
+        MOV     R2,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R2
+        MOV     R2,A
+        MOV     B,#0x4
+        MOV     A,R1
+        MUL     AB
+        ADD     A,R2
+        MOV     R1,A
+        MOV     A,#(interrupt_handles + 2) & 0xff
+        ADD     A,R0
+        MOV     DPL,A
+        MOV     A,#((interrupt_handles + 2) >> 8) & 0xff
+        ADDC    A,R1
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R0
+        MOV     DPH,R1
+//   36     if (handle)
+        MOV     A,DPL
+        ORL     A,DPH
+        JZ      ??interrupt_main_entry_0
+//   37       handle();
+        ; Setup parameters for indirect call
+        LCALL   ?CALL_IND
+//   38 } 
+??interrupt_main_entry_0:
+        POP     DPH
+        POP     DPL
+        RET
+//   39 
+//   40 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   41 CPU_BOOLEAN IRQ_register(unsigned char IRQ_num, interrupt_handle_sub_t handle_entry)
+IRQ_register:
+        CODE
+//   42 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+        MOV     A,R1
+        MOV     R5,A
+//   43     if (IRQ_NUM_MAX <= IRQ_num || handle_entry == 0)
+        MOV     A,R5
+        CLR     C
+        SUBB    A,#0x12
+        JNC     ??IRQ_register_0
+        MOV     A,R2
+        ORL     A,R3
+        JNZ     ??IRQ_register_1
+//   44       return DEF_FAIL;
+??IRQ_register_0:
+        MOV     R1,#0x0
+        SJMP    ??IRQ_register_2
+//   45     
+//   46     interrupt_handles[IRQ_num].handle_for_user = handle_entry;
+??IRQ_register_1:
+        MOV     A,R5
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R0
+        MOV     B,#0x4
+        MUL     AB
+        XCH     A,R0
+        MOV     R4,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R4
+        MOV     R4,A
+        MOV     B,#0x4
+        MOV     A,R1
+        MUL     AB
+        ADD     A,R4
+        MOV     R1,A
+        MOV     A,#interrupt_handles & 0xff
+        ADD     A,R0
+        MOV     DPL,A
+        MOV     A,#(interrupt_handles >> 8) & 0xff
+        ADDC    A,R1
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//   47     
+//   48     return DEF_OK;
+        MOV     R1,#0x1
+??IRQ_register_2:
+        POP     DPH
+        POP     DPL
+        RET
+//   49 }
+//   50 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   51 void Set_ST_Period(CPU_INT16U cnts) 
+Set_ST_Period:
+        CODE
+//   52 { 
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 0
+//   53    CPU_INT32U sleepTimer = 0; 
+        MOV     ?V4,#0x0
+        MOV     ?V5,#0x0
+        MOV     ?V6,#0x0
+        MOV     ?V7,#0x0
+//   54    sleepTimer |= (CPU_INT32U)ST0; 
+        MOV     A,0x95
+        MOV     ?V0,A
+        CLR     A
+        MOV     ?V1,A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_IOR
+//   55    sleepTimer |= (CPU_INT32U)ST1 <<  8; 
+        MOV     A,0x96
+        MOV     ?V0,A
+        CLR     A
+        MOV     ?V1,A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     A,#0x8
+        MOV     R0,#?V0
+        LCALL   ?L_SHL
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_IOR
+//   56    sleepTimer |= (CPU_INT32U)ST2 << 16; 
+        MOV     A,0x97
+        MOV     ?V0,A
+        CLR     A
+        MOV     ?V1,A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     A,#0x10
+        MOV     R0,#?V0
+        LCALL   ?L_SHL
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_IOR
+//   57    sleepTimer += cnts; 
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        CLR     A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_ADD
+//   58    ST2 = (CPU_INT08U)(sleepTimer >> 16); 
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        MOV     ?V2,?V6
+        MOV     ?V3,?V7
+        MOV     A,#0x10
+        MOV     R0,#?V0
+        LCALL   ?UL_SHR
+        MOV     A,?V0
+        MOV     0x97,A
+//   59    ST1 = (CPU_INT08U)(sleepTimer >> 8); 
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        CLR     A
+        XCH     A,?V1
+        MOV     ?V0,A
+        MOV     A,?V0
+        MOV     0x96,A
+//   60    ST0 = (CPU_INT08U) sleepTimer; 
+        MOV     A,?V4
+        MOV     0x95,A
+//   61 }
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE ST0
+        REQUIRE ST1
+        REQUIRE ST2
+//   62 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   63 void SYS_TICK_ISR_sys(void)
+SYS_TICK_ISR_sys:
+        CODE
+//   64 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//   65     interrupt_handle_sub_t handle;
+//   66     STIF = 0;
+        CLR     0xc0.7
+//   67     EA = 1; // 打开中断
+        SETB    0xa8.7
+//   68     Set_ST_Period(OSCfg_TickRate_Cnt);  // 32768/OSCfg_TickRate_Hz
+        ; Setup parameters for call to function Set_ST_Period
+        MOV     DPTR,#OSCfg_TickRate_Cnt
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   Set_ST_Period
+//   69     handle = interrupt_handles[SLP_TIMER_INT_NUM].handle_for_user;
+        MOV     DPTR,#interrupt_handles + 20
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R0
+        MOV     DPH,R1
+//   70     if (handle)
+        MOV     A,DPL
+        ORL     A,DPH
+        JZ      ??SYS_TICK_ISR_sys_0
+//   71        handle();  
+        ; Setup parameters for indirect call
+        LCALL   ?CALL_IND
+//   72 }
+??SYS_TICK_ISR_sys_0:
+        POP     DPH
+        POP     DPL
+        RET
+        REQUIRE _A_IRCON
+        REQUIRE _A_IEN0
+//   73 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   74 void UART0_TX_ISR_sys(void)
+UART0_TX_ISR_sys:
+        CODE
+//   75 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//   76     interrupt_handle_sub_t handle;
+//   77     EA = 1; // 打开中断
+        SETB    0xa8.7
+//   78     handle = interrupt_handles[UART0_TX_INT_NUM].handle_for_user;
+        MOV     DPTR,#interrupt_handles + 28
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R0
+        MOV     DPH,R1
+//   79     if (handle)
+        MOV     A,DPL
+        ORL     A,DPH
+        JZ      ??UART0_TX_ISR_sys_0
+//   80        handle();  
+        ; Setup parameters for indirect call
+        LCALL   ?CALL_IND
+//   81 }
+??UART0_TX_ISR_sys_0:
+        POP     DPH
+        POP     DPL
+        RET
+        REQUIRE _A_IEN0
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for interrupt_handles>`:
+        DATA16
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW SYS_TICK_ISR_sys
+        DW 0H
+        DW 0H
+        DW 0H
+        DW UART0_TX_ISR_sys
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+        DW 0H
+
+        END
+//   82     
+//   83     
+// 
+//   1 byte  in segment DATA_Z
+// 355 bytes in segment NEAR_CODE
+//   5 bytes in segment SFR_AN
+//  72 bytes in segment XDATA_I
+//  72 bytes in segment XDATA_ID
+// 
+// 427 bytes of CODE  memory
+//   1 byte  of DATA  memory (+ 5 bytes shared)
+//  72 bytes of XDATA memory
+//
+//Errors: none
+//Warnings: none

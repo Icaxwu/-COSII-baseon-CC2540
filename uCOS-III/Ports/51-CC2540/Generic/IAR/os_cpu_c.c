@@ -231,6 +231,7 @@ CPU_STK  *OSTaskStkInit (OS_TASK_PTR    p_task,
                          OS_OPT         opt)
 {
     CPU_STK  *p_stk;
+    CPU_INT16U tmp;
 
 
     (void)opt;                                              /* Prevent compiler warning                               */
@@ -240,9 +241,14 @@ CPU_STK  *OSTaskStkInit (OS_TASK_PTR    p_task,
     /* 
         高低存高字节，地地址存低字节
         跳过开头的5个字节 
+        fix bug1: 下面的写法是有bug的，假如p_task刚好等于0x08FB, 那么下面的代码将初始化一个错误的入口地址————0x800
+        *--p_stk = (CPU_STK)((CPU_INT16U)p_task >> 8);          
+        *--p_stk = (CPU_STK)(((CPU_INT16U)p_task & 0xFF)+5);   
     */
-    *--p_stk = (CPU_STK)((CPU_INT16U)p_task >> 8);          /* Entry Point                                                   */
-    *--p_stk = (CPU_STK)(((CPU_INT16U)p_task & 0xFF)+5);   
+    tmp = (CPU_INT16U)p_task;  // 指针为2个字节
+    tmp += 5;
+    *--p_stk = (CPU_STK)((tmp >> 8) & 0xFF);                  /* Entry Point                                                   */
+    *--p_stk = (CPU_STK)(tmp & 0xFF);   
     *--p_stk = (CPU_STK)0x00;                        /* PSW, 填其他的初始值似乎有问题                      */
     *--p_stk = (CPU_STK)0xaa;                        /* A                                               */
     *--p_stk = (CPU_STK)0xbb;                        /* B                                               */

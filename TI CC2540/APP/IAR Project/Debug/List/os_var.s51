@@ -1,0 +1,402 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:07
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_var.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_var.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_var.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_var
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN __INIT_XDATA_Z
+
+        PUBLIC OSFlagDbgListPtr
+        PUBLIC OSFlagQty
+        PUBLIC OSIdleTaskCtr
+        PUBLIC OSIdleTaskTCB
+        PUBLIC OSIntNestingCtr
+        PUBLIC OSMemDbgListPtr
+        PUBLIC OSMemQty
+        PUBLIC OSMsgPool
+        PUBLIC OSMutexDbgListPtr
+        PUBLIC OSMutexQty
+        PUBLIC OSPrioCur
+        PUBLIC OSPrioHighRdy
+        PUBLIC OSPrioSaved
+        PUBLIC OSQDbgListPtr
+        PUBLIC OSQQty
+        PUBLIC OSRdyList
+        PUBLIC OSRunning
+        PUBLIC OSSchedLockNestingCtr
+        PUBLIC OSSchedRoundRobinDfltTimeQuanta
+        PUBLIC OSSchedRoundRobinEn
+        PUBLIC OSSemDbgListPtr
+        PUBLIC OSSemQty
+        PUBLIC OSTCBCurPtr
+        PUBLIC OSTCBHighRdyPtr
+        PUBLIC OSTaskCtxSwCtr
+        PUBLIC OSTaskDbgListPtr
+        PUBLIC OSTaskQty
+        PUBLIC OSTaskRegNextAvailID
+        PUBLIC OSTickCtr
+        PUBLIC OSTickTaskTCB
+        PUBLIC OSTickTaskTimeMax
+        PUBLIC OS_AppIdleTaskHookPtr
+        PUBLIC OS_AppStatTaskHookPtr
+        PUBLIC OS_AppTaskCreateHookPtr
+        PUBLIC OS_AppTaskDelHookPtr
+        PUBLIC OS_AppTaskReturnHookPtr
+        PUBLIC OS_AppTaskSwHookPtr
+        PUBLIC OS_AppTimeTickHookPtr
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_var.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                                      VARIABLES
+//   10 *
+//   11 * File    : OS_VAR.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define   OS_GLOBALS
+//   34 
+//   35 #define  MICRIUM_SOURCE
+//   36 #include <os.h>
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_APP_HOOK_TCB OS_AppTaskCreateHookPtr
+OS_AppTaskCreateHookPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_APP_HOOK_TCB OS_AppTaskDelHookPtr
+OS_AppTaskDelHookPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_APP_HOOK_TCB OS_AppTaskReturnHookPtr
+OS_AppTaskReturnHookPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// void (*)(void) OS_AppIdleTaskHookPtr
+OS_AppIdleTaskHookPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// void (*)(void) OS_AppStatTaskHookPtr
+OS_AppStatTaskHookPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// void (*)(void) OS_AppTaskSwHookPtr
+OS_AppTaskSwHookPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// void (*)(void) OS_AppTimeTickHookPtr
+OS_AppTimeTickHookPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+// CPU_INT32U OSIdleTaskCtr
+OSIdleTaskCtr:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_TCB OSIdleTaskTCB
+OSIdleTaskTCB:
+        DS 143
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// CPU_INT08U OSIntNestingCtr
+OSIntNestingCtr:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_STATE OSRunning
+OSRunning:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_FLAG_GRP *__xdata OSFlagDbgListPtr
+OSFlagDbgListPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_OBJ_QTY OSFlagQty
+OSFlagQty:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_MEM *__xdata OSMemDbgListPtr
+OSMemDbgListPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_OBJ_QTY OSMemQty
+OSMemQty:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_MSG_POOL OSMsgPool
+OSMsgPool:
+        DS 8
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_MUTEX *__xdata OSMutexDbgListPtr
+OSMutexDbgListPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_OBJ_QTY OSMutexQty
+OSMutexQty:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_PRIO OSPrioCur
+OSPrioCur:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_PRIO OSPrioHighRdy
+OSPrioHighRdy:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_PRIO OSPrioSaved
+OSPrioSaved:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_Q *__xdata OSQDbgListPtr
+OSQDbgListPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_OBJ_QTY OSQQty
+OSQQty:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_RDY_LIST OSRdyList[32]
+OSRdyList:
+        DS 192
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// CPU_INT08U OSSchedLockNestingCtr
+OSSchedLockNestingCtr:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+// OS_TICK OSSchedRoundRobinDfltTimeQuanta
+OSSchedRoundRobinDfltTimeQuanta:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// CPU_BOOLEAN OSSchedRoundRobinEn
+OSSchedRoundRobinEn:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_SEM *__xdata OSSemDbgListPtr
+OSSemDbgListPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_OBJ_QTY OSSemQty
+OSSemQty:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+// CPU_INT32U OSTaskCtxSwCtr
+OSTaskCtxSwCtr:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_TCB *__xdata OSTaskDbgListPtr
+OSTaskDbgListPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_OBJ_QTY OSTaskQty
+OSTaskQty:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_REG_ID OSTaskRegNextAvailID
+OSTaskRegNextAvailID:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+// OS_TICK OSTickCtr
+OSTickCtr:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+// OS_TCB OSTickTaskTCB
+OSTickTaskTCB:
+        DS 143
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+// CPU_TS OSTickTaskTimeMax
+OSTickTaskTimeMax:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_TCB *__xdata OSTCBCurPtr
+OSTCBCurPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// OS_TCB *__xdata OSTCBHighRdyPtr
+OSTCBHighRdyPtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        END
+//   37 
+//   38 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   39 const  CPU_CHAR  *os_var__c = "$Id: $";
+//   40 #endif
+// 
+// 556 bytes in segment XDATA_Z
+// 
+// 556 bytes of XDATA memory
+//
+//Errors: none
+//Warnings: none

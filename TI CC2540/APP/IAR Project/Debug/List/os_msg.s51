@@ -1,0 +1,1583 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:04
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_msg.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_msg.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_msg.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_msg
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?XLOAD_R0123
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN ?XSTORE_R0123
+
+        PUBLIC OS_MsgPoolInit
+        PUBLIC OS_MsgQFreeAll
+        PUBLIC OS_MsgQGet
+        PUBLIC OS_MsgQInit
+        PUBLIC OS_MsgQPut
+
+        EXTERN OSCfg_MsgPoolBasePtr
+        EXTERN OSCfg_MsgPoolSize
+        EXTERN OSMsgPool
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_msg.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                              MESSAGE HANDLING SERVICES
+//   10 *
+//   11 * File    : OS_MSG.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define  MICRIUM_SOURCE
+//   34 #include <os.h>
+//   35 
+//   36 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   37 const  CPU_CHAR  *os_msg__c = "$Id: $";
+//   38 #endif
+//   39 
+//   40 
+//   41 #if OS_MSG_EN > 0u
+//   42 /*$PAGE*/
+//   43 /*
+//   44 ************************************************************************************************************************
+//   45 *                                            INITIALIZE THE POOL OF 'OS_MSG'
+//   46 *
+//   47 * Description: This function is called by OSInit() to initialize the free list of OS_MSGs.
+//   48 *
+//   49 * Argument(s): p_err     is a pointer to a variable that will contain an error code returned by this function.
+//   50 *
+//   51 *                            OS_ERR_MSG_POOL_NULL_PTR
+//   52 *                            OS_ERR_MSG_POOL_EMPTY
+//   53 *                            OS_ERR_NONE
+//   54 *
+//   55 * Returns    : none
+//   56 *
+//   57 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//   58 ************************************************************************************************************************
+//   59 */
+//   60 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   61 void  OS_MsgPoolInit (OS_ERR  *p_err)
+OS_MsgPoolInit:
+        CODE
+//   62 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 0
+        MOV     ?V6,R2
+        MOV     ?V7,R3
+//   63     OS_MSG      *p_msg1;
+//   64     OS_MSG      *p_msg2;
+//   65     OS_MSG_QTY   i;
+//   66     OS_MSG_QTY   loops;
+//   67 
+//   68 
+//   69 
+//   70 #ifdef OS_SAFETY_CRITICAL
+//   71     if (p_err == (OS_ERR *)0) {
+//   72         OS_SAFETY_CRITICAL_EXCEPTION();
+//   73         return;
+//   74     }
+//   75 #endif
+//   76 
+//   77 #if OS_CFG_ARG_CHK_EN > 0u
+//   78     if (OSCfg_MsgPoolBasePtr == (OS_MSG *)0) {
+        MOV     DPTR,#OSCfg_MsgPoolBasePtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_MsgPoolInit_0
+//   79        *p_err = OS_ERR_MSG_POOL_NULL_PTR;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x1e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x57
+        MOVX    @DPTR,A
+//   80         return;
+        LJMP    ??OS_MsgPoolInit_1
+//   81     }
+//   82     if (OSCfg_MsgPoolSize == (OS_MSG_QTY)0) {
+??OS_MsgPoolInit_0:
+        MOV     DPTR,#OSCfg_MsgPoolSize
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_MsgPoolInit_2
+//   83        *p_err = OS_ERR_MSG_POOL_EMPTY;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x1d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x57
+        MOVX    @DPTR,A
+//   84         return;
+        LJMP    ??OS_MsgPoolInit_1
+//   85     }
+//   86 #endif
+//   87 
+//   88     p_msg1 = OSCfg_MsgPoolBasePtr;
+??OS_MsgPoolInit_2:
+        MOV     DPTR,#OSCfg_MsgPoolBasePtr
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+//   89     p_msg2 = OSCfg_MsgPoolBasePtr;
+        MOV     DPTR,#OSCfg_MsgPoolBasePtr
+        MOVX    A,@DPTR
+        MOV     ?V2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V3,A
+//   90     p_msg2++;
+        MOV     A,?V2
+        ADD     A,#0xa
+        MOV     ?V2,A
+        JNC     ??OS_MsgPoolInit_3
+        INC     ?V3
+//   91     loops  = OSCfg_MsgPoolSize - 1u;
+??OS_MsgPoolInit_3:
+        MOV     DPTR,#OSCfg_MsgPoolSize
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOV     R3,A
+//   92     for (i = 0u; i < loops; i++) {                          /* Init. list of free OS_MSGs                             */
+        MOV     ?V4,#0x0
+        MOV     ?V5,#0x0
+        SJMP    ??OS_MsgPoolInit_4
+//   93         p_msg1->NextPtr = p_msg2;
+??OS_MsgPoolInit_5:
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     A,?V2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V3
+        MOVX    @DPTR,A
+//   94         p_msg1->MsgPtr  = (void      *)0;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   95         p_msg1->MsgSize = (OS_MSG_SIZE)0u;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//   96         p_msg1->MsgTS   = (CPU_TS     )0u;
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//   97         p_msg1++;
+        MOV     A,?V0
+        ADD     A,#0xa
+        MOV     ?V0,A
+        JNC     ??OS_MsgPoolInit_6
+        INC     ?V1
+//   98         p_msg2++;
+??OS_MsgPoolInit_6:
+        MOV     A,?V2
+        ADD     A,#0xa
+        MOV     ?V2,A
+        JNC     ??OS_MsgPoolInit_7
+        INC     ?V3
+//   99     }
+??OS_MsgPoolInit_7:
+        INC     ?V4
+        MOV     A,?V4
+        JNZ     ??OS_MsgPoolInit_4
+        INC     ?V5
+??OS_MsgPoolInit_4:
+        CLR     C
+        MOV     A,?V4
+        SUBB    A,R2
+        MOV     A,?V5
+        SUBB    A,R3
+        JC      ??OS_MsgPoolInit_5
+//  100     p_msg1->NextPtr = (OS_MSG    *)0;                       /* Last OS_MSG                                            */
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  101     p_msg1->MsgPtr  = (void      *)0;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  102     p_msg1->MsgSize = (OS_MSG_SIZE)0u;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  103     p_msg1->MsgTS   = (CPU_TS     )0u;
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     R7,A
+        MOV     A,R0
+        MOV     R4,A
+        MOV     A,R1
+        MOV     R5,A
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        XCH     A,R7
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  104 
+//  105     OSMsgPool.NextPtr    =  OSCfg_MsgPoolBasePtr;
+        MOV     DPTR,#OSCfg_MsgPoolBasePtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPTR,#OSMsgPool
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  106     OSMsgPool.NbrFree    =  OSCfg_MsgPoolSize;
+        MOV     DPTR,#OSCfg_MsgPoolSize
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPTR,#OSMsgPool + 2
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  107     OSMsgPool.NbrUsed    = (OS_MSG_QTY)0;
+        MOV     DPTR,#OSMsgPool + 4
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  108     OSMsgPool.NbrUsedMax = (OS_MSG_QTY)0;
+        MOV     DPTR,#OSMsgPool + 6
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  109    *p_err                =  OS_ERR_NONE;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  110 }
+??OS_MsgPoolInit_1:
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  111 
+//  112 /*$PAGE*/
+//  113 /*
+//  114 ************************************************************************************************************************
+//  115 *                                        RELEASE ALL MESSAGE IN MESSAGE QUEUE
+//  116 *
+//  117 * Description: This function returns all the messages in a message queue to the free list.
+//  118 *
+//  119 * Arguments  : p_msg_q       is a pointer to the OS_MSG_Q structure containing messages to free.
+//  120 *              -------
+//  121 *
+//  122 * Returns    : the number of OS_MSGs returned to the free list
+//  123 *
+//  124 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  125 ************************************************************************************************************************
+//  126 */
+//  127 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  128 OS_MSG_QTY  OS_MsgQFreeAll (OS_MSG_Q  *p_msg_q)
+OS_MsgQFreeAll:
+        CODE
+//  129 {
+        REQUIRE ?V0
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+//  130     OS_MSG      *p_msg;
+//  131     OS_MSG_QTY   qty;
+//  132 
+//  133 
+//  134 
+//  135     qty = p_msg_q->NbrEntries;                              /* Get the number of OS_MSGs being freed                  */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+//  136     if (p_msg_q->NbrEntries > (OS_MSG_QTY)0) {
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     A,R4
+        ORL     A,R5
+        JNZ     $+5
+        LJMP    ??OS_MsgQFreeAll_0
+//  137         p_msg                   = p_msg_q->InPtr;           /* Point to end of message chain                          */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  138         p_msg->NextPtr          = OSMsgPool.NextPtr;
+        MOV     DPTR,#OSMsgPool
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  139         OSMsgPool.NextPtr       = p_msg_q->OutPtr;          /* Point to beginning of message chain                    */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     DPTR,#OSMsgPool
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  140         OSMsgPool.NbrUsed      -= p_msg_q->NbrEntries;      /* Update statistics for free list of messages            */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     DPTR,#OSMsgPool + 4
+        CLR     C
+        MOVX    A,@DPTR
+        SUBB    A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        SUBB    A,R5
+        MOVX    @DPTR,A
+//  141         OSMsgPool.NbrFree      += p_msg_q->NbrEntries;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     DPTR,#OSMsgPool + 2
+        MOVX    A,@DPTR
+        ADD     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,R5
+        MOVX    @DPTR,A
+//  142         p_msg_q->NbrEntries     = (OS_MSG_QTY)0;            /* Flush the message queue                                */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  143         p_msg_q->NbrEntriesMax  = (OS_MSG_QTY)0;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  144         p_msg_q->InPtr          = (OS_MSG   *)0;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  145         p_msg_q->OutPtr         = (OS_MSG   *)0;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  146     }
+//  147     return (qty);
+??OS_MsgQFreeAll_0:
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+//  148 }
+//  149 
+//  150 /*$PAGE*/
+//  151 /*
+//  152 ************************************************************************************************************************
+//  153 *                                               INITIALIZE A MESSAGE QUEUE
+//  154 *
+//  155 * Description: This function is called to initialize a message queue
+//  156 *
+//  157 * Arguments  : p_msg_q      is a pointer to the message queue to initialize
+//  158 *              -------
+//  159 *
+//  160 *              max          is the maximum number of entries that a message queue can have.
+//  161 *
+//  162 * Returns    : none
+//  163 *
+//  164 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  165 ************************************************************************************************************************
+//  166 */
+//  167 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  168 void  OS_MsgQInit (OS_MSG_Q    *p_msg_q,
+OS_MsgQInit:
+        CODE
+//  169                    OS_MSG_QTY   size)
+//  170 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  171     p_msg_q->NbrEntriesSize = (OS_MSG_QTY)size;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  172     p_msg_q->NbrEntries     = (OS_MSG_QTY)0;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  173     p_msg_q->NbrEntriesMax  = (OS_MSG_QTY)0;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  174     p_msg_q->InPtr          = (OS_MSG   *)0;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  175     p_msg_q->OutPtr         = (OS_MSG   *)0;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  176 }
+        POP     DPH
+        POP     DPL
+        RET
+//  177 
+//  178 /*$PAGE*/
+//  179 /*
+//  180 ************************************************************************************************************************
+//  181 *                                           RETRIEVE MESSAGE FROM MESSAGE QUEUE
+//  182 *
+//  183 * Description: This function retrieves a message from a message queue
+//  184 *
+//  185 * Arguments  : p_msg_q     is a pointer to the message queue where we want to extract the message from
+//  186 *              -------
+//  187 *
+//  188 *              p_msg_size  is a pointer to where the size (in bytes) of the message will be placed
+//  189 *
+//  190 *              p_ts        is a pointer to where the time stamp will be placed
+//  191 *
+//  192 *              p_err       is a pointer to an error code that will be returned from this call.
+//  193 *
+//  194 *                              OS_ERR_Q_EMPTY
+//  195 *                              OS_ERR_NONE
+//  196 *
+//  197 * Returns    : The message (a pointer)
+//  198 *
+//  199 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  200 ************************************************************************************************************************
+//  201 */
+//  202 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  203 void  *OS_MsgQGet (OS_MSG_Q     *p_msg_q,
+OS_MsgQGet:
+        CODE
+//  204                    OS_MSG_SIZE  *p_msg_size,
+//  205                    CPU_TS       *p_ts,
+//  206                    OS_ERR       *p_err)
+//  207 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        MOV     A,#-0xe
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 14
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     A,R4
+        MOV     R0,A
+        MOV     A,R5
+        MOV     R1,A
+        MOV     A,#0xe
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     A,#0x10
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V5,A
+//  208     OS_MSG  *p_msg;
+//  209     void    *p_void;
+//  210 
+//  211 
+//  212 
+//  213 #ifdef OS_SAFETY_CRITICAL
+//  214     if (p_err == (OS_ERR *)0) {
+//  215         OS_SAFETY_CRITICAL_EXCEPTION();
+//  216         return ((void *)0);
+//  217     }
+//  218 #endif
+//  219 
+//  220     if (p_msg_q->NbrEntries == (OS_MSG_QTY)0) {             /* Is the queue empty?                                    */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        MOV     A,R2
+        ORL     A,R3
+        JNZ     ??OS_MsgQGet_0
+//  221        *p_msg_size = (OS_MSG_SIZE)0;                        /* Yes                                                    */
+        MOV     DPL,R0
+        MOV     DPH,R1
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  222         if (p_ts != (CPU_TS *)0) {
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OS_MsgQGet_1
+//  223            *p_ts  = (CPU_TS  )0;
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     R7,A
+        MOV     A,R0
+        MOV     R4,A
+        MOV     A,R1
+        MOV     R5,A
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        XCH     A,R7
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  224         }
+//  225        *p_err = OS_ERR_Q_EMPTY;
+??OS_MsgQGet_1:
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#-0x6e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x65
+        MOVX    @DPTR,A
+//  226         return ((void *)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OS_MsgQGet_2
+//  227     }
+//  228 
+//  229     p_msg           = p_msg_q->OutPtr;                      /* No, get the next message to extract from the queue     */
+??OS_MsgQGet_0:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  230     p_void          = p_msg->MsgPtr;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V3,A
+//  231    *p_msg_size      = p_msg->MsgSize;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        MOV     DPL,R0
+        MOV     DPH,R1
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//  232     if (p_ts != (CPU_TS *)0) {
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OS_MsgQGet_3
+//  233        *p_ts  = p_msg->MsgTS;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        LCALL   ?XSTORE_R0123
+//  234     }
+//  235 
+//  236     p_msg_q->OutPtr = p_msg->NextPtr;                       /* Point to next message to extract                       */
+??OS_MsgQGet_3:
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  237 
+//  238     if (p_msg_q->OutPtr == (OS_MSG *)0) {                   /* Are there any more messages in the queue?              */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_MsgQGet_4
+//  239         p_msg_q->InPtr      = (OS_MSG   *)0;                /* No                                                     */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  240         p_msg_q->NbrEntries = (OS_MSG_QTY)0;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_MsgQGet_5
+//  241     } else {
+//  242         p_msg_q->NbrEntries--;                              /* Yes, One less message in the queue                     */
+??OS_MsgQGet_4:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  243     }
+//  244 
+//  245     p_msg->NextPtr    = OSMsgPool.NextPtr;                  /* Return message control block to free list              */
+??OS_MsgQGet_5:
+        MOV     DPTR,#OSMsgPool
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  246     OSMsgPool.NextPtr = p_msg;
+        MOV     DPTR,#OSMsgPool
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  247     OSMsgPool.NbrFree++;
+        MOV     DPTR,#OSMsgPool + 2
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  248     OSMsgPool.NbrUsed--;
+        MOV     DPTR,#OSMsgPool + 4
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  249 
+//  250    *p_err             = OS_ERR_NONE;
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  251     return (p_void);
+        MOV     R2,?V2
+        MOV     R3,?V3
+??OS_MsgQGet_2:
+        MOV     R7,#0x7
+        LJMP    ?FUNC_LEAVE_XDATA
+//  252 }
+//  253 
+//  254 /*$PAGE*/
+//  255 /*
+//  256 ************************************************************************************************************************
+//  257 *                                           DEPOSIT MESSAGE IN MESSAGE QUEUE
+//  258 *
+//  259 * Description: This function places a message in a message queue
+//  260 *
+//  261 * Arguments  : p_msg_q     is a pointer to the OS_TCB of the task to post the message to
+//  262 *              -------
+//  263 *
+//  264 *              p_void      is a pointer to the message to send.
+//  265 *
+//  266 *              msg_size    is the size of the message (in bytes)
+//  267 *
+//  268 *              opt         specifies whether the message will be posted in FIFO or LIFO order
+//  269 *
+//  270 *                              OS_OPT_POST_FIFO
+//  271 *                              OS_OPT_POST_LIFO
+//  272 *
+//  273 *              ts          is a timestamp as to when the message was posted
+//  274 *
+//  275 *              p_err       is a pointer to a variable that will contain an error code returned by this function.
+//  276 *
+//  277 *                              OS_ERR_Q_MAX           if the queue is full
+//  278 *                              OS_ERR_MSG_POOL_EMPTY  if we no longer have any OS_MSG to use
+//  279 *                              OS_ERR_NONE            the message was deposited in the queue
+//  280 *
+//  281 * Returns    : none
+//  282 *
+//  283 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  284 ************************************************************************************************************************
+//  285 */
+//  286 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  287 void  OS_MsgQPut (OS_MSG_Q     *p_msg_q,
+OS_MsgQPut:
+        CODE
+//  288                   void         *p_void,
+//  289                   OS_MSG_SIZE   msg_size,
+//  290                   OS_OPT        opt,
+//  291                   CPU_TS        ts,
+//  292                   OS_ERR       *p_err)
+//  293 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        MOV     A,#-0xa
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 10
+        ; Auto size: 0
+        MOV     A,R4
+        MOV     R0,A
+        MOV     A,R5
+        MOV     R1,A
+        MOV     A,#0x12
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+//  294     OS_MSG  *p_msg;
+//  295     OS_MSG  *p_msg_in;
+//  296 
+//  297 
+//  298 
+//  299 #ifdef OS_SAFETY_CRITICAL
+//  300     if (p_err == (OS_ERR *)0) {
+//  301         OS_SAFETY_CRITICAL_EXCEPTION();
+//  302         return;
+//  303     }
+//  304 #endif
+//  305 
+//  306     if (p_msg_q->NbrEntries >= p_msg_q->NbrEntriesSize) {
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        PUSH    DPL
+        PUSH    DPH
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        POP     DPH
+        POP     DPL
+        CLR     C
+        MOVX    A,@DPTR
+        SUBB    A,R4
+        INC     DPTR
+        MOVX    A,@DPTR
+        SUBB    A,R5
+        JC      ??OS_MsgQPut_0
+//  307        *p_err = OS_ERR_Q_MAX;                               /* Message queue cannot accept any more messages          */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x6d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x65
+        MOVX    @DPTR,A
+//  308         return;
+        LJMP    ??OS_MsgQPut_1
+//  309     }
+//  310 
+//  311     if (OSMsgPool.NbrFree == (OS_MSG_QTY)0) {
+??OS_MsgQPut_0:
+        MOV     DPTR,#OSMsgPool + 2
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     A,R4
+        ORL     A,R5
+        JNZ     ??OS_MsgQPut_2
+//  312        *p_err = OS_ERR_MSG_POOL_EMPTY;                      /* No more OS_MSG to use                                  */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x1d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x57
+        MOVX    @DPTR,A
+//  313         return;
+        LJMP    ??OS_MsgQPut_1
+//  314     }
+//  315 
+//  316     p_msg             = OSMsgPool.NextPtr;                  /* Remove message control block from free list            */
+??OS_MsgQPut_2:
+        MOV     DPTR,#OSMsgPool
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  317     OSMsgPool.NextPtr = p_msg->NextPtr;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     DPTR,#OSMsgPool
+        MOV     A,?V0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V1
+        MOVX    @DPTR,A
+//  318     OSMsgPool.NbrFree--;
+        MOV     DPTR,#OSMsgPool + 2
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  319     OSMsgPool.NbrUsed++;
+        MOV     DPTR,#OSMsgPool + 4
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  320     if (OSMsgPool.NbrUsedMax < OSMsgPool.NbrUsed) {
+        MOV     DPTR,#OSMsgPool + 6
+        PUSH    DPL
+        PUSH    DPH
+        MOV     DPTR,#OSMsgPool + 4
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        POP     DPH
+        POP     DPL
+        CLR     C
+        MOVX    A,@DPTR
+        SUBB    A,?V0
+        INC     DPTR
+        MOVX    A,@DPTR
+        SUBB    A,?V1
+        JNC     ??OS_MsgQPut_3
+//  321         OSMsgPool.NbrUsedMax = OSMsgPool.NbrUsed;
+        MOV     DPTR,#OSMsgPool + 4
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     DPTR,#OSMsgPool + 6
+        MOV     A,?V0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V1
+        MOVX    @DPTR,A
+//  322     }
+//  323 
+//  324     if (p_msg_q->NbrEntries == (OS_MSG_QTY)0) {             /* Is this first message placed in the queue?             */
+??OS_MsgQPut_3:
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     A,?V0
+        ORL     A,?V1
+        JNZ     ??OS_MsgQPut_4
+//  325         p_msg_q->InPtr         = p_msg;                     /* Yes                                                    */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  326         p_msg_q->OutPtr        = p_msg;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  327         p_msg_q->NbrEntries    = (OS_MSG_QTY)1;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  328         p_msg->NextPtr         = (OS_MSG *)0;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_MsgQPut_5
+//  329     } else {                                                /* No                                                     */
+//  330         if ((opt & OS_OPT_POST_LIFO) == OS_OPT_POST_FIFO) { /* Is it FIFO or LIFO?                                    */
+??OS_MsgQPut_4:
+        MOV     A,#0xc
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     A,?V0
+        ANL     A,#0x10
+        JNZ     ??OS_MsgQPut_6
+//  331             p_msg_in           = p_msg_q->InPtr;            /* FIFO, add to the head                                  */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+//  332             p_msg_in->NextPtr  = p_msg;
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  333             p_msg_q->InPtr     = p_msg;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  334             p_msg->NextPtr     = (OS_MSG *)0;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_MsgQPut_7
+//  335         } else {
+//  336             p_msg->NextPtr     = p_msg_q->OutPtr;           /* LIFO, add to the tail                                  */
+??OS_MsgQPut_6:
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOV     A,?V0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V1
+        MOVX    @DPTR,A
+//  337             p_msg_q->OutPtr    = p_msg;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  338         }
+//  339         p_msg_q->NbrEntries++;
+??OS_MsgQPut_7:
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  340     }
+//  341     if (p_msg_q->NbrEntriesMax < p_msg_q->NbrEntries) {
+??OS_MsgQPut_5:
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        PUSH    DPL
+        PUSH    DPH
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        POP     DPH
+        POP     DPL
+        CLR     C
+        MOVX    A,@DPTR
+        SUBB    A,?V0
+        INC     DPTR
+        MOVX    A,@DPTR
+        SUBB    A,?V1
+        JNC     ??OS_MsgQPut_8
+//  342         p_msg_q->NbrEntriesMax = p_msg_q->NbrEntries;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,?V0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V1
+        MOVX    @DPTR,A
+//  343     }
+//  344     p_msg->MsgPtr  = p_void;                                /* Deposit message in the message queue entry             */
+??OS_MsgQPut_8:
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  345     p_msg->MsgSize = msg_size;
+        MOV     A,#0xa
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  346     p_msg->MsgTS   = ts;
+        MOV     A,#0xe
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        LCALL   ?XSTORE_R0123
+//  347    *p_err          = OS_ERR_NONE;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  348 }
+??OS_MsgQPut_1:
+        MOV     R7,#0x3
+        LJMP    ?FUNC_LEAVE_XDATA
+
+        END
+//  349 #endif
+// 
+// 1 573 bytes in segment NEAR_CODE
+// 
+// 1 573 bytes of CODE memory
+//
+//Errors: none
+//Warnings: none

@@ -1,0 +1,2681 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:06
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_tick.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_tick.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_tick.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_tick
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?L_ADD_TO_X
+        EXTERN ?L_ADD_X
+        EXTERN ?L_EQ_X
+        EXTERN ?L_MOV_TO_X
+        EXTERN ?L_MOV_X
+        EXTERN ?L_NEG
+        EXTERN ?L_SUB_X
+        EXTERN ?PUSH_XSTACK8_X_FOUR
+        EXTERN ?PUSH_XSTACK8_X_TWO
+        EXTERN ?PUSH_XSTACK_I_TWO
+        EXTERN ?UL_DIV_MOD
+        EXTERN ?UL_GE_X
+        EXTERN ?UL_GT
+        EXTERN ?UL_GT_X
+        EXTERN ?XLOAD_R0123
+        EXTERN ?XLOAD_R2345
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN ?XSTACK_DISP100_8
+        EXTERN ?XSTORE_R0123
+        EXTERN __INIT_XDATA_I
+
+        PUBLIC OS_TickListInit
+        PUBLIC OS_TickListInsert
+        PUBLIC OS_TickListRemove
+        PUBLIC OS_TickListResetPeak
+        PUBLIC OS_TickListUpdate
+        PUBLIC OS_TickTask
+        PUBLIC OS_TickTaskInit
+        PUBWEAK _A_P1
+        PUBWEAK __Constant_0
+        PUBWEAK __Constant_1
+        PUBWEAK __Constant_ffff0001
+        PUBWEAK __Constant_ffffffff
+
+        EXTERN CPU_SR_Restore
+        EXTERN CPU_SR_Save
+        EXTERN OSCfg_StkSizeMin
+        EXTERN OSCfg_TickTaskPrio
+        EXTERN OSCfg_TickTaskStkBasePtr
+        EXTERN OSCfg_TickTaskStkLimit
+        EXTERN OSCfg_TickTaskStkSize
+        EXTERN OSCfg_TickWheel
+        EXTERN OSCfg_TickWheelSize
+        EXTERN OSRunning
+        EXTERN OSTaskCreate
+        EXTERN OSTaskSemPend
+        EXTERN OSTickCtr
+        EXTERN OSTickTaskTCB
+        EXTERN OSTickTaskTimeMax
+        EXTERN OS_PendListRemove
+        EXTERN OS_TaskRdy
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_tick.c
+//    1 /*
+//    2 ***********************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                                   TICK MANAGEMENT
+//   10 *
+//   11 * File    : OS_TICK.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define  MICRIUM_SOURCE
+//   34 #include <os.h>
+
+        ASEGN SFR_AN:DATA:NOROOT,090H
+// union <unnamed> volatile __sfr _A_P1
+_A_P1:
+        DATA8
+        DS 1
+//   35 
+//   36 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   37 const  CPU_CHAR  *os_tick__c = "$Id: $";
+//   38 #endif
+//   39 
+//   40 /*
+//   41 ************************************************************************************************************************
+//   42 *                                                  LOCAL PROTOTYPES
+//   43 ************************************************************************************************************************
+//   44 */
+//   45 
+//   46 
+//   47 /*
+//   48 ************************************************************************************************************************
+//   49 *                                                      TICK TASK
+//   50 *
+//   51 * Description: This task is internal to uC/OS-III and is triggered by the tick interrupt.
+//   52 *
+//   53 * Arguments  : p_arg     is an argument passed to the task when the task is created (unused).
+//   54 *
+//   55 * Returns    : none
+//   56 *
+//   57 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+//   58 ************************************************************************************************************************
+//   59 */
+//   60 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   61 void  OS_TickTask (void  *p_arg)
+OS_TickTask:
+        CODE
+//   62 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        MOV     A,#-0xb
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 11
+        ; Auto size: 6
+        MOV     A,#-0x6
+        LCALL   ?ALLOC_XSTACK8
+//   63     OS_ERR  err;
+//   64     CPU_TS  ts;
+//   65 
+//   66 
+//   67     p_arg = p_arg;                                          /* Prevent compiler warning                               */
+//   68 
+//   69     while (DEF_ON) {
+//   70         P1_3 = ~P1_3;
+??OS_TickTask_0:
+        MOV     C,0x90.3
+        CLR     A
+        RLC     A
+        CPL     A
+        MOV     R6,A
+        SETB    B.0
+        MOV     C,0x90.3
+        JNB     B.0,??OS_TickTask_1
+        CPL     C
+??OS_TickTask_1:
+        MOV     0x90.3,C
+//   71         (void)OSTaskSemPend((OS_TICK  )0,
+//   72                             (OS_OPT   )OS_OPT_PEND_BLOCKING,
+//   73                             (CPU_TS  *)&ts,
+//   74                             (OS_ERR  *)&err);               /* Wait for signal from tick interrupt                    */
+        ; Setup parameters for call to function OSTaskSemPend
+        MOV     R0,?XSP + 0
+        MOV     R1,?XSP + 1
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP100_8
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     DPTR,#__Constant_0
+        LCALL   ?XLOAD_R2345
+        LCALL   OSTaskSemPend
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     ?V2,R4
+        MOV     ?V3,R5
+//   75          if (err == OS_ERR_NONE) {
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_TickTask_0
+//   76             if (OSRunning == OS_STATE_OS_RUNNING) {
+        MOV     DPTR,#OSRunning
+        MOVX    A,@DPTR
+        XRL     A,#0x1
+        JNZ     ??OS_TickTask_0
+//   77                 OS_TickListUpdate();                        /* Update all tasks waiting for time                      */
+        ; Setup parameters for call to function OS_TickListUpdate
+        LCALL   OS_TickListUpdate
+        SJMP    ??OS_TickTask_0
+        REQUIRE _A_P1
+//   78             }
+//   79         }
+//   80     }
+//   81 }
+//   82 
+//   83 /*$PAGE*/
+//   84 /*
+//   85 ************************************************************************************************************************
+//   86 *                                                 INITIALIZE TICK TASK
+//   87 *
+//   88 * Description: This function is called by OSInit() to create the tick task.
+//   89 *
+//   90 * Arguments  : p_err   is a pointer to a variable that will hold the value of an error code:
+//   91 *
+//   92 *                          OS_ERR_TICK_STK_INVALID   if the pointer to the tick task stack is a NULL pointer
+//   93 *                          OS_ERR_TICK_STK_SIZE      indicates that the specified stack size
+//   94 *                          OS_ERR_PRIO_INVALID       if the priority you specified in the configuration is invalid
+//   95 *                                                      (There could be only one task at the Idle Task priority)
+//   96 *                                                      (Maybe the priority you specified is higher than OS_CFG_PRIO_MAX-1
+//   97 *                          OS_ERR_??                 other error code returned by OSTaskCreate()
+//   98 *
+//   99 * Returns    : none
+//  100 *
+//  101 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  102 ************************************************************************************************************************
+//  103 */
+//  104 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  105 void  OS_TickTaskInit (OS_ERR  *p_err)
+OS_TickTaskInit:
+        CODE
+//  106 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 0
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+//  107 #ifdef OS_SAFETY_CRITICAL
+//  108     if (p_err == (OS_ERR *)0) {
+//  109         OS_SAFETY_CRITICAL_EXCEPTION();
+//  110         return;
+//  111     }
+//  112 #endif
+//  113 
+//  114     OSTickCtr         = (OS_TICK)0u;                        /* Clear the tick counter                                 */
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     DPTR,#OSTickCtr
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  115 
+//  116     OSTickTaskTimeMax = (CPU_TS)0u;
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     DPTR,#OSTickTaskTimeMax
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  117 
+//  118 
+//  119     OS_TickListInit();                                      /* Initialize the tick list data structures               */
+        ; Setup parameters for call to function OS_TickListInit
+        LCALL   OS_TickListInit
+//  120 
+//  121                                                             /* ---------------- CREATE THE TICK TASK ---------------- */
+//  122     if (OSCfg_TickTaskStkBasePtr == (CPU_STK *)0) {
+        MOV     DPTR,#OSCfg_TickTaskStkBasePtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_TickTaskInit_0
+//  123        *p_err = OS_ERR_TICK_STK_INVALID;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     A,#0x12
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  124         return;
+        LJMP    ??OS_TickTaskInit_1
+//  125     }
+//  126 
+//  127     if (OSCfg_TickTaskStkSize < OSCfg_StkSizeMin) {
+??OS_TickTaskInit_0:
+        MOV     DPTR,#OSCfg_TickTaskStkSize
+        PUSH    DPL
+        PUSH    DPH
+        MOV     DPTR,#OSCfg_StkSizeMin
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        POP     DPH
+        POP     DPL
+        CLR     C
+        MOVX    A,@DPTR
+        SUBB    A,R0
+        INC     DPTR
+        MOVX    A,@DPTR
+        SUBB    A,R1
+        JNC     ??OS_TickTaskInit_2
+//  128        *p_err = OS_ERR_TICK_STK_SIZE_INVALID;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     A,#0x13
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  129         return;
+        SJMP    ??OS_TickTaskInit_1
+//  130     }
+//  131 
+//  132     if (OSCfg_TickTaskPrio >= (OS_CFG_PRIO_MAX - 1u)) {     /* Only one task at the 'Idle Task' priority              */
+??OS_TickTaskInit_2:
+        MOV     DPTR,#OSCfg_TickTaskPrio
+        MOVX    A,@DPTR
+        CLR     C
+        SUBB    A,#0x1f
+        JC      ??OS_TickTaskInit_3
+//  133        *p_err = OS_ERR_TICK_PRIO_INVALID;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     A,#0x11
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  134         return;
+        SJMP    ??OS_TickTaskInit_1
+//  135     }
+//  136 
+//  137     OSTaskCreate((OS_TCB     *)&OSTickTaskTCB,
+//  138                  (CPU_CHAR   *)((void *)"uC/OS-III Tick Task"),
+//  139                  (OS_TASK_PTR )OS_TickTask,
+//  140                  (void       *)0,
+//  141                  (OS_PRIO     )OSCfg_TickTaskPrio,
+//  142                  (CPU_STK    *)OSCfg_TickTaskStkBasePtr,
+//  143                  (CPU_STK_SIZE)OSCfg_TickTaskStkLimit,
+//  144                  (CPU_STK_SIZE)OSCfg_TickTaskStkSize,
+//  145                  (OS_MSG_QTY  )0u,
+//  146                  (OS_TICK     )0u,
+//  147                  (void       *)0,
+//  148                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR | OS_OPT_TASK_NO_TLS),
+//  149                  (OS_ERR     *)p_err);
+??OS_TickTaskInit_3:
+        ; Setup parameters for call to function OSTaskCreate
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#0xb
+        MOV     ?V1,#0x0
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     DPTR,#__Constant_0
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     DPTR,#OSCfg_TickTaskStkSize
+        LCALL   ?PUSH_XSTACK8_X_TWO
+        MOV     DPTR,#OSCfg_TickTaskStkLimit
+        LCALL   ?PUSH_XSTACK8_X_TWO
+        MOV     DPTR,#OSCfg_TickTaskStkBasePtr
+        LCALL   ?PUSH_XSTACK8_X_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     ?V0,#OS_TickTask & 0xff
+        MOV     ?V1,#(OS_TickTask >> 8) & 0xff
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     DPTR,#OSCfg_TickTaskPrio
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     R4,#`?<Constant "uC/OS-III Tick Task">` & 0xff
+        MOV     R5,#(`?<Constant "uC/OS-III Tick Task">` >> 8) & 0xff
+        MOV     R2,#OSTickTaskTCB & 0xff
+        MOV     R3,#(OSTickTaskTCB >> 8) & 0xff
+        LCALL   OSTaskCreate
+        MOV     A,#0x16
+        LCALL   ?DEALLOC_XSTACK8
+//  150 }
+??OS_TickTaskInit_1:
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+//  151 
+//  152 /*$PAGE*/
+//  153 /*
+//  154 ************************************************************************************************************************
+//  155 *                                               INITIALIZE THE TICK LIST
+//  156 *
+//  157 * Description: This function initializes the tick handling data structures of uC/OS-III.
+//  158 *
+//  159 * Arguments  : none
+//  160 *
+//  161 * Returns    : None
+//  162 *
+//  163 * Note(s)    : This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  164 ************************************************************************************************************************
+//  165 */
+//  166 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  167 void  OS_TickListInit (void)
+OS_TickListInit:
+        CODE
+//  168 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  169     OS_TICK_SPOKE_IX   i;
+//  170     OS_TICK_SPOKE     *p_spoke;
+//  171 
+//  172 
+//  173 
+//  174     for (i = 0u; i < OSCfg_TickWheelSize; i++) {
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        SJMP    ??OS_TickListInit_0
+//  175         p_spoke                = (OS_TICK_SPOKE *)&OSCfg_TickWheel[i];
+??OS_TickListInit_1:
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+        MOV     A,R2
+        MOV     B,#0x6
+        MUL     AB
+        XCH     A,R2
+        MOV     R4,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R4
+        MOV     R4,A
+        MOV     B,#0x6
+        MOV     A,R3
+        MUL     AB
+        ADD     A,R4
+        MOV     R3,A
+        MOV     A,#OSCfg_TickWheel & 0xff
+        ADD     A,R2
+        MOV     R2,A
+        MOV     A,#(OSCfg_TickWheel >> 8) & 0xff
+        ADDC    A,R3
+        MOV     R3,A
+//  176         p_spoke->FirstPtr      = (OS_TCB        *)0;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  177         p_spoke->NbrEntries    = (OS_OBJ_QTY     )0u;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  178         p_spoke->NbrEntriesMax = (OS_OBJ_QTY     )0u;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  179     }
+        INC     R0
+        MOV     A,R0
+        JNZ     ??OS_TickListInit_0
+        INC     R1
+??OS_TickListInit_0:
+        MOV     DPTR,#OSCfg_TickWheelSize
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        CLR     C
+        MOV     A,R0
+        SUBB    A,R2
+        MOV     A,R1
+        SUBB    A,R3
+        JC      ??OS_TickListInit_1
+//  180 }
+        POP     DPH
+        POP     DPL
+        RET
+//  181 
+//  182 /*$PAGE*/
+//  183 /*
+//  184 ************************************************************************************************************************
+//  185 *                                                ADD TASK TO TICK LIST
+//  186 *
+//  187 * Description: This function is called to place a task in a list of task waiting for either time to expire or waiting to
+//  188 *              timeout on a pend call.
+//  189 *
+//  190 * Arguments  : p_tcb          is a pointer to the OS_TCB of the task to add to the tick list
+//  191 *              -----
+//  192 *
+//  193 *              time           represents either the 'match' value of OSTickCtr or a relative time from the current
+//  194 *                             value of OSTickCtr as specified by the 'opt' argument..
+//  195 *
+//  196 *                             relative when 'opt' is set to OS_OPT_TIME_DLY
+//  197 *                             relative when 'opt' is set to OS_OPT_TIME_TIMEOUT
+//  198 *                             match    when 'opt' is set to OS_OPT_TIME_MATCH
+//  199 *                             periodic when 'opt' is set to OS_OPT_TIME_PERIODIC
+//  200 *
+//  201 *              opt            is an option specifying how to calculate time.  The valid values are:
+//  202 *              ---
+//  203 *                                 OS_OPT_TIME_DLY
+//  204 *                                 OS_OPT_TIME_TIMEOUT
+//  205 *                                 OS_OPT_TIME_PERIODIC
+//  206 *                                 OS_OPT_TIME_MATCH
+//  207 *
+//  208 *              p_err          is a pointer to a variable that will contain an error code returned by this function.
+//  209 *              -----
+//  210 *                                 OS_ERR_NONE           the call was successful and the time delay was scheduled.
+//  211 *                                 OS_ERR_TIME_ZERO_DLY  if delay is zero or already occurred.
+//  212 *
+//  213 * Returns    : None
+//  214 *
+//  215 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  216 *
+//  217 *              2) This function is assumed to be called with interrupts disabled.
+//  218 ************************************************************************************************************************
+//  219 */
+//  220 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  221 void  OS_TickListInsert (OS_TCB   *p_tcb,
+OS_TickListInsert:
+        CODE
+//  222                          OS_TICK   time,
+//  223                          OS_OPT    opt,
+//  224                          OS_ERR   *p_err)
+//  225 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 4
+        MOV     A,#-0x4
+        LCALL   ?ALLOC_XSTACK8
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     A,#0x13
+        LCALL   ?XSTACK_DISP0_8
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+//  226     OS_TICK            tick_delta;
+//  227     OS_TICK            tick_next;
+//  228     OS_TICK_SPOKE     *p_spoke;
+//  229     OS_TCB            *p_tcb0;
+//  230     OS_TCB            *p_tcb1;
+//  231     OS_TICK_SPOKE_IX   spoke;
+//  232 
+//  233 
+//  234 
+//  235     if (opt == OS_OPT_TIME_MATCH) {                              /* Task time is absolute.                            */
+        MOV     A,#0x4
+        XRL     A,R4
+        JNZ     ??OS_TickListInsert_0
+        MOV     A,#0x0
+        XRL     A,R5
+??OS_TickListInsert_0:
+        JZ      $+5
+        LJMP    ??OS_TickListInsert_1
+//  236         tick_delta = time - OSTickCtr - 1u;
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        MOV     ?V2,?V6
+        MOV     ?V3,?V7
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_SUB_X
+        MOV     DPTR,#__Constant_ffffffff
+        MOV     R0,#?V0
+        LCALL   ?L_ADD_X
+//  237         if (tick_delta > OS_TICK_TH_RDY) {                       /* If delay already occurred, ...                    */
+        MOV     DPTR,#__Constant_ffff0001
+        MOV     R0,#?V0
+        LCALL   ?UL_GE_X
+        JNC     ??OS_TickListInsert_2
+//  238             p_tcb->TickCtrMatch = (OS_TICK        )0u;
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  239             p_tcb->TickRemain   = (OS_TICK        )0u;
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  240             p_tcb->TickSpokePtr = (OS_TICK_SPOKE *)0;
+        MOV     A,R6
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  241            *p_err               =  OS_ERR_TIME_ZERO_DLY;         /* ... do NOT delay.                                 */
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x7e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  242             return;
+        LJMP    ??OS_TickListInsert_3
+//  243         }
+//  244         p_tcb->TickCtrMatch = time;
+??OS_TickListInsert_2:
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_TO_X
+//  245         p_tcb->TickRemain   = tick_delta + 1u;
+        MOV     DPTR,#__Constant_1
+        MOV     R0,#?V0
+        LCALL   ?L_ADD_X
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+//  246 
+//  247     } else if (time > (OS_TICK)0u) {
+//  248         if (opt == OS_OPT_TIME_PERIODIC) {                       /* Task time is periodic.                            */
+//  249             tick_next  = p_tcb->TickCtrPrev + time;
+//  250             tick_delta = tick_next - OSTickCtr - 1u;
+//  251             if (tick_delta < time) {                             /* If next periodic delay did NOT already occur, ... */
+//  252                 p_tcb->TickCtrMatch = tick_next;                 /* ... set  next  periodic delay;                ... */
+//  253             } else {
+//  254                 p_tcb->TickCtrMatch = OSTickCtr + time;          /* ... else reset periodic delay.                    */
+//  255             }
+//  256             p_tcb->TickRemain   = p_tcb->TickCtrMatch - OSTickCtr;
+//  257             p_tcb->TickCtrPrev  = p_tcb->TickCtrMatch;
+//  258 
+//  259         } else {                                                 /* Task time is relative to current.                 */
+//  260             p_tcb->TickCtrMatch = OSTickCtr + time;
+//  261             p_tcb->TickRemain   = time;
+//  262         }
+//  263 
+//  264     } else {                                                     /* Zero time delay; ...                              */
+//  265         p_tcb->TickCtrMatch = (OS_TICK        )0u;
+//  266         p_tcb->TickRemain   = (OS_TICK        )0u;
+//  267         p_tcb->TickSpokePtr = (OS_TICK_SPOKE *)0;
+//  268        *p_err               =  OS_ERR_TIME_ZERO_DLY;             /* ... do NOT delay.                                 */
+//  269         return;
+//  270     }
+//  271 
+//  272 
+//  273     spoke   = (OS_TICK_SPOKE_IX)(p_tcb->TickCtrMatch % OSCfg_TickWheelSize);
+??OS_TickListInsert_4:
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSCfg_TickWheelSize
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        CLR     A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?UL_DIV_MOD
+        MOV     R0,?V0
+        MOV     R1,?V1
+//  274     p_spoke = &OSCfg_TickWheel[spoke];
+        MOV     A,R0
+        MOV     B,#0x6
+        MUL     AB
+        XCH     A,R0
+        MOV     R2,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R2
+        MOV     R2,A
+        MOV     B,#0x6
+        MOV     A,R1
+        MUL     AB
+        ADD     A,R2
+        MOV     R1,A
+        MOV     A,#OSCfg_TickWheel & 0xff
+        ADD     A,R0
+        MOV     R4,A
+        MOV     A,#(OSCfg_TickWheel >> 8) & 0xff
+        ADDC    A,R1
+        MOV     R5,A
+//  275 
+//  276     if (p_spoke->NbrEntries == (OS_OBJ_QTY)0u) {                 /* First entry in the spoke                          */
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      $+5
+        LJMP    ??OS_TickListInsert_5
+//  277         p_tcb->TickNextPtr   = (OS_TCB   *)0;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  278         p_tcb->TickPrevPtr   = (OS_TCB   *)0;
+        MOV     A,R6
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  279         p_spoke->FirstPtr    =  p_tcb;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  280         p_spoke->NbrEntries  = (OS_OBJ_QTY)1u;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        LJMP    ??OS_TickListInsert_6
+//  281     } else {
+??OS_TickListInsert_1:
+        MOV     A,?V4
+        ORL     A,?V5
+        ORL     A,?V6
+        ORL     A,?V7
+        JNZ     $+5
+        LJMP    ??OS_TickListInsert_7
+        MOV     A,#0x8
+        XRL     A,R4
+        JNZ     ??OS_TickListInsert_8
+        MOV     A,#0x0
+        XRL     A,R5
+??OS_TickListInsert_8:
+        JZ      $+5
+        LJMP    ??OS_TickListInsert_9
+        MOV     A,R6
+        ADD     A,#0x2c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        MOV     ?V2,?V6
+        MOV     ?V3,?V7
+        MOV     R0,#?V0
+        LCALL   ?L_ADD_X
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_SUB_X
+        MOV     DPTR,#__Constant_ffffffff
+        MOV     R0,#?V0
+        LCALL   ?L_ADD_X
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?UL_GT
+        JNC     ??OS_TickListInsert_10
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        LCALL   ?XLOAD_R0123
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+        SJMP    ??OS_TickListInsert_11
+??OS_TickListInsert_10:
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V4
+        LCALL   ?L_ADD_X
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_TO_X
+??OS_TickListInsert_11:
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_SUB_X
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,R6
+        ADD     A,#0x2c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+        LJMP    ??OS_TickListInsert_4
+??OS_TickListInsert_9:
+        MOV     DPTR,#OSTickCtr
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        MOV     ?V2,?V6
+        MOV     ?V3,?V7
+        MOV     R0,#?V0
+        LCALL   ?L_ADD_X
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_TO_X
+        LJMP    ??OS_TickListInsert_4
+??OS_TickListInsert_7:
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x7e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+        LJMP    ??OS_TickListInsert_3
+//  282         p_tcb1     = p_spoke->FirstPtr;                          /* Point to current first TCB in the list            */
+??OS_TickListInsert_5:
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        SJMP    ??OS_TickListInsert_12
+//  283         while (p_tcb1 != (OS_TCB *)0) {
+//  284             p_tcb1->TickRemain = p_tcb1->TickCtrMatch            /* Compute time remaining of current TCB in list     */
+//  285                                - OSTickCtr;
+//  286             if (p_tcb->TickRemain > p_tcb1->TickRemain) {        /* Do we need to insert AFTER current TCB in list?   */
+//  287                 if (p_tcb1->TickNextPtr != (OS_TCB *)0) {        /* Yes, are we pointing at the last TCB in the list? */
+//  288                     p_tcb1               =  p_tcb1->TickNextPtr; /* No,  Point to next TCB in the list                */
+//  289                 } else {
+//  290                     p_tcb->TickNextPtr   = (OS_TCB *)0;
+//  291                     p_tcb->TickPrevPtr   =  p_tcb1;
+//  292                     p_tcb1->TickNextPtr  =  p_tcb;               /* Yes, TCB to add is now new last entry in the list */
+//  293                     p_tcb1               = (OS_TCB *)0;          /* Break loop                                        */
+//  294                 }
+//  295             } else {                                             /* Insert before the current TCB                     */
+//  296                 if (p_tcb1->TickPrevPtr == (OS_TCB *)0) {        /* Are we inserting before the first TCB?            */
+//  297                     p_tcb->TickPrevPtr   = (OS_TCB *)0;
+//  298                     p_tcb->TickNextPtr   =  p_tcb1;
+//  299                     p_tcb1->TickPrevPtr  =  p_tcb;
+//  300                     p_spoke->FirstPtr    =  p_tcb;
+//  301                 } else {                                         /* Insert in between 2 TCBs already in the list      */
+//  302                     p_tcb0               =  p_tcb1->TickPrevPtr;
+??OS_TickListInsert_13:
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+//  303                     p_tcb->TickPrevPtr   =  p_tcb0;
+        MOV     A,R6
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  304                     p_tcb->TickNextPtr   =  p_tcb1;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//  305                     p_tcb0->TickNextPtr  =  p_tcb;
+        MOV     DPL,R0
+        MOV     DPH,R1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  306                     p_tcb1->TickPrevPtr  =  p_tcb;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  307                 }
+//  308                 p_tcb1 = (OS_TCB *)0;                            /* Break loop                                        */
+??OS_TickListInsert_14:
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+??OS_TickListInsert_12:
+        MOV     A,R2
+        ORL     A,R3
+        JNZ     $+5
+        LJMP    ??OS_TickListInsert_15
+        MOV     A,R2
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_SUB_X
+        MOV     A,R2
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,R2
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?UL_GT_X
+        JNC     ??OS_TickListInsert_16
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OS_TickListInsert_17
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        SJMP    ??OS_TickListInsert_12
+??OS_TickListInsert_17:
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OS_TickListInsert_12
+??OS_TickListInsert_16:
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      $+5
+        LJMP    ??OS_TickListInsert_13
+        MOV     A,R6
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+        MOV     DPL,R4
+        MOV     DPH,R5
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+        LJMP    ??OS_TickListInsert_14
+//  309             }
+//  310         }
+//  311         p_spoke->NbrEntries++;
+??OS_TickListInsert_15:
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  312     }
+//  313     if (p_spoke->NbrEntriesMax < p_spoke->NbrEntries) {          /* Keep track of maximum # of entries in each spoke  */
+??OS_TickListInsert_6:
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        PUSH    DPL
+        PUSH    DPH
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        POP     DPH
+        POP     DPL
+        CLR     C
+        MOVX    A,@DPTR
+        SUBB    A,R0
+        INC     DPTR
+        MOVX    A,@DPTR
+        SUBB    A,R1
+        JNC     ??OS_TickListInsert_18
+//  314         p_spoke->NbrEntriesMax = p_spoke->NbrEntries;
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R4
+        MOV     DPH,R5
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  315     }
+//  316     p_tcb->TickSpokePtr = p_spoke;                               /* Link back to tick spoke                           */
+??OS_TickListInsert_18:
+        MOV     A,R6
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  317    *p_err               = OS_ERR_NONE;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  318 }
+??OS_TickListInsert_3:
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  319 
+//  320 /*$PAGE*/
+//  321 /*
+//  322 ************************************************************************************************************************
+//  323 *                                         REMOVE A TASK FROM THE TICK LIST
+//  324 *
+//  325 * Description: This function is called to remove a task from the tick list
+//  326 *
+//  327 * Arguments  : p_tcb          Is a pointer to the OS_TCB to remove.
+//  328 *              -----
+//  329 *
+//  330 * Returns    : none
+//  331 *
+//  332 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  333 *
+//  334 *              2) This function is assumed to be called with interrupts disabled.
+//  335 ************************************************************************************************************************
+//  336 */
+//  337 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  338 void  OS_TickListRemove (OS_TCB  *p_tcb)
+OS_TickListRemove:
+        CODE
+//  339 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 0
+//  340     OS_TICK_SPOKE  *p_spoke;
+//  341     OS_TCB         *p_tcb1;
+//  342     OS_TCB         *p_tcb2;
+//  343 
+//  344 
+//  345 
+//  346     p_spoke = p_tcb->TickSpokePtr;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+//  347     if (p_spoke != (OS_TICK_SPOKE *)0) {                              /* Confirm that task is in tick list            */
+        MOV     A,?V0
+        ORL     A,?V1
+        JNZ     $+5
+        LJMP    ??OS_TickListRemove_0
+//  348         p_tcb->TickRemain = (OS_TICK)0u;
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     A,R2
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  349         if (p_spoke->FirstPtr == p_tcb) {                             /* Is timer to remove at the beginning of list? */
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R2
+        XRL     A,R0
+        JNZ     ??OS_TickListRemove_1
+        MOV     A,R3
+        XRL     A,R1
+??OS_TickListRemove_1:
+        JNZ     ??OS_TickListRemove_2
+//  350             p_tcb1            = (OS_TCB *)p_tcb->TickNextPtr;         /* Yes                                          */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+//  351             p_spoke->FirstPtr = p_tcb1;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  352             if (p_tcb1 != (OS_TCB *)0) {
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OS_TickListRemove_3
+//  353                 p_tcb1->TickPrevPtr = (OS_TCB *)0;
+        MOV     A,R0
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R1
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_TickListRemove_3
+//  354             }
+//  355         } else {
+//  356             p_tcb1              = p_tcb->TickPrevPtr;                 /* No, remove timer from somewhere in the list  */
+??OS_TickListRemove_2:
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+//  357             p_tcb2              = p_tcb->TickNextPtr;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  358             p_tcb1->TickNextPtr = p_tcb2;
+        MOV     DPL,R0
+        MOV     DPH,R1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  359             if (p_tcb2 != (OS_TCB *)0) {
+        MOV     A,R4
+        ORL     A,R5
+        JZ      ??OS_TickListRemove_3
+//  360                 p_tcb2->TickPrevPtr = p_tcb1;
+        MOV     A,R4
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  361             }
+//  362         }
+//  363         p_tcb->TickNextPtr  = (OS_TCB        *)0;
+??OS_TickListRemove_3:
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  364         p_tcb->TickPrevPtr  = (OS_TCB        *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  365         p_tcb->TickSpokePtr = (OS_TICK_SPOKE *)0;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  366         p_tcb->TickCtrMatch = (OS_TICK        )0u;
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     A,R2
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  367         p_spoke->NbrEntries--;
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  368     }
+//  369 }
+??OS_TickListRemove_0:
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+//  370 
+//  371 /*$PAGE*/
+//  372 /*
+//  373 ************************************************************************************************************************
+//  374 *                                              RESET TICK LIST PEAK DETECTOR
+//  375 *
+//  376 * Description: This function is used to reset the peak detector for the number of entries in each spoke.
+//  377 *
+//  378 * Arguments  : void
+//  379 *
+//  380 * Returns    : none
+//  381 *
+//  382 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  383 ************************************************************************************************************************
+//  384 */
+//  385 
+//  386 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  387 void  OS_TickListResetPeak (void)
+OS_TickListResetPeak:
+        CODE
+//  388 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  389     OS_TICK_SPOKE_IX   i;
+//  390     OS_TICK_SPOKE     *p_spoke;
+//  391 
+//  392 
+//  393 
+//  394     for (i = 0u; i < OSCfg_TickWheelSize; i++) {
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        SJMP    ??OS_TickListResetPeak_0
+//  395         p_spoke                = (OS_TICK_SPOKE *)&OSCfg_TickWheel[i];
+??OS_TickListResetPeak_1:
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+        MOV     A,R2
+        MOV     B,#0x6
+        MUL     AB
+        XCH     A,R2
+        MOV     R4,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R4
+        MOV     R4,A
+        MOV     B,#0x6
+        MOV     A,R3
+        MUL     AB
+        ADD     A,R4
+        MOV     R3,A
+        MOV     A,#OSCfg_TickWheel & 0xff
+        ADD     A,R2
+        MOV     DPL,A
+        MOV     A,#(OSCfg_TickWheel >> 8) & 0xff
+        ADDC    A,R3
+        MOV     DPH,A
+//  396         p_spoke->NbrEntriesMax = (OS_OBJ_QTY     )0u;
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  397     }
+        INC     R0
+        MOV     A,R0
+        JNZ     ??OS_TickListResetPeak_0
+        INC     R1
+??OS_TickListResetPeak_0:
+        MOV     DPTR,#OSCfg_TickWheelSize
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        CLR     C
+        MOV     A,R0
+        SUBB    A,R2
+        MOV     A,R1
+        SUBB    A,R3
+        JC      ??OS_TickListResetPeak_1
+//  398 }
+        POP     DPH
+        POP     DPL
+        RET
+//  399 
+//  400 /*$PAGE*/
+//  401 /*
+//  402 ************************************************************************************************************************
+//  403 *                                                UPDATE THE TICK LIST
+//  404 *
+//  405 * Description: This function is called when a tick occurs and determines if the timeout waiting for a kernel object has
+//  406 *              expired or a delay has expired.
+//  407 *
+//  408 * Arguments  : non
+//  409 *
+//  410 * Returns    : none
+//  411 *
+//  412 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  413 ************************************************************************************************************************
+//  414 */
+//  415 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  416 void  OS_TickListUpdate (void)
+OS_TickListUpdate:
+        CODE
+//  417 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 7
+        MOV     A,#-0x7
+        LCALL   ?ALLOC_XSTACK8
+//  418     CPU_BOOLEAN        done;
+//  419     OS_TICK_SPOKE     *p_spoke;
+//  420     OS_TCB            *p_tcb;
+//  421     OS_TCB            *p_tcb_next;
+//  422     OS_TICK_SPOKE_IX   spoke;
+//  423     CPU_TS             ts_start;
+//  424     CPU_TS             ts_end;
+//  425     CPU_SR_ALLOC();
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  426 
+//  427 
+//  428     OS_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        PUSH    A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        POP     A
+        MOVX    @DPTR,A
+//  429     ts_start = OS_TS_GET();
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  430     OSTickCtr++;                                                       /* Keep track of the number of ticks           */
+        MOV     DPTR,#__Constant_1
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_ADD_TO_X
+//  431     spoke    = (OS_TICK_SPOKE_IX)(OSTickCtr % OSCfg_TickWheelSize);
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSCfg_TickWheelSize
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        CLR     A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?UL_DIV_MOD
+        MOV     R0,?V0
+        MOV     R1,?V1
+//  432     p_spoke  = &OSCfg_TickWheel[spoke];
+        MOV     A,R0
+        MOV     B,#0x6
+        MUL     AB
+        XCH     A,R0
+        MOV     R2,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R2
+        MOV     R2,A
+        MOV     B,#0x6
+        MOV     A,R1
+        MUL     AB
+        ADD     A,R2
+        MOV     R1,A
+        MOV     A,#OSCfg_TickWheel & 0xff
+        ADD     A,R0
+        MOV     DPL,A
+        MOV     A,#(OSCfg_TickWheel >> 8) & 0xff
+        ADDC    A,R1
+        MOV     DPH,A
+//  433     p_tcb    = p_spoke->FirstPtr;
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+//  434     done     = DEF_FALSE;
+        MOV     ?V4,#0x0
+        SJMP    ??OS_TickListUpdate_0
+//  435     while (done == DEF_FALSE) {
+//  436         if (p_tcb != (OS_TCB *)0) {
+//  437             p_tcb_next = p_tcb->TickNextPtr;                           /* Point to next TCB to update                 */
+//  438             switch (p_tcb->TaskState) {
+//  439                 case OS_TASK_STATE_RDY:
+//  440                 case OS_TASK_STATE_PEND:
+//  441                 case OS_TASK_STATE_SUSPENDED:
+//  442                 case OS_TASK_STATE_PEND_SUSPENDED:
+//  443                      break;
+//  444 
+//  445                 case OS_TASK_STATE_DLY:
+//  446                      p_tcb->TickRemain = p_tcb->TickCtrMatch           /* Compute time remaining of current TCB       */
+//  447                                        - OSTickCtr;
+//  448                      if (OSTickCtr == p_tcb->TickCtrMatch) {           /* Process each TCB that expires               */
+//  449                          p_tcb->TaskState = OS_TASK_STATE_RDY;
+//  450                          OS_TaskRdy(p_tcb);                            /* Make task ready to run                      */
+//  451                      } else {
+//  452                          done             = DEF_TRUE;                  /* Don't find a match, we're done!             */
+//  453                      }
+//  454                      break;
+//  455 
+//  456                 case OS_TASK_STATE_PEND_TIMEOUT:
+//  457                      p_tcb->TickRemain = p_tcb->TickCtrMatch           /* Compute time remaining of current TCB       */
+//  458                                        - OSTickCtr;
+//  459                      if (OSTickCtr == p_tcb->TickCtrMatch) {           /* Process each TCB that expires               */
+//  460 #if (OS_MSG_EN > 0u)
+//  461                          p_tcb->MsgPtr     = (void      *)0;
+//  462                          p_tcb->MsgSize    = (OS_MSG_SIZE)0u;
+//  463 #endif
+//  464                          p_tcb->TS         = OS_TS_GET();
+//  465                          OS_PendListRemove(p_tcb);                     /* Remove from wait list                       */
+//  466                          OS_TaskRdy(p_tcb);
+//  467                          p_tcb->TaskState  = OS_TASK_STATE_RDY;
+//  468                          p_tcb->PendStatus = OS_STATUS_PEND_TIMEOUT;   /* Indicate pend timed out                     */
+//  469                          p_tcb->PendOn     = OS_TASK_PEND_ON_NOTHING;  /* Indicate no longer pending                  */
+//  470                      } else {
+//  471                          done              = DEF_TRUE;                 /* Don't find a match, we're done!             */
+//  472                      }
+//  473                      break;
+//  474 
+//  475                 case OS_TASK_STATE_DLY_SUSPENDED:
+//  476                      p_tcb->TickRemain = p_tcb->TickCtrMatch           /* Compute time remaining of current TCB       */
+//  477                                        - OSTickCtr;
+//  478                      if (OSTickCtr == p_tcb->TickCtrMatch) {           /* Process each TCB that expires               */
+//  479                          p_tcb->TaskState  = OS_TASK_STATE_SUSPENDED;
+//  480                          OS_TickListRemove(p_tcb);                     /* Remove from current wheel spoke             */
+//  481                      } else {
+//  482                          done              = DEF_TRUE;                 /* Don't find a match, we're done!             */
+//  483                      }
+//  484                      break;
+//  485 
+//  486                 case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+//  487                      p_tcb->TickRemain = p_tcb->TickCtrMatch           /* Compute time remaining of current TCB       */
+//  488                                        - OSTickCtr;
+//  489                      if (OSTickCtr == p_tcb->TickCtrMatch) {           /* Process each TCB that expires               */
+//  490 #if (OS_MSG_EN > 0u)
+//  491                          p_tcb->MsgPtr     = (void      *)0;
+//  492                          p_tcb->MsgSize    = (OS_MSG_SIZE)0u;
+//  493 #endif
+//  494                          p_tcb->TS         = OS_TS_GET();
+//  495                          OS_PendListRemove(p_tcb);                     /* Remove from wait list                       */
+//  496                          OS_TickListRemove(p_tcb);                     /* Remove from current wheel spoke             */
+//  497                          p_tcb->TaskState  = OS_TASK_STATE_SUSPENDED;
+//  498                          p_tcb->PendStatus = OS_STATUS_PEND_TIMEOUT;   /* Indicate pend timed out                     */
+//  499                          p_tcb->PendOn     = OS_TASK_PEND_ON_NOTHING;  /* Indicate no longer pending                  */
+//  500                      } else {
+//  501                          done              = DEF_TRUE;                 /* Don't find a match, we're done!             */
+//  502                      }
+//  503                      break;
+//  504 
+//  505                 default:
+//  506                      break;
+//  507             }
+//  508             p_tcb = p_tcb_next;
+??OS_TickListUpdate_1:
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+??OS_TickListUpdate_0:
+        MOV     A,?V4
+        JZ      $+5
+        LJMP    ??OS_TickListUpdate_2
+        MOV     A,R6
+        ORL     A,R7
+        JNZ     $+5
+        LJMP    ??OS_TickListUpdate_3
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OS_TickListUpdate_1
+        DEC     A
+        JZ      ??OS_TickListUpdate_4
+        DEC     A
+        JZ      ??OS_TickListUpdate_1
+        DEC     A
+        JZ      ??OS_TickListUpdate_5
+        DEC     A
+        JZ      ??OS_TickListUpdate_1
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OS_TickListUpdate_6
+        DEC     A
+        JZ      ??OS_TickListUpdate_1
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OS_TickListUpdate_7
+        SJMP    ??OS_TickListUpdate_1
+??OS_TickListUpdate_4:
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_SUB_X
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_TickListUpdate_8
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        ; Setup parameters for call to function OS_TaskRdy
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_TaskRdy
+        SJMP    ??OS_TickListUpdate_9
+??OS_TickListUpdate_8:
+        MOV     ?V4,#0x1
+??OS_TickListUpdate_9:
+        LJMP    ??OS_TickListUpdate_1
+??OS_TickListUpdate_5:
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_SUB_X
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_TickListUpdate_10
+        MOV     A,R6
+        ADD     A,#0x40
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x42
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x24
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        ; Setup parameters for call to function OS_PendListRemove
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_PendListRemove
+        ; Setup parameters for call to function OS_TaskRdy
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_TaskRdy
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x1b
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x3
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x1a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_TickListUpdate_11
+??OS_TickListUpdate_10:
+        MOV     ?V4,#0x1
+??OS_TickListUpdate_11:
+        LJMP    ??OS_TickListUpdate_1
+??OS_TickListUpdate_6:
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_SUB_X
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_TickListUpdate_12
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x4
+        MOVX    @DPTR,A
+        ; Setup parameters for call to function OS_TickListRemove
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_TickListRemove
+        SJMP    ??OS_TickListUpdate_13
+??OS_TickListUpdate_12:
+        MOV     ?V4,#0x1
+??OS_TickListUpdate_13:
+        LJMP    ??OS_TickListUpdate_1
+??OS_TickListUpdate_7:
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_SUB_X
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        MOV     A,R6
+        ADD     A,#0x34
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x30
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTickCtr
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_TickListUpdate_14
+        MOV     A,R6
+        ADD     A,#0x40
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x42
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x24
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        ; Setup parameters for call to function OS_PendListRemove
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_PendListRemove
+        ; Setup parameters for call to function OS_TickListRemove
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_TickListRemove
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x4
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x1b
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x3
+        MOVX    @DPTR,A
+        MOV     A,R6
+        ADD     A,#0x1a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_TickListUpdate_15
+??OS_TickListUpdate_14:
+        MOV     ?V4,#0x1
+??OS_TickListUpdate_15:
+        LJMP    ??OS_TickListUpdate_1
+//  509         } else {
+//  510             done  = DEF_TRUE;
+??OS_TickListUpdate_3:
+        MOV     ?V4,#0x1
+        LJMP    ??OS_TickListUpdate_0
+//  511         }
+//  512     }
+//  513     ts_end = OS_TS_GET() - ts_start;                                   /* Measure execution time of tick task         */
+??OS_TickListUpdate_2:
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V0
+        LCALL   ?L_NEG
+//  514     if (OSTickTaskTimeMax < ts_end) {
+        MOV     DPTR,#OSTickTaskTimeMax
+        MOV     R0,#?V0
+        LCALL   ?UL_GT_X
+        JNC     ??OS_TickListUpdate_16
+//  515         OSTickTaskTimeMax = ts_end;
+        MOV     DPTR,#OSTickTaskTimeMax
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+//  516     }
+//  517     OS_CRITICAL_EXIT();
+??OS_TickListUpdate_16:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  518 }
+        MOV     A,#0x7
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant "uC/OS-III Tick Ta`:
+        DB "uC/OS-III Tick Task"
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_0>`:
+        DATA32
+        DD 0
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_ffffffff>`:
+        DATA32
+        DD 4294967295
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_ffff0001>`:
+        DATA32
+        DD 4294901761
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_1>`:
+        DATA32
+        DD 1
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+`?<Constant "uC/OS-III Tick Task">`:
+        DS 20
+        REQUIRE `?<Initializer for <Constant "uC/OS-III Tick Ta`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_0:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_0>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_ffffffff:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_ffffffff>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_ffff0001:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_ffff0001>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_1:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_1>`
+        REQUIRE __INIT_XDATA_I
+
+        END
+// 
+// 2 930 bytes in segment NEAR_CODE
+//     1 byte  in segment SFR_AN
+//    36 bytes in segment XDATA_I
+//    36 bytes in segment XDATA_ID
+// 
+// 2 950 bytes of CODE  memory (+ 16 bytes shared)
+//     0 bytes of DATA  memory (+  1 byte  shared)
+//    20 bytes of XDATA memory (+ 16 bytes shared)
+//
+//Errors: none
+//Warnings: none

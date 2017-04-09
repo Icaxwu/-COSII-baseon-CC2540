@@ -1,0 +1,5637 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:03
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_flag.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_flag.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_flag.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_flag
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V1
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?L_AND
+        EXTERN ?L_AND_TO_X
+        EXTERN ?L_AND_X
+        EXTERN ?L_EQ
+        EXTERN ?L_EQ_X
+        EXTERN ?L_IOR_TO_X
+        EXTERN ?L_MOV_TO_X
+        EXTERN ?L_MOV_X
+        EXTERN ?L_NOT
+        EXTERN ?PUSH_XSTACK8_X_FOUR
+        EXTERN ?PUSH_XSTACK_I_FOUR
+        EXTERN ?PUSH_XSTACK_I_TWO
+        EXTERN ?US_SWITCH_DENSE
+        EXTERN ?US_SWITCH_SPARSE
+        EXTERN ?XLOAD_R0123
+        EXTERN ?XLOAD_R2345
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN ?XSTACK_DISP101_8
+        EXTERN ?XSTORE_R0123
+        EXTERN __INIT_XDATA_I
+
+        PUBLIC OSFlagCreate
+        PUBLIC OSFlagDel
+        PUBLIC OSFlagPend
+        PUBLIC OSFlagPendAbort
+        PUBLIC OSFlagPendGetFlagsRdy
+        PUBLIC OSFlagPost
+        PUBLIC OS_FlagBlock
+        PUBLIC OS_FlagClr
+        PUBLIC OS_FlagDbgListAdd
+        PUBLIC OS_FlagDbgListRemove
+        PUBLIC OS_FlagInit
+        PUBLIC OS_FlagPost
+        PUBLIC OS_FlagTaskRdy
+        PUBWEAK __Constant_4c464741
+
+        EXTERN CPU_SR_Restore
+        EXTERN CPU_SR_Save
+        EXTERN OSFlagDbgListPtr
+        EXTERN OSFlagQty
+        EXTERN OSIntNestingCtr
+        EXTERN OSSched
+        EXTERN OSSchedLockNestingCtr
+        EXTERN OSTCBCurPtr
+        EXTERN OS_Pend
+        EXTERN OS_PendAbort
+        EXTERN OS_PendListInit
+        EXTERN OS_PendListRemove
+        EXTERN OS_PendObjDel
+        EXTERN OS_TaskRdy
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_flag.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                                EVENT FLAG MANAGEMENT
+//   10 *
+//   11 * File    : OS_FLAG.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define  MICRIUM_SOURCE
+//   34 #include <os.h>
+//   35 
+//   36 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   37 const  CPU_CHAR  *os_flag__c = "$Id: $";
+//   38 #endif
+//   39 
+//   40 
+//   41 #if OS_CFG_FLAG_EN > 0u
+//   42 
+//   43 /*$PAGE*/
+//   44 /*
+//   45 ************************************************************************************************************************
+//   46 *                                                 CREATE AN EVENT FLAG
+//   47 *
+//   48 * Description: This function is called to create an event flag group.
+//   49 *
+//   50 * Arguments  : p_grp          is a pointer to the event flag group to create
+//   51 *
+//   52 *              p_name         is the name of the event flag group
+//   53 *
+//   54 *              flags          contains the initial value to store in the event flag group (typically 0).
+//   55 *
+//   56 *              p_err          is a pointer to an error code which will be returned to your application:
+//   57 *
+//   58 *                                 OS_ERR_NONE                    if the call was successful.
+//   59 *                                 OS_ERR_CREATE_ISR              if you attempted to create an Event Flag from an ISR.
+//   60 *                                 OS_ERR_ILLEGAL_CREATE_RUN_TIME if you are trying to create the Event Flag after you
+//   61 *                                                                   called OSSafetyCriticalStart().
+//   62 *                                 OS_ERR_NAME                    if 'p_name' is a NULL pointer
+//   63 *                                 OS_ERR_OBJ_CREATED             if the event flag group has already been created
+//   64 *                                 OS_ERR_OBJ_PTR_NULL            if 'p_grp' is a NULL pointer
+//   65 *
+//   66 * Returns    : none
+//   67 ************************************************************************************************************************
+//   68 */
+//   69 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   70 void  OSFlagCreate (OS_FLAG_GRP  *p_grp,
+OSFlagCreate:
+        CODE
+//   71                     CPU_CHAR     *p_name,
+//   72                     OS_FLAGS      flags,
+//   73                     OS_ERR       *p_err)
+//   74 {
+        REQUIRE ?V0
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     ?V2,R4
+        MOV     ?V3,R5
+//   75     CPU_SR_ALLOC();
+        MOV     ?V0,#0x0
+        MOV     A,#0x11
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V5,A
+//   76 
+//   77 
+//   78 
+//   79 #ifdef OS_SAFETY_CRITICAL
+//   80     if (p_err == (OS_ERR *)0) {
+//   81         OS_SAFETY_CRITICAL_EXCEPTION();
+//   82         return;
+//   83     }
+//   84 #endif
+//   85 
+//   86 #ifdef OS_SAFETY_CRITICAL_IEC61508
+//   87     if (OSSafetyCriticalStartFlag == DEF_TRUE) {
+//   88        *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME;
+//   89         return;
+//   90     }
+//   91 #endif
+//   92 
+//   93 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//   94     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* See if called from ISR ...                             */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagCreate_0
+//   95        *p_err = OS_ERR_CREATE_ISR;                          /* ... can't CREATE from an ISR                           */
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#-0x1f
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x2e
+        MOVX    @DPTR,A
+//   96         return;
+        LJMP    ??OSFlagCreate_1
+//   97     }
+//   98 #endif
+//   99 
+//  100 #if OS_CFG_ARG_CHK_EN > 0u
+//  101     if (p_grp == (OS_FLAG_GRP *)0) {                        /* Validate 'p_grp'                                       */
+??OSFlagCreate_0:
+        MOV     A,R6
+        ORL     A,R7
+        JNZ     ??OSFlagCreate_2
+//  102        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  103         return;
+        LJMP    ??OSFlagCreate_1
+//  104     }
+//  105 #endif
+//  106 
+//  107     OS_CRITICAL_ENTER();
+??OSFlagCreate_2:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V0,A
+//  108     p_grp->Type    = OS_OBJ_TYPE_FLAG;                      /* Set to event flag group type                           */
+        MOV     R2,#0x41
+        MOV     R3,#0x47
+        MOV     R4,#0x46
+        MOV     R5,#0x4c
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  109     p_grp->NamePtr = p_name;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,?V2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V3
+        MOVX    @DPTR,A
+//  110     p_grp->Flags   = flags;                                 /* Set to desired initial value                           */
+        MOV     A,#0xd
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?XLOAD_R0123
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+//  111     p_grp->TS      = (CPU_TS)0;
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  112     OS_PendListInit(&p_grp->PendList);
+        ; Setup parameters for call to function OS_PendListInit
+        MOV     A,R6
+        ADD     A,#0x6
+        MOV     R2,A
+        CLR     A
+        ADDC    A,R7
+        MOV     R3,A
+        LCALL   OS_PendListInit
+//  113 
+//  114 #if OS_CFG_DBG_EN > 0u
+//  115     OS_FlagDbgListAdd(p_grp);
+        ; Setup parameters for call to function OS_FlagDbgListAdd
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_FlagDbgListAdd
+//  116 #endif
+//  117     OSFlagQty++;
+        MOV     DPTR,#OSFlagQty
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  118 
+//  119     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  120    *p_err = OS_ERR_NONE;
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  121 }
+??OSFlagCreate_1:
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+//  122 
+//  123 /*$PAGE*/
+//  124 /*
+//  125 ************************************************************************************************************************
+//  126 *                                             DELETE AN EVENT FLAG GROUP
+//  127 *
+//  128 * Description: This function deletes an event flag group and readies all tasks pending on the event flag group.
+//  129 *
+//  130 * Arguments  : p_grp     is a pointer to the desired event flag group.
+//  131 *
+//  132 *              opt       determines delete options as follows:
+//  133 *
+//  134 *                            OS_OPT_DEL_NO_PEND           Deletes the event flag group ONLY if no task pending
+//  135 *                            OS_OPT_DEL_ALWAYS            Deletes the event flag group even if tasks are waiting.
+//  136 *                                                         In this case, all the tasks pending will be readied.
+//  137 *
+//  138 *              p_err     is a pointer to an error code that can contain one of the following values:
+//  139 *
+//  140 *                            OS_ERR_NONE                  The call was successful and the event flag group was deleted
+//  141 *                            OS_ERR_DEL_ISR               If you attempted to delete the event flag group from an ISR
+//  142 *                            OS_ERR_OBJ_PTR_NULL          If 'p_grp' is a NULL pointer.
+//  143 *                            OS_ERR_OBJ_TYPE              If you didn't pass a pointer to an event flag group
+//  144 *                            OS_ERR_OPT_INVALID           An invalid option was specified
+//  145 *                            OS_ERR_TASK_WAITING          One or more tasks were waiting on the event flag group.
+//  146 *
+//  147 * Returns    : == 0          if no tasks were waiting on the event flag group, or upon error.
+//  148 *              >  0          if one or more tasks waiting on the event flag group are now readied and informed.
+//  149 *
+//  150 * Note(s)    : 1) This function must be used with care.  Tasks that would normally expect the presence of the event flag
+//  151 *                 group MUST check the return code of OSFlagPost and OSFlagPend().
+//  152 ************************************************************************************************************************
+//  153 */
+//  154 
+//  155 #if OS_CFG_FLAG_DEL_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  156 OS_OBJ_QTY  OSFlagDel (OS_FLAG_GRP  *p_grp,
+OSFlagDel:
+        CODE
+//  157                        OS_OPT        opt,
+//  158                        OS_ERR       *p_err)
+//  159 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 8
+        MOV     A,#-0x8
+        LCALL   ?ALLOC_XSTACK8
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     ?V0,R4
+        MOV     ?V1,R5
+//  160     OS_OBJ_QTY        cnt;
+//  161     OS_OBJ_QTY        nbr_tasks;
+//  162     OS_PEND_DATA     *p_pend_data;
+//  163     OS_PEND_LIST     *p_pend_list;
+//  164     OS_TCB           *p_tcb;
+//  165     CPU_TS            ts;
+//  166     CPU_SR_ALLOC();
+        MOV     R6,#0x0
+//  167 
+//  168 
+//  169 
+//  170 #ifdef OS_SAFETY_CRITICAL
+//  171     if (p_err == (OS_ERR *)0) {
+//  172         OS_SAFETY_CRITICAL_EXCEPTION();
+//  173         return ((OS_OBJ_QTY)0);
+//  174     }
+//  175 #endif
+//  176 
+//  177 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  178     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* See if called from ISR ...                             */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagDel_0
+//  179        *p_err = OS_ERR_DEL_ISR;                             /* ... can't DELETE from an ISR                           */
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x37
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x32
+        MOVX    @DPTR,A
+//  180         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagDel_1
+//  181     }
+//  182 #endif
+//  183 
+//  184 #if OS_CFG_ARG_CHK_EN > 0u
+//  185     if (p_grp == (OS_FLAG_GRP *)0) {                        /* Validate 'p_grp'                                       */
+??OSFlagDel_0:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSFlagDel_2
+//  186        *p_err  = OS_ERR_OBJ_PTR_NULL;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  187         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagDel_1
+//  188     }
+//  189     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSFlagDel_2:
+        MOV     ?V2,?V0
+        MOV     ?V3,?V1
+        MOV     R0,#?V2
+        LCALL   ?US_SWITCH_DENSE
+`?<Jumptable for OSFlagDel>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA8
+        DATA
+        DATA8
+        DB        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagDel_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagDel_4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagDel_4
+        CODE
+//  190         case OS_OPT_DEL_NO_PEND:
+//  191         case OS_OPT_DEL_ALWAYS:
+//  192              break;
+//  193 
+//  194         default:
+//  195             *p_err = OS_ERR_OPT_INVALID;
+//  196              return ((OS_OBJ_QTY)0);
+//  197     }
+//  198 #endif
+//  199 
+//  200 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  201     if (p_grp->Type != OS_OBJ_TYPE_FLAG) {                  /* Validate event group object                            */
+??OSFlagDel_4:
+        MOV     DPTR,#__Constant_4c464741
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     R0,#?V4
+        LCALL   ?L_EQ_X
+        JZ      $+5
+        LJMP    ??OSFlagDel_5
+//  202        *p_err = OS_ERR_OBJ_TYPE;
+//  203         return ((OS_OBJ_QTY)0);
+//  204     }
+//  205 #endif
+//  206     OS_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+//  207     p_pend_list = &p_grp->PendList;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        ADD     A,#0x6
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOV     R1,A
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  208     cnt         = p_pend_list->NbrEntries;
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  209     nbr_tasks   = cnt;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  210     switch (opt) {
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_DENSE
+`?<Jumptable for OSFlagDel>_1`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA8
+        DATA
+        DATA8
+        DB        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagDel_6
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagDel_7
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagDel_8
+        CODE
+//  211         case OS_OPT_DEL_NO_PEND:                            /* Delete group if no task waiting                        */
+//  212              if (nbr_tasks == (OS_OBJ_QTY)0) {
+??OSFlagDel_7:
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSFlagDel_9
+//  213 #if OS_CFG_DBG_EN > 0u
+//  214                  OS_FlagDbgListRemove(p_grp);
+        ; Setup parameters for call to function OS_FlagDbgListRemove
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_FlagDbgListRemove
+//  215 #endif
+//  216                  OSFlagQty--;
+        MOV     DPTR,#OSFlagQty
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  217                  OS_FlagClr(p_grp);
+        ; Setup parameters for call to function OS_FlagClr
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_FlagClr
+//  218 
+//  219                  OS_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  220                 *p_err = OS_ERR_NONE;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OSFlagDel_10
+//  221              } else {
+??OSFlagDel_3:
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagDel_1
+??OSFlagDel_5:
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagDel_1
+//  222                  OS_CRITICAL_EXIT();
+??OSFlagDel_9:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  223                 *p_err = OS_ERR_TASK_WAITING;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x5f
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  224              }
+//  225              break;
+??OSFlagDel_10:
+        LJMP    ??OSFlagDel_11
+//  226 
+//  227         case OS_OPT_DEL_ALWAYS:                             /* Always delete the event flag group                     */
+//  228              ts = OS_TS_GET();                              /* Get local time stamp so all tasks get the same time    */
+??OSFlagDel_8:
+        MOV     ?V0,#0x0
+        MOV     ?V1,#0x0
+        MOV     ?V2,#0x0
+        MOV     ?V3,#0x0
+        SJMP    ??OSFlagDel_12
+//  229              while (cnt > 0u) {                             /* Remove all tasks from the pend list                    */
+//  230                  p_pend_data = p_pend_list->HeadPtr;
+??OSFlagDel_13:
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R0
+        MOV     DPH,R1
+//  231                  p_tcb       = p_pend_data->TCBPtr;
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  232                  OS_PendObjDel((OS_PEND_OBJ *)((void *)p_grp),
+//  233                                p_tcb,
+//  234                                ts);
+        ; Setup parameters for call to function OS_PendObjDel
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_PendObjDel
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  235                  cnt--;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  236              }
+??OSFlagDel_12:
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSFlagDel_13
+//  237 #if OS_CFG_DBG_EN > 0u
+//  238              OS_FlagDbgListRemove(p_grp);
+        ; Setup parameters for call to function OS_FlagDbgListRemove
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_FlagDbgListRemove
+//  239 #endif
+//  240              OSFlagQty--;
+        MOV     DPTR,#OSFlagQty
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  241              OS_FlagClr(p_grp);
+        ; Setup parameters for call to function OS_FlagClr
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_FlagClr
+//  242              OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  243              OSSched();                                     /* Find highest priority task ready to run                */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  244             *p_err = OS_ERR_NONE;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  245              break;
+        SJMP    ??OSFlagDel_11
+//  246 
+//  247         default:
+//  248              OS_CRITICAL_EXIT();
+??OSFlagDel_6:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  249             *p_err = OS_ERR_OPT_INVALID;
+        MOV     A,#0x17
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+//  250              break;
+//  251     }
+//  252     return (nbr_tasks);
+??OSFlagDel_11:
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+??OSFlagDel_1:
+        MOV     A,#0x8
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  253 }
+//  254 #endif
+//  255 
+//  256 /*
+//  257 ************************************************************************************************************************
+//  258 *                                             WAIT ON AN EVENT FLAG GROUP
+//  259 *
+//  260 * Description: This function is called to wait for a combination of bits to be set in an event flag group.  Your
+//  261 *              application can wait for ANY bit to be set or ALL bits to be set.
+//  262 *
+//  263 * Arguments  : p_grp         is a pointer to the desired event flag group.
+//  264 *
+//  265 *              flags         Is a bit pattern indicating which bit(s) (i.e. flags) you wish to wait for.
+//  266 *                            The bits you want are specified by setting the corresponding bits in 'flags'.
+//  267 *                            e.g. if your application wants to wait for bits 0 and 1 then 'flags' would contain 0x03.
+//  268 *
+//  269 *              timeout       is an optional timeout (in clock ticks) that your task will wait for the
+//  270 *                            desired bit combination.  If you specify 0, however, your task will wait
+//  271 *                            forever at the specified event flag group or, until a message arrives.
+//  272 *
+//  273 *              opt           specifies whether you want ALL bits to be set or ANY of the bits to be set.
+//  274 *                            You can specify the 'ONE' of the following arguments:
+//  275 *
+//  276 *                                OS_OPT_PEND_FLAG_CLR_ALL   You will wait for ALL bits in 'flags' to be clear (0)
+//  277 *                                OS_OPT_PEND_FLAG_CLR_ANY   You will wait for ANY bit  in 'flags' to be clear (0)
+//  278 *                                OS_OPT_PEND_FLAG_SET_ALL   You will wait for ALL bits in 'flags' to be set   (1)
+//  279 *                                OS_OPT_PEND_FLAG_SET_ANY   You will wait for ANY bit  in 'flags' to be set   (1)
+//  280 *
+//  281 *                            You can 'ADD' OS_OPT_PEND_FLAG_CONSUME if you want the event flag to be 'consumed' by
+//  282 *                                      the call.  Example, to wait for any flag in a group AND then clear
+//  283 *                                      the flags that are present, set 'wait_opt' to:
+//  284 *
+//  285 *                                      OS_OPT_PEND_FLAG_SET_ANY + OS_OPT_PEND_FLAG_CONSUME
+//  286 *
+//  287 *                            You can also 'ADD' the type of pend with 'ONE' of the two option:
+//  288 *
+//  289 *                                OS_OPT_PEND_NON_BLOCKING   Task will NOT block if flags are not available
+//  290 *                                OS_OPT_PEND_BLOCKING       Task will     block if flags are not available
+//  291 *
+//  292 *              p_ts          is a pointer to a variable that will receive the timestamp of when the event flag group was
+//  293 *                            posted, aborted or the event flag group deleted.  If you pass a NULL pointer (i.e. (CPU_TS *)0)
+//  294 *                            then you will not get the timestamp.  In other words, passing a NULL pointer is valid and
+//  295 *                            indicates that you don't need the timestamp.
+//  296 *
+//  297 *              p_err         is a pointer to an error code and can be:
+//  298 *
+//  299 *                                OS_ERR_NONE                The desired bits have been set within the specified 'timeout'
+//  300 *                                OS_ERR_OBJ_PTR_NULL        If 'p_grp' is a NULL pointer.
+//  301 *                                OS_ERR_OBJ_TYPE            You are not pointing to an event flag group
+//  302 *                                OS_ERR_OPT_INVALID         You didn't specify a proper 'opt' argument.
+//  303 *                                OS_ERR_PEND_ABORT          The wait on the flag was aborted.
+//  304 *                                OS_ERR_PEND_ISR            If you tried to PEND from an ISR
+//  305 *                                OS_ERR_PEND_WOULD_BLOCK    If you specified non-blocking but the flags were not
+//  306 *                                                           available.
+//  307 *                                OS_ERR_SCHED_LOCKED        If you called this function when the scheduler is locked
+//  308 *                                OS_ERR_TIMEOUT             The bit(s) have not been set in the specified 'timeout'.
+//  309 *
+//  310 * Returns    : The flags in the event flag group that made the task ready or, 0 if a timeout or an error
+//  311 *              occurred.
+//  312 ************************************************************************************************************************
+//  313 */
+//  314 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  315 OS_FLAGS  OSFlagPend (OS_FLAG_GRP  *p_grp,
+OSFlagPend:
+        CODE
+//  316                       OS_FLAGS      flags,
+//  317                       OS_TICK       timeout,
+//  318                       OS_OPT        opt,
+//  319                       CPU_TS       *p_ts,
+//  320                       OS_ERR       *p_err)
+//  321 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 24
+        MOV     A,#-0x18
+        LCALL   ?ALLOC_XSTACK8
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     A,R4
+        MOV     R6,A
+        MOV     A,R5
+        MOV     R7,A
+//  322     CPU_BOOLEAN   consume;
+//  323     OS_FLAGS      flags_rdy;
+//  324     OS_OPT        mode;
+//  325     OS_PEND_DATA  pend_data;
+//  326     CPU_SR_ALLOC();
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  327 
+//  328 
+//  329 
+//  330 #ifdef OS_SAFETY_CRITICAL
+//  331     if (p_err == (OS_ERR *)0) {
+//  332         OS_SAFETY_CRITICAL_EXCEPTION();
+//  333         return ((OS_FLAGS)0);
+//  334     }
+//  335 #endif
+//  336 
+//  337 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  338     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* See if called from ISR ...                             */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagPend_0
+//  339        *p_err = OS_ERR_PEND_ISR;                            /* ... can't PEND from an ISR                             */
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x52
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  340         return ((OS_FLAGS)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+//  341     }
+//  342 #endif
+//  343 
+//  344 #if OS_CFG_ARG_CHK_EN > 0u
+//  345     if (p_grp == (OS_FLAG_GRP *)0) {                        /* Validate 'p_grp'                                       */
+??OSFlagPend_0:
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSFlagPend_2
+//  346        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  347         return ((OS_FLAGS)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+//  348     }
+//  349     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSFlagPend_2:
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSFlagPend>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        257
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        258
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32769
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32770
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        33025
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        33026
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        8
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        8
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        260
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        264
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32772
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32776
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        33028
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        33032
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_4
+        CODE
+//  350         case OS_OPT_PEND_FLAG_CLR_ALL:
+//  351         case OS_OPT_PEND_FLAG_CLR_ANY:
+//  352         case OS_OPT_PEND_FLAG_SET_ALL:
+//  353         case OS_OPT_PEND_FLAG_SET_ANY:
+//  354         case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_FLAG_CONSUME:
+//  355         case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_FLAG_CONSUME:
+//  356         case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_FLAG_CONSUME:
+//  357         case OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME:
+//  358         case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_NON_BLOCKING:
+//  359         case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_NON_BLOCKING:
+//  360         case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_NON_BLOCKING:
+//  361         case OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_NON_BLOCKING:
+//  362         case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
+//  363         case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
+//  364         case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
+//  365         case OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
+//  366              break;
+//  367 
+//  368         default:
+//  369             *p_err = OS_ERR_OPT_INVALID;
+//  370              return ((OS_OBJ_QTY)0);
+//  371     }
+//  372 #endif
+//  373 
+//  374 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  375     if (p_grp->Type != OS_OBJ_TYPE_FLAG) {                  /* Validate that we are pointing at an event flag         */
+??OSFlagPend_3:
+        MOV     DPTR,#__Constant_4c464741
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OSFlagPend_5
+//  376        *p_err = OS_ERR_OBJ_TYPE;
+//  377         return ((OS_FLAGS)0);
+//  378     }
+//  379 #endif
+//  380 
+//  381     if ((opt & OS_OPT_PEND_FLAG_CONSUME) != (OS_OPT)0) {    /* See if we need to consume the flags                    */
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x1
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_6
+//  382         consume = DEF_TRUE;
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+        SJMP    ??OSFlagPend_7
+//  383     } else {
+??OSFlagPend_4:
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_5:
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+//  384         consume = DEF_FALSE;
+??OSFlagPend_6:
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  385     }
+//  386 
+//  387     if (p_ts != (CPU_TS *)0) {
+??OSFlagPend_7:
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_8
+//  388        *p_ts = (CPU_TS)0;                                   /* Initialize the returned timestamp                      */
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  389     }
+//  390 
+//  391     mode = opt & OS_OPT_PEND_FLAG_MASK;
+??OSFlagPend_8:
+        MOV     A,R6
+        ANL     A,#0xf
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x0
+        MOV     R1,A
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  392     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        PUSH    A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        POP     A
+        MOVX    @DPTR,A
+        MOV     A,#0x27
+        LCALL   ?XSTACK_DISP0_8
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+//  393     switch (mode) {
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_DENSE
+`?<Jumptable for OSFlagPend>_1`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        1
+        DATA
+        DATA8
+        DATA
+        DATA8
+        DB        7
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_10
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_11
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_12
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_13
+        CODE
+//  394         case OS_OPT_PEND_FLAG_SET_ALL:                      /* See if all required flags are set                      */
+//  395              flags_rdy = (OS_FLAGS)(p_grp->Flags & flags);  /* Extract only the bits we want                          */
+??OSFlagPend_12:
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        MOV     ?V2,?V6
+        MOV     ?V3,?V7
+        MOV     R0,#?V0
+        LCALL   ?L_AND_X
+//  396              if (flags_rdy == flags) {                      /* Must match ALL the bits that we want                   */
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_EQ
+        JZ      $+5
+        LJMP    ??OSFlagPend_14
+//  397                  if (consume == DEF_TRUE) {                 /* See if we need to consume the flags                    */
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        XRL     A,#0x1
+        JNZ     ??OSFlagPend_15
+//  398                      p_grp->Flags &= ~flags_rdy;            /* Clear ONLY the flags that we wanted                    */
+        MOV     ?V4,?V0
+        MOV     ?V5,?V1
+        MOV     ?V6,?V2
+        MOV     ?V7,?V3
+        MOV     R0,#?V4
+        LCALL   ?L_NOT
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_AND_TO_X
+//  399                  }
+//  400                  OSTCBCurPtr->FlagsRdy = flags_rdy;         /* Save flags that were ready                             */
+??OSFlagPend_15:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x5e
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+//  401                  if (p_ts != (CPU_TS *)0) {
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_16
+//  402                     *p_ts  = p_grp->TS;
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x16
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R4
+        LCALL   ?XSTORE_R0123
+//  403                  }
+//  404                  CPU_CRITICAL_EXIT();                       /* Yes, condition met, return to caller                   */
+??OSFlagPend_16:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  405                 *p_err = OS_ERR_NONE;
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  406                  return (flags_rdy);
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        LJMP    ??OSFlagPend_1
+//  407              } else {                                       /* Block task until events occur or timeout               */
+//  408                  if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) {
+??OSFlagPend_14:
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_17
+//  409                      CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  410                     *p_err = OS_ERR_PEND_WOULD_BLOCK;       /* Specified non-blocking so task would block             */
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x50
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  411                      return ((OS_FLAGS)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+//  412                  } else {                                   /* Specified blocking so check is scheduler is locked     */
+//  413                      if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) { /* See if called with scheduler locked ...      */
+??OSFlagPend_17:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagPend_18
+//  414                          CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  415                         *p_err = OS_ERR_SCHED_LOCKED;                 /* ... can't PEND when locked                   */
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+//  416                          return ((OS_FLAGS)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+//  417                      }
+//  418                  }
+//  419                                                             /* Lock the scheduler/re-enable interrupts                */
+//  420                  OS_CRITICAL_ENTER_CPU_EXIT();              
+//  421                  OS_FlagBlock(&pend_data,
+//  422                               p_grp,
+//  423                               flags,
+//  424                               opt,
+//  425                               timeout);
+??OSFlagPend_18:
+        ; Setup parameters for call to function OS_FlagBlock
+        MOV     A,#0x2b
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0xb
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     A,#0x10
+        LCALL   ?XSTACK_DISP101_8
+        LCALL   OS_FlagBlock
+        MOV     A,#0xa
+        LCALL   ?DEALLOC_XSTACK8
+//  426                  OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  427              }
+//  428              break;
+//  429 
+//  430         case OS_OPT_PEND_FLAG_SET_ANY:
+//  431              flags_rdy = (OS_FLAGS)(p_grp->Flags & flags);  /* Extract only the bits we want                          */
+//  432              if (flags_rdy != (OS_FLAGS)0) {                /* See if any flag set                                    */
+//  433                  if (consume == DEF_TRUE) {                 /* See if we need to consume the flags                    */
+//  434                      p_grp->Flags &= ~flags_rdy;            /* Clear ONLY the flags that we got                       */
+//  435                  }
+//  436                  OSTCBCurPtr->FlagsRdy = flags_rdy;         /* Save flags that were ready                             */
+//  437                  if (p_ts != (CPU_TS *)0) {
+//  438                     *p_ts  = p_grp->TS;
+//  439                  }
+//  440                  CPU_CRITICAL_EXIT();                       /* Yes, condition met, return to caller                   */
+//  441                 *p_err = OS_ERR_NONE;
+//  442                  return (flags_rdy);
+//  443              } else {                                       /* Block task until events occur or timeout               */
+//  444                  if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) {
+//  445                      CPU_CRITICAL_EXIT();
+//  446                     *p_err = OS_ERR_PEND_WOULD_BLOCK;       /* Specified non-blocking so task would block             */
+//  447                      return ((OS_FLAGS)0);
+//  448                  } else {                                   /* Specified blocking so check is scheduler is locked     */
+//  449                      if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) { /* See if called with scheduler locked ...      */
+//  450                          CPU_CRITICAL_EXIT();
+//  451                         *p_err = OS_ERR_SCHED_LOCKED;                 /* ... can't PEND when locked                   */
+//  452                          return ((OS_FLAGS)0);
+//  453                      }
+//  454                  }
+//  455                                                             /* Lock the scheduler/re-enable interrupts                */
+//  456                  OS_CRITICAL_ENTER_CPU_EXIT();              
+//  457                  OS_FlagBlock(&pend_data,
+//  458                               p_grp,
+//  459                               flags,
+//  460                               opt,
+//  461                               timeout);
+//  462                  OS_CRITICAL_EXIT_NO_SCHED();
+//  463              }
+//  464              break;
+//  465 
+//  466 #if OS_CFG_FLAG_MODE_CLR_EN > 0u
+//  467         case OS_OPT_PEND_FLAG_CLR_ALL:                      /* See if all required flags are cleared                  */
+//  468              flags_rdy = (OS_FLAGS)(~p_grp->Flags & flags); /* Extract only the bits we want                          */
+//  469              if (flags_rdy == flags) {                      /* Must match ALL the bits that we want                   */
+//  470                  if (consume == DEF_TRUE) {                 /* See if we need to consume the flags                    */
+//  471                      p_grp->Flags |= flags_rdy;             /* Set ONLY the flags that we wanted                      */
+//  472                  }
+//  473                  OSTCBCurPtr->FlagsRdy = flags_rdy;         /* Save flags that were ready                             */
+//  474                  if (p_ts != (CPU_TS *)0) {
+//  475                     *p_ts  = p_grp->TS;
+//  476                  }
+//  477                  CPU_CRITICAL_EXIT();                       /* Yes, condition met, return to caller                   */
+//  478                 *p_err = OS_ERR_NONE;
+//  479                  return (flags_rdy);
+//  480              } else {                                       /* Block task until events occur or timeout               */
+//  481                  if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) {
+//  482                      CPU_CRITICAL_EXIT();
+//  483                     *p_err = OS_ERR_PEND_WOULD_BLOCK;       /* Specified non-blocking so task would block             */
+//  484                      return ((OS_FLAGS)0);
+//  485                  } else {                                   /* Specified blocking so check is scheduler is locked     */
+//  486                      if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) { /* See if called with scheduler locked ...      */
+//  487                          CPU_CRITICAL_EXIT();
+//  488                         *p_err = OS_ERR_SCHED_LOCKED;                 /* ... can't PEND when locked                   */
+//  489                          return ((OS_FLAGS)0);
+//  490                      }
+//  491                  }
+//  492                                                             
+//  493                  OS_CRITICAL_ENTER_CPU_EXIT();              /* Lock the scheduler/re-enable interrupts                */
+//  494                  OS_FlagBlock(&pend_data,
+//  495                               p_grp,
+//  496                               flags,
+//  497                               opt,
+//  498                               timeout);
+//  499                  OS_CRITICAL_EXIT_NO_SCHED();
+//  500              }
+//  501              break;
+//  502 
+//  503         case OS_OPT_PEND_FLAG_CLR_ANY:
+//  504              flags_rdy = (OS_FLAGS)(~p_grp->Flags & flags); /* Extract only the bits we want                          */
+//  505              if (flags_rdy != (OS_FLAGS)0) {                /* See if any flag cleared                                */
+//  506                  if (consume == DEF_TRUE) {                 /* See if we need to consume the flags                    */
+//  507                      p_grp->Flags |= flags_rdy;             /* Set ONLY the flags that we got                         */
+//  508                  }
+//  509                  OSTCBCurPtr->FlagsRdy = flags_rdy;         /* Save flags that were ready                             */
+//  510                  if (p_ts != (CPU_TS *)0) {
+//  511                     *p_ts  = p_grp->TS;
+//  512                  }
+//  513                  CPU_CRITICAL_EXIT();                       /* Yes, condition met, return to caller                   */
+//  514                 *p_err = OS_ERR_NONE;
+//  515                  return (flags_rdy);
+//  516              } else {                                       /* Block task until events occur or timeout               */
+//  517                  if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) {
+//  518                      CPU_CRITICAL_EXIT();
+//  519                     *p_err = OS_ERR_PEND_WOULD_BLOCK;       /* Specified non-blocking so task would block             */
+//  520                      return ((OS_FLAGS)0);
+//  521                  } else {                                   /* Specified blocking so check is scheduler is locked     */
+//  522                      if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) { /* See if called with scheduler locked ...      */
+//  523                          CPU_CRITICAL_EXIT();
+//  524                         *p_err = OS_ERR_SCHED_LOCKED;                 /* ... can't PEND when locked                   */
+//  525                          return ((OS_FLAGS)0);
+//  526                      }
+//  527                  }
+//  528                                                             
+//  529                  OS_CRITICAL_ENTER_CPU_EXIT();              /* Lock the scheduler/re-enable interrupts                */
+//  530                  OS_FlagBlock(&pend_data,              
+//  531                               p_grp,
+//  532                               flags,
+//  533                               opt,
+//  534                               timeout);
+//  535                  OS_CRITICAL_EXIT_NO_SCHED();
+//  536              }
+//  537              break;
+//  538 #endif
+//  539 
+//  540         default:
+//  541              CPU_CRITICAL_EXIT();
+//  542             *p_err = OS_ERR_OPT_INVALID;
+//  543              return ((OS_FLAGS)0);
+//  544     }
+//  545 
+//  546     OSSched();                                              /* Find next HPT ready to run                             */
+??OSFlagPend_19:
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  547 
+//  548     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        PUSH    A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        POP     A
+        MOVX    @DPTR,A
+//  549     switch (OSTCBCurPtr->PendStatus) {
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1b
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OSFlagPend_20
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSFlagPend_21
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSFlagPend_22
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSFlagPend_23
+        LJMP    ??OSFlagPend_24
+//  550         case OS_STATUS_PEND_OK:                             /* We got the vent flags                                  */
+//  551              if (p_ts != (CPU_TS *)0) {
+??OSFlagPend_20:
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_25
+//  552                 *p_ts  = OSTCBCurPtr->TS;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R4
+        LCALL   ?XSTORE_R0123
+//  553              }
+//  554             *p_err = OS_ERR_NONE;
+??OSFlagPend_25:
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  555              break;
+        LJMP    ??OSFlagPend_26
+??OSFlagPend_13:
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        MOV     ?V2,?V6
+        MOV     ?V3,?V7
+        MOV     R0,#?V0
+        LCALL   ?L_AND_X
+        MOV     A,?V0
+        ORL     A,?V1
+        ORL     A,?V2
+        ORL     A,?V3
+        JNZ     $+5
+        LJMP    ??OSFlagPend_27
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        XRL     A,#0x1
+        JNZ     ??OSFlagPend_28
+        MOV     ?V4,?V0
+        MOV     ?V5,?V1
+        MOV     ?V6,?V2
+        MOV     ?V7,?V3
+        MOV     R0,#?V4
+        LCALL   ?L_NOT
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_AND_TO_X
+??OSFlagPend_28:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x5e
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_29
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x16
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R4
+        LCALL   ?XSTORE_R0123
+??OSFlagPend_29:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_27:
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_30
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x50
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_30:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagPend_31
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_31:
+        ; Setup parameters for call to function OS_FlagBlock
+        MOV     A,#0x2b
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0xb
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     A,#0x10
+        LCALL   ?XSTACK_DISP101_8
+        LCALL   OS_FlagBlock
+        MOV     A,#0xa
+        LCALL   ?DEALLOC_XSTACK8
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        LJMP    ??OSFlagPend_19
+??OSFlagPend_10:
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V0
+        LCALL   ?L_NOT
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_AND
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_EQ
+        JZ      $+5
+        LJMP    ??OSFlagPend_32
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        XRL     A,#0x1
+        JNZ     ??OSFlagPend_33
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_IOR_TO_X
+??OSFlagPend_33:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x5e
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_34
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x16
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R4
+        LCALL   ?XSTORE_R0123
+??OSFlagPend_34:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_32:
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_35
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x50
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_35:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagPend_36
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_36:
+        ; Setup parameters for call to function OS_FlagBlock
+        MOV     A,#0x2b
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0xb
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     A,#0x10
+        LCALL   ?XSTACK_DISP101_8
+        LCALL   OS_FlagBlock
+        MOV     A,#0xa
+        LCALL   ?DEALLOC_XSTACK8
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        LJMP    ??OSFlagPend_19
+??OSFlagPend_11:
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V0
+        LCALL   ?L_NOT
+        MOV     R0,#?V0
+        MOV     R1,#?V4
+        LCALL   ?L_AND
+        MOV     A,?V0
+        ORL     A,?V1
+        ORL     A,?V2
+        ORL     A,?V3
+        JNZ     $+5
+        LJMP    ??OSFlagPend_37
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        XRL     A,#0x1
+        JNZ     ??OSFlagPend_38
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_IOR_TO_X
+??OSFlagPend_38:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x5e
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_39
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x16
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R4
+        LCALL   ?XSTORE_R0123
+??OSFlagPend_39:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_37:
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_40
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x50
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_40:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagPend_41
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+??OSFlagPend_41:
+        ; Setup parameters for call to function OS_FlagBlock
+        MOV     A,#0x2b
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0xb
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        MOV     A,#0x10
+        LCALL   ?XSTACK_DISP101_8
+        LCALL   OS_FlagBlock
+        MOV     A,#0xa
+        LCALL   ?DEALLOC_XSTACK8
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        LJMP    ??OSFlagPend_19
+??OSFlagPend_9:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+//  556 
+//  557         case OS_STATUS_PEND_ABORT:                          /* Indicate that we aborted                               */
+//  558              if (p_ts != (CPU_TS *)0) {
+??OSFlagPend_21:
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_42
+//  559                 *p_ts  = OSTCBCurPtr->TS;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R4
+        LCALL   ?XSTORE_R0123
+//  560              }
+//  561              CPU_CRITICAL_EXIT();
+??OSFlagPend_42:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  562             *p_err = OS_ERR_PEND_ABORT;
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x57
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  563              break;
+        LJMP    ??OSFlagPend_26
+//  564 
+//  565         case OS_STATUS_PEND_TIMEOUT:                        /* Indicate that we didn't get semaphore within timeout   */
+//  566              if (p_ts != (CPU_TS *)0) {
+??OSFlagPend_23:
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_43
+//  567                 *p_ts  = (CPU_TS  )0;
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  568              }
+//  569              CPU_CRITICAL_EXIT();
+??OSFlagPend_43:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  570             *p_err = OS_ERR_TIMEOUT;
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x27
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  571              break;
+        SJMP    ??OSFlagPend_26
+//  572 
+//  573         case OS_STATUS_PEND_DEL:                            /* Indicate that object pended on has been deleted        */
+//  574              if (p_ts != (CPU_TS *)0) {
+??OSFlagPend_22:
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_44
+//  575                 *p_ts  = OSTCBCurPtr->TS;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     A,#0x2f
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R4
+        LCALL   ?XSTORE_R0123
+//  576              }
+//  577              CPU_CRITICAL_EXIT();
+??OSFlagPend_44:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  578             *p_err = OS_ERR_OBJ_DEL;
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  579              break;
+        SJMP    ??OSFlagPend_26
+//  580 
+//  581         default:
+//  582              CPU_CRITICAL_EXIT();
+??OSFlagPend_24:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  583             *p_err = OS_ERR_STATUS_INVALID;
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x2e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6e
+        MOVX    @DPTR,A
+//  584              break;
+//  585     }
+//  586     if (*p_err != OS_ERR_NONE) {
+??OSFlagPend_26:
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPend_45
+//  587         return ((OS_FLAGS)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OSFlagPend_1
+//  588     }
+//  589 
+//  590     flags_rdy = OSTCBCurPtr->FlagsRdy;
+??OSFlagPend_45:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x5e
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+//  591     if (consume == DEF_TRUE) {                              /* See if we need to consume the flags                    */
+        MOV     A,#0x3
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        XRL     A,#0x1
+        JNZ     ??OSFlagPend_46
+//  592         switch (mode) {
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V5,A
+        MOV     R0,#?V4
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSFlagPend>_2`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_47
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_48
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        8
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_48
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPend_49
+        CODE
+//  593             case OS_OPT_PEND_FLAG_SET_ALL:
+//  594             case OS_OPT_PEND_FLAG_SET_ANY:                  /* Clear ONLY the flags we got                            */
+//  595                  p_grp->Flags &= ~flags_rdy;
+??OSFlagPend_48:
+        MOV     ?V4,?V0
+        MOV     ?V5,?V1
+        MOV     ?V6,?V2
+        MOV     ?V7,?V3
+        MOV     R0,#?V4
+        LCALL   ?L_NOT
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_AND_TO_X
+//  596                  break;
+//  597 
+//  598 #if OS_CFG_FLAG_MODE_CLR_EN > 0u
+//  599             case OS_OPT_PEND_FLAG_CLR_ALL:
+//  600             case OS_OPT_PEND_FLAG_CLR_ANY:                  /* Set   ONLY the flags we got                            */
+//  601                  p_grp->Flags |=  flags_rdy;
+//  602                  break;
+//  603 #endif
+//  604             default:
+//  605                  CPU_CRITICAL_EXIT();
+//  606                 *p_err = OS_ERR_OPT_INVALID;
+//  607                  return ((OS_FLAGS)0);
+//  608         }
+//  609     }
+//  610     CPU_CRITICAL_EXIT();
+??OSFlagPend_46:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  611    *p_err = OS_ERR_NONE;                                    /* Event(s) must have occurred                            */
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  612     return (flags_rdy);
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+??OSFlagPend_1:
+        MOV     A,#0x18
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+??OSFlagPend_47:
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_IOR_TO_X
+        SJMP    ??OSFlagPend_46
+??OSFlagPend_49:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x31
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OSFlagPend_1
+//  613 }
+//  614 
+//  615 /*$PAGE*/
+//  616 /*
+//  617 ************************************************************************************************************************
+//  618 *                                          ABORT WAITING ON AN EVENT FLAG GROUP
+//  619 *
+//  620 * Description: This function aborts & readies any tasks currently waiting on an event flag group.  This function should
+//  621 *              be used to fault-abort the wait on the event flag group, rather than to normally post to the event flag
+//  622 *              group OSFlagPost().
+//  623 *
+//  624 * Arguments  : p_grp     is a pointer to the event flag group
+//  625 *
+//  626 *              opt       determines the type of ABORT performed:
+//  627 *
+//  628 *                            OS_OPT_PEND_ABORT_1          ABORT wait for a single task (HPT) waiting on the event flag
+//  629 *                            OS_OPT_PEND_ABORT_ALL        ABORT wait for ALL tasks that are  waiting on the event flag
+//  630 *                            OS_OPT_POST_NO_SCHED         Do not call the scheduler
+//  631 *
+//  632 *              p_err     is a pointer to a variable that will contain an error code returned by this function.
+//  633 *
+//  634 *                            OS_ERR_NONE                  At least one task waiting on the event flag group and was
+//  635 *                                                         readied and informed of the aborted wait; check return value
+//  636 *                                                         for the number of tasks whose wait on the event flag group
+//  637 *                                                         was aborted.
+//  638 *                            OS_ERR_OBJ_PTR_NULL          If 'p_grp' is a NULL pointer.
+//  639 *                            OS_ERR_OBJ_TYPE              If 'p_grp' is not pointing at an event flag group
+//  640 *                            OS_ERR_OPT_INVALID           If you specified an invalid option
+//  641 *                            OS_ERR_PEND_ABORT_ISR        If you called this function from an ISR
+//  642 *                            OS_ERR_PEND_ABORT_NONE       No task were pending
+//  643 *
+//  644 * Returns    : == 0          if no tasks were waiting on the event flag group, or upon error.
+//  645 *              >  0          if one or more tasks waiting on the event flag group are now readied and informed.
+//  646 ************************************************************************************************************************
+//  647 */
+//  648 
+//  649 #if OS_CFG_FLAG_PEND_ABORT_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  650 OS_OBJ_QTY  OSFlagPendAbort (OS_FLAG_GRP  *p_grp,
+OSFlagPendAbort:
+        CODE
+//  651                              OS_OPT        opt,
+//  652                              OS_ERR       *p_err)
+//  653 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 6
+        MOV     A,#-0x6
+        LCALL   ?ALLOC_XSTACK8
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     A,R4
+        MOV     R6,A
+        MOV     A,R5
+        MOV     R7,A
+//  654     OS_PEND_LIST  *p_pend_list;
+//  655     OS_TCB        *p_tcb;
+//  656     CPU_TS         ts;
+//  657     OS_OBJ_QTY     nbr_tasks;
+//  658     CPU_SR_ALLOC();
+        MOV     ?V4,#0x0
+        MOV     A,#0x15
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V7,A
+//  659 
+//  660 
+//  661 
+//  662 #ifdef OS_SAFETY_CRITICAL
+//  663     if (p_err == (OS_ERR *)0) {
+//  664         OS_SAFETY_CRITICAL_EXCEPTION();
+//  665         return ((OS_OBJ_QTY)0u);
+//  666     }
+//  667 #endif
+//  668 
+//  669 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  670     if (OSIntNestingCtr > (OS_NESTING_CTR)0u) {             /* Not allowed to Pend Abort from an ISR                  */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagPendAbort_0
+//  671        *p_err = OS_ERR_PEND_ABORT_ISR;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x56
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  672         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagPendAbort_1
+//  673     }
+//  674 #endif
+//  675 
+//  676 #if OS_CFG_ARG_CHK_EN > 0u
+//  677     if (p_grp == (OS_FLAG_GRP *)0) {                        /* Validate 'p_grp'                                       */
+??OSFlagPendAbort_0:
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSFlagPendAbort_2
+//  678        *p_err  =  OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  679         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagPendAbort_1
+//  680     }
+//  681     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSFlagPendAbort_2:
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSFlagPendAbort>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        256
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        33024
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPendAbort_4
+        CODE
+//  682         case OS_OPT_PEND_ABORT_1:
+//  683         case OS_OPT_PEND_ABORT_ALL:
+//  684         case OS_OPT_PEND_ABORT_1   | OS_OPT_POST_NO_SCHED:
+//  685         case OS_OPT_PEND_ABORT_ALL | OS_OPT_POST_NO_SCHED:
+//  686              break;
+//  687 
+//  688         default:
+//  689             *p_err = OS_ERR_OPT_INVALID;
+//  690              return ((OS_OBJ_QTY)0u);
+//  691     }
+//  692 #endif
+//  693 
+//  694 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  695     if (p_grp->Type != OS_OBJ_TYPE_FLAG) {                  /* Make sure event flag group was created                 */
+??OSFlagPendAbort_3:
+        MOV     DPTR,#__Constant_4c464741
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OSFlagPendAbort_5
+//  696        *p_err = OS_ERR_OBJ_TYPE;
+//  697         return ((OS_OBJ_QTY)0u);
+//  698     }
+//  699 #endif
+//  700 
+//  701     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V4,A
+//  702     p_pend_list = &p_grp->PendList;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#0x6
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOV     R1,A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  703     if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0u) {        /* Any task waiting on flag group?                        */
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSFlagPendAbort_6
+//  704         CPU_CRITICAL_EXIT();                                /* No                                                     */
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V4
+        LCALL   CPU_SR_Restore
+//  705        *p_err = OS_ERR_PEND_ABORT_NONE;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x55
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  706         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagPendAbort_1
+//  707     }
+??OSFlagPendAbort_4:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagPendAbort_1
+??OSFlagPendAbort_5:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSFlagPendAbort_1
+//  708 
+//  709     OS_CRITICAL_ENTER_CPU_EXIT();
+//  710     nbr_tasks = 0u;
+??OSFlagPendAbort_6:
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  711     ts        = OS_TS_GET();                                /* Get local time stamp so all tasks get the same time    */
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     ?V2,R2
+        MOV     ?V3,R3
+//  712     while (p_pend_list->NbrEntries > (OS_OBJ_QTY)0u) {
+??OSFlagPendAbort_7:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSFlagPendAbort_8
+//  713         p_tcb = p_pend_list->HeadPtr->TCBPtr;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  714         OS_PendAbort((OS_PEND_OBJ *)((void *)p_grp),
+//  715                      p_tcb,
+//  716                      ts);
+        ; Setup parameters for call to function OS_PendAbort
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_PendAbort
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  717         nbr_tasks++;
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  718         if (opt != OS_OPT_PEND_ABORT_ALL) {                 /* Pend abort all tasks waiting?                          */
+        MOV     A,#0x0
+        XRL     A,R6
+        JNZ     ??OSFlagPendAbort_9
+        MOV     A,#0x1
+        XRL     A,R7
+??OSFlagPendAbort_9:
+        JZ      ??OSFlagPendAbort_7
+//  719             break;                                          /* No                                                     */
+//  720         }
+//  721     }
+//  722     OS_CRITICAL_EXIT_NO_SCHED();
+??OSFlagPendAbort_8:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V4
+        LCALL   CPU_SR_Restore
+//  723 
+//  724     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0u) {
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSFlagPendAbort_10
+//  725         OSSched();                                          /* Run the scheduler                                      */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  726     }
+//  727 
+//  728    *p_err = OS_ERR_NONE;
+??OSFlagPendAbort_10:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  729     return (nbr_tasks);
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+??OSFlagPendAbort_1:
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  730 }
+//  731 #endif
+//  732 
+//  733 /*$PAGE*/
+//  734 /*
+//  735 ************************************************************************************************************************
+//  736 *                                       GET FLAGS WHO CAUSED TASK TO BECOME READY
+//  737 *
+//  738 * Description: This function is called to obtain the flags that caused the task to become ready to run.
+//  739 *              In other words, this function allows you to tell "Who done it!".
+//  740 *
+//  741 * Arguments  : p_err     is a pointer to an error code
+//  742 *
+//  743 *                            OS_ERR_NONE       if the call was successful
+//  744 *                            OS_ERR_PEND_ISR   if called from an ISR
+//  745 *
+//  746 * Returns    : The flags that caused the task to be ready.
+//  747 ************************************************************************************************************************
+//  748 */
+//  749 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  750 OS_FLAGS  OSFlagPendGetFlagsRdy (OS_ERR  *p_err)
+OSFlagPendGetFlagsRdy:
+        CODE
+//  751 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        MOV     A,#-0xb
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 11
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+//  752     OS_FLAGS   flags;
+//  753     CPU_SR_ALLOC();
+        MOV     R1,#0x0
+//  754 
+//  755 
+//  756 
+//  757 #ifdef OS_SAFETY_CRITICAL
+//  758     if (p_err == (OS_ERR *)0) {
+//  759         OS_SAFETY_CRITICAL_EXCEPTION();
+//  760         return ((OS_FLAGS)0);
+//  761     }
+//  762 #endif
+//  763 
+//  764 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  765     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* See if called from ISR ...                             */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSFlagPendGetFlagsRdy_0
+//  766        *p_err = OS_ERR_PEND_ISR;                            /* ... can't get from an ISR                              */
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#-0x52
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  767         return ((OS_FLAGS)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OSFlagPendGetFlagsRdy_1
+//  768     }
+//  769 #endif
+//  770 
+//  771     CPU_CRITICAL_ENTER();
+??OSFlagPendGetFlagsRdy_0:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R1,A
+//  772     flags = OSTCBCurPtr->FlagsRdy;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x5e
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+//  773     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        LCALL   CPU_SR_Restore
+//  774    *p_err = OS_ERR_NONE;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  775     return (flags);
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+??OSFlagPendGetFlagsRdy_1:
+        MOV     R7,#0x4
+        LJMP    ?FUNC_LEAVE_XDATA
+//  776 }
+//  777 
+//  778 /*$PAGE*/
+//  779 /*
+//  780 ************************************************************************************************************************
+//  781 *                                                POST EVENT FLAG BIT(S)
+//  782 *
+//  783 * Description: This function is called to set or clear some bits in an event flag group.  The bits to set or clear are
+//  784 *              specified by a 'bit mask'.
+//  785 *
+//  786 * Arguments  : p_grp         is a pointer to the desired event flag group.
+//  787 *
+//  788 *              flags         If 'opt' (see below) is OS_OPT_POST_FLAG_SET, each bit that is set in 'flags' will
+//  789 *                            set the corresponding bit in the event flag group.  e.g. to set bits 0, 4
+//  790 *                            and 5 you would set 'flags' to:
+//  791 *
+//  792 *                                0x31     (note, bit 0 is least significant bit)
+//  793 *
+//  794 *                            If 'opt' (see below) is OS_OPT_POST_FLAG_CLR, each bit that is set in 'flags' will
+//  795 *                            CLEAR the corresponding bit in the event flag group.  e.g. to clear bits 0,
+//  796 *                            4 and 5 you would specify 'flags' as:
+//  797 *
+//  798 *                                0x31     (note, bit 0 is least significant bit)
+//  799 *
+//  800 *              opt           indicates whether the flags will be:
+//  801 *
+//  802 *                                OS_OPT_POST_FLAG_SET       set
+//  803 *                                OS_OPT_POST_FLAG_CLR       cleared
+//  804 *
+//  805 *                            you can also 'add' OS_OPT_POST_NO_SCHED to prevent the scheduler from being called.
+//  806 *
+//  807 *              p_err         is a pointer to an error code and can be:
+//  808 *
+//  809 *                                OS_ERR_NONE                The call was successful
+//  810 *                                OS_ERR_OBJ_PTR_NULL        You passed a NULL pointer
+//  811 *                                OS_ERR_OBJ_TYPE            You are not pointing to an event flag group
+//  812 *                                OS_ERR_OPT_INVALID         You specified an invalid option
+//  813 *
+//  814 * Returns    : the new value of the event flags bits that are still set.
+//  815 *
+//  816 * Note(s)    : 1) The execution time of this function depends on the number of tasks waiting on the event flag group.
+//  817 ************************************************************************************************************************
+//  818 */
+//  819 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  820 OS_FLAGS  OSFlagPost (OS_FLAG_GRP  *p_grp,
+OSFlagPost:
+        CODE
+//  821                       OS_FLAGS      flags,
+//  822                       OS_OPT        opt,
+//  823                       OS_ERR       *p_err)
+//  824 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     A,#0x11
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V5,A
+//  825     OS_FLAGS  flags_cur;
+//  826     CPU_TS    ts;
+//  827 
+//  828 
+//  829 
+//  830 #ifdef OS_SAFETY_CRITICAL
+//  831     if (p_err == (OS_ERR *)0) {
+//  832         OS_SAFETY_CRITICAL_EXCEPTION();
+//  833         return ((OS_FLAGS)0);
+//  834     }
+//  835 #endif
+//  836 
+//  837 #if OS_CFG_ARG_CHK_EN > 0u
+//  838     if (p_grp == (OS_FLAG_GRP *)0) {                        /* Validate 'p_grp'                                       */
+        MOV     A,R6
+        ORL     A,R7
+        JNZ     ??OSFlagPost_0
+//  839        *p_err  = OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  840         return ((OS_FLAGS)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OSFlagPost_1
+//  841     }
+//  842     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSFlagPost_0:
+        MOV     ?V0,R4
+        MOV     ?V1,R5
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSFlagPost>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPost_2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32769
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPost_2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSFlagPost_3
+        CODE
+//  843         case OS_OPT_POST_FLAG_SET:
+//  844         case OS_OPT_POST_FLAG_CLR:
+//  845         case OS_OPT_POST_FLAG_SET | OS_OPT_POST_NO_SCHED:
+//  846         case OS_OPT_POST_FLAG_CLR | OS_OPT_POST_NO_SCHED:
+//  847              break;
+//  848 
+//  849         default:
+//  850             *p_err = OS_ERR_OPT_INVALID;
+//  851              return ((OS_FLAGS)0);
+//  852     }
+//  853 #endif
+//  854 
+//  855 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  856     if (p_grp->Type != OS_OBJ_TYPE_FLAG) {                  /* Make sure we are pointing to an event flag grp         */
+??OSFlagPost_2:
+        MOV     DPTR,#__Constant_4c464741
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OSFlagPost_4
+//  857        *p_err = OS_ERR_OBJ_TYPE;
+//  858         return ((OS_FLAGS)0);
+//  859     }
+//  860 #endif
+//  861 
+//  862     ts = OS_TS_GET();                                       /* Get timestamp                                          */
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     ?V2,R2
+        MOV     ?V3,R3
+//  863 #if OS_CFG_ISR_POST_DEFERRED_EN > 0u
+//  864     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* See if called from an ISR                              */
+//  865         OS_IntQPost((OS_OBJ_TYPE)OS_OBJ_TYPE_FLAG,          /* Post to ISR queue                                      */
+//  866                     (void      *)p_grp,
+//  867                     (void      *)0,
+//  868                     (OS_MSG_SIZE)0,
+//  869                     (OS_FLAGS   )flags,
+//  870                     (OS_OPT     )opt,
+//  871                     (CPU_TS     )ts,
+//  872                     (OS_ERR    *)p_err);
+//  873         return ((OS_FLAGS)0);
+//  874     }
+//  875 #endif
+//  876 
+//  877     flags_cur = OS_FlagPost(p_grp,
+//  878                             flags,
+//  879                             opt,
+//  880                             ts,
+//  881                             p_err);
+        ; Setup parameters for call to function OS_FlagPost
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0x13
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_FlagPost
+        MOV     A,#0xa
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     ?V2,R4
+        MOV     ?V3,R5
+//  882 
+//  883     return (flags_cur);
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+??OSFlagPost_1:
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+??OSFlagPost_3:
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OSFlagPost_1
+??OSFlagPost_4:
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OSFlagPost_1
+//  884 }
+//  885 
+//  886 /*$PAGE*/
+//  887 /*
+//  888 ************************************************************************************************************************
+//  889 *                         SUSPEND TASK UNTIL EVENT FLAG(s) RECEIVED OR TIMEOUT OCCURS
+//  890 *
+//  891 * Description: This function is internal to uC/OS-III and is used to put a task to sleep until the desired
+//  892 *              event flag bit(s) are set.
+//  893 *
+//  894 * Arguments  : p_pend_data    is a pointer to an object used to link the task being blocked to the list of task(s)
+//  895 *              -----------    pending on the desired event flag group.
+//  896 *
+//  897 *              p_grp         is a pointer to the desired event flag group.
+//  898 *              -----
+//  899 *
+//  900 *              flags         Is a bit pattern indicating which bit(s) (i.e. flags) you wish to check.
+//  901 *                            The bits you want are specified by setting the corresponding bits in
+//  902 *                            'flags'.  e.g. if your application wants to wait for bits 0 and 1 then
+//  903 *                            'flags' would contain 0x03.
+//  904 *
+//  905 *              opt           specifies whether you want ALL bits to be set/cleared or ANY of the bits
+//  906 *                            to be set/cleared.
+//  907 *                            You can specify the following argument:
+//  908 *
+//  909 *                                OS_OPT_PEND_FLAG_CLR_ALL   You will check ALL bits in 'mask' to be clear (0)
+//  910 *                                OS_OPT_PEND_FLAG_CLR_ANY   You will check ANY bit  in 'mask' to be clear (0)
+//  911 *                                OS_OPT_PEND_FLAG_SET_ALL   You will check ALL bits in 'mask' to be set   (1)
+//  912 *                                OS_OPT_PEND_FLAG_SET_ANY   You will check ANY bit  in 'mask' to be set   (1)
+//  913 *
+//  914 *              timeout       is the desired amount of time that the task will wait for the event flag
+//  915 *                            bit(s) to be set.
+//  916 *
+//  917 * Returns    : none
+//  918 *
+//  919 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  920 ************************************************************************************************************************
+//  921 */
+//  922 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  923 void  OS_FlagBlock (OS_PEND_DATA  *p_pend_data,
+OS_FlagBlock:
+        CODE
+//  924                     OS_FLAG_GRP   *p_grp,
+//  925                     OS_FLAGS       flags,
+//  926                     OS_OPT         opt,
+//  927                     OS_TICK        timeout)
+//  928 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 0
+        MOV     ?V4,R2
+        MOV     ?V5,R3
+//  929     OSTCBCurPtr->FlagsPend = flags;                         /* Save the flags that we need to wait for                */
+        MOV     A,#0xd
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?XLOAD_R0123
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R6
+        ADD     A,#0x5a
+        MOV     DPL,A
+        XCH     A,R6
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+//  930     OSTCBCurPtr->FlagsOpt  = opt;                           /* Save the type of wait we are doing                     */
+        MOV     A,#0x11
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R2
+        ADD     A,#0x62
+        MOV     DPL,A
+        XCH     A,R2
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  931     OSTCBCurPtr->FlagsRdy  = (OS_FLAGS)0;
+        MOV     ?V0,#0x0
+        MOV     ?V1,#0x0
+        MOV     ?V2,#0x0
+        MOV     ?V3,#0x0
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x5e
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+//  932 
+//  933     OS_Pend(p_pend_data,
+//  934             (OS_PEND_OBJ *)((void *)p_grp),
+//  935              OS_TASK_PEND_ON_FLAG,
+//  936              timeout);
+        ; Setup parameters for call to function OS_Pend
+        MOV     A,#0x13
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     R1,#0x1
+        MOV     R2,?V4
+        MOV     R3,?V5
+        LCALL   OS_Pend
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  937 }
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+//  938 
+//  939 /*$PAGE*/
+//  940 /*
+//  941 ************************************************************************************************************************
+//  942 *                                      CLEAR THE CONTENTS OF AN EVENT FLAG GROUP
+//  943 *
+//  944 * Description: This function is called by OSFlagDel() to clear the contents of an event flag group
+//  945 *
+//  946 
+//  947 * Argument(s): p_grp     is a pointer to the event flag group to clear
+//  948 *              -----
+//  949 *
+//  950 * Returns    : none
+//  951 *
+//  952 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  953 ************************************************************************************************************************
+//  954 */
+//  955 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  956 void  OS_FlagClr (OS_FLAG_GRP  *p_grp)
+OS_FlagClr:
+        CODE
+//  957 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+//  958     OS_PEND_LIST  *p_pend_list;
+//  959 
+//  960 
+//  961 
+//  962     p_grp->Type             = OS_OBJ_TYPE_NONE;
+        MOV     R4,#0x4e
+        MOV     R5,#0x45
+        MOV     R6,#0x4e
+        MOV     R7,#0x4f
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  963     p_grp->NamePtr          = (CPU_CHAR *)((void *)"?FLAG");    /* Unknown name                                       */
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#`?<Constant "?FLAG">` & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(`?<Constant "?FLAG">` >> 8) & 0xff
+        MOVX    @DPTR,A
+//  964     p_grp->Flags            = (OS_FLAGS )0;
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     A,R2
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  965     p_pend_list             = &p_grp->PendList;
+        MOV     A,R2
+        ADD     A,#0x6
+        MOV     R2,A
+        JNC     ??OS_FlagClr_0
+        INC     R3
+//  966     OS_PendListInit(p_pend_list);
+??OS_FlagClr_0:
+        ; Setup parameters for call to function OS_PendListInit
+        LCALL   OS_PendListInit
+//  967 }
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+//  968 
+//  969 /*$PAGE*/
+//  970 /*
+//  971 ************************************************************************************************************************
+//  972 *                                          INITIALIZE THE EVENT FLAG MODULE
+//  973 *
+//  974 * Description: This function is called by uC/OS-III to initialize the event flag module.  Your application MUST NOT call
+//  975 *              this function.  In other words, this function is internal to uC/OS-III.
+//  976 *
+//  977 * Arguments  : p_err     is a pointer to an error code that can contain one of the following values:
+//  978 *
+//  979 *                            OS_ERR_NONE   The call was successful.
+//  980 *
+//  981 * Returns    : none
+//  982 *
+//  983 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  984 ************************************************************************************************************************
+//  985 */
+//  986 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  987 void  OS_FlagInit (OS_ERR  *p_err)
+OS_FlagInit:
+        CODE
+//  988 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  989 #ifdef OS_SAFETY_CRITICAL
+//  990     if (p_err == (OS_ERR *)0) {
+//  991         OS_SAFETY_CRITICAL_EXCEPTION();
+//  992         return;
+//  993     }
+//  994 #endif
+//  995 
+//  996 #if OS_CFG_DBG_EN > 0u
+//  997     OSFlagDbgListPtr = (OS_FLAG_GRP *)0;
+        MOV     DPTR,#OSFlagDbgListPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  998 #endif
+//  999 
+// 1000     OSFlagQty        = (OS_OBJ_QTY   )0;
+        MOV     DPTR,#OSFlagQty
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1001    *p_err            = OS_ERR_NONE;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1002 }
+        POP     DPH
+        POP     DPL
+        RET
+// 1003 
+// 1004 /*$PAGE*/
+// 1005 /*
+// 1006 ************************************************************************************************************************
+// 1007 *                                    ADD/REMOVE EVENT FLAG GROUP TO/FROM DEBUG LIST
+// 1008 *
+// 1009 * Description: These functions are called by uC/OS-III to add or remove an event flag group from the event flag debug
+// 1010 *              list.
+// 1011 *
+// 1012 * Arguments  : p_grp     is a pointer to the event flag group to add/remove
+// 1013 *
+// 1014 * Returns    : none
+// 1015 *
+// 1016 * Note(s)    : These functions are INTERNAL to uC/OS-III and your application should not call it.
+// 1017 ************************************************************************************************************************
+// 1018 */
+// 1019 
+// 1020 #if OS_CFG_DBG_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+// 1021 void  OS_FlagDbgListAdd (OS_FLAG_GRP  *p_grp)
+OS_FlagDbgListAdd:
+        CODE
+// 1022 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+// 1023     p_grp->DbgNamePtr                = (CPU_CHAR    *)((void *)" ");
+        MOV     A,R2
+        ADD     A,#0x10
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#`?<Constant " ">` & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(`?<Constant " ">` >> 8) & 0xff
+        MOVX    @DPTR,A
+// 1024     p_grp->DbgPrevPtr                = (OS_FLAG_GRP *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1025     if (OSFlagDbgListPtr == (OS_FLAG_GRP *)0) {
+        MOV     DPTR,#OSFlagDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_FlagDbgListAdd_0
+// 1026         p_grp->DbgNextPtr            = (OS_FLAG_GRP *)0;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_FlagDbgListAdd_1
+// 1027     } else {
+// 1028         p_grp->DbgNextPtr            =  OSFlagDbgListPtr;
+??OS_FlagDbgListAdd_0:
+        MOV     DPTR,#OSFlagDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+// 1029         OSFlagDbgListPtr->DbgPrevPtr =  p_grp;
+        MOV     DPTR,#OSFlagDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0xc
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+// 1030     }
+// 1031     OSFlagDbgListPtr                 =  p_grp;
+??OS_FlagDbgListAdd_1:
+        MOV     DPTR,#OSFlagDbgListPtr
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+// 1032 }
+        POP     DPH
+        POP     DPL
+        RET
+// 1033 
+// 1034 
+// 1035 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+// 1036 void  OS_FlagDbgListRemove (OS_FLAG_GRP  *p_grp)
+OS_FlagDbgListRemove:
+        CODE
+// 1037 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+// 1038     OS_FLAG_GRP  *p_grp_next;
+// 1039     OS_FLAG_GRP  *p_grp_prev;
+// 1040 
+// 1041 
+// 1042     p_grp_prev = p_grp->DbgPrevPtr;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+// 1043     p_grp_next = p_grp->DbgNextPtr;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+// 1044 
+// 1045     if (p_grp_prev == (OS_FLAG_GRP *)0) {
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_FlagDbgListRemove_0
+// 1046         OSFlagDbgListPtr = p_grp_next;
+        MOV     DPTR,#OSFlagDbgListPtr
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+// 1047         if (p_grp_next != (OS_FLAG_GRP *)0) {
+        MOV     A,R4
+        ORL     A,R5
+        JZ      ??OS_FlagDbgListRemove_1
+// 1048             p_grp_next->DbgPrevPtr = (OS_FLAG_GRP *)0;
+        MOV     A,R4
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1049         }
+// 1050         p_grp->DbgNextPtr = (OS_FLAG_GRP *)0;
+??OS_FlagDbgListRemove_1:
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_FlagDbgListRemove_2
+// 1051 
+// 1052     } else if (p_grp_next == (OS_FLAG_GRP *)0) {
+??OS_FlagDbgListRemove_0:
+        MOV     A,R4
+        ORL     A,R5
+        JNZ     ??OS_FlagDbgListRemove_3
+// 1053         p_grp_prev->DbgNextPtr = (OS_FLAG_GRP *)0;
+        MOV     A,R0
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R1
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1054         p_grp->DbgPrevPtr      = (OS_FLAG_GRP *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_FlagDbgListRemove_2
+// 1055 
+// 1056     } else {
+// 1057         p_grp_prev->DbgNextPtr =  p_grp_next;
+??OS_FlagDbgListRemove_3:
+        MOV     A,R0
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R1
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+// 1058         p_grp_next->DbgPrevPtr =  p_grp_prev;
+        MOV     A,R4
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+// 1059         p_grp->DbgNextPtr      = (OS_FLAG_GRP *)0;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1060         p_grp->DbgPrevPtr      = (OS_FLAG_GRP *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1061     }
+// 1062 }
+??OS_FlagDbgListRemove_2:
+        POP     DPH
+        POP     DPL
+        RET
+// 1063 #endif
+// 1064 
+// 1065 /*$PAGE*/
+// 1066 /*
+// 1067 ************************************************************************************************************************
+// 1068 *                                                POST EVENT FLAG BIT(S)
+// 1069 *
+// 1070 * Description: This function is called to set or clear some bits in an event flag group.  The bits to set or clear are
+// 1071 *              specified by a 'bit mask'.
+// 1072 *
+// 1073 * Arguments  : p_grp         is a pointer to the desired event flag group.
+// 1074 *
+// 1075 *              flags         If 'opt' (see below) is OS_OPT_POST_FLAG_SET, each bit that is set in 'flags' will
+// 1076 *                            set the corresponding bit in the event flag group.  e.g. to set bits 0, 4
+// 1077 *                            and 5 you would set 'flags' to:
+// 1078 *
+// 1079 *                                0x31     (note, bit 0 is least significant bit)
+// 1080 *
+// 1081 *                            If 'opt' (see below) is OS_OPT_POST_FLAG_CLR, each bit that is set in 'flags' will
+// 1082 *                            CLEAR the corresponding bit in the event flag group.  e.g. to clear bits 0,
+// 1083 *                            4 and 5 you would specify 'flags' as:
+// 1084 *
+// 1085 *                                0x31     (note, bit 0 is least significant bit)
+// 1086 *
+// 1087 *              opt           indicates whether the flags will be:
+// 1088 *
+// 1089 *                                OS_OPT_POST_FLAG_SET       set
+// 1090 *                                OS_OPT_POST_FLAG_CLR       cleared
+// 1091 *
+// 1092 *                            you can also 'add' OS_OPT_POST_NO_SCHED to prevent the scheduler from being called.
+// 1093 *
+// 1094 *              ts            is the timestamp of the post
+// 1095 *
+// 1096 *              p_err         is a pointer to an error code and can be:
+// 1097 *
+// 1098 *                                OS_ERR_NONE                The call was successful
+// 1099 *                                OS_ERR_OBJ_PTR_NULL        You passed a NULL pointer
+// 1100 *                                OS_ERR_OBJ_TYPE            You are not pointing to an event flag group
+// 1101 *                                OS_ERR_OPT_INVALID         You specified an invalid option
+// 1102 *
+// 1103 * Returns    : the new value of the event flags bits that are still set.
+// 1104 *
+// 1105 * Note(s)    : 1) The execution time of this function depends on the number of tasks waiting on the event flag group.
+// 1106 ************************************************************************************************************************
+// 1107 */
+// 1108 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+// 1109 OS_FLAGS  OS_FlagPost (OS_FLAG_GRP  *p_grp,
+OS_FlagPost:
+        CODE
+// 1110                        OS_FLAGS      flags,
+// 1111                        OS_OPT        opt,
+// 1112                        CPU_TS        ts,
+// 1113                        OS_ERR       *p_err)
+// 1114 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 6
+        MOV     A,#-0x6
+        LCALL   ?ALLOC_XSTACK8
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+// 1115     OS_FLAGS        flags_cur;
+// 1116     OS_FLAGS        flags_rdy;
+// 1117     OS_OPT          mode;
+// 1118     OS_PEND_DATA   *p_pend_data;
+// 1119     OS_PEND_DATA   *p_pend_data_next;
+// 1120     OS_PEND_LIST   *p_pend_list;
+// 1121     OS_TCB         *p_tcb;
+// 1122     CPU_SR_ALLOC();
+        MOV     R6,#0x0
+// 1123 
+// 1124 
+// 1125 
+// 1126     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+        MOV     A,#0x15
+        LCALL   ?XSTACK_DISP0_8
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+// 1127     switch (opt) {
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V5,A
+        MOV     R0,#?V4
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OS_FlagPost>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32769
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_2
+        CODE
+// 1128         case OS_OPT_POST_FLAG_SET:
+// 1129         case OS_OPT_POST_FLAG_SET | OS_OPT_POST_NO_SCHED:
+// 1130              p_grp->Flags |=  flags;                            /* Set   the flags specified in the group             */
+??OS_FlagPost_0:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_IOR_TO_X
+// 1131              break;
+??OS_FlagPost_3:
+        MOV     A,#0x19
+        LCALL   ?XSTACK_DISP0_8
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+// 1132 
+// 1133         case OS_OPT_POST_FLAG_CLR:
+// 1134         case OS_OPT_POST_FLAG_CLR | OS_OPT_POST_NO_SCHED:
+// 1135              p_grp->Flags &= ~flags;                            /* Clear the flags specified in the group             */
+// 1136              break;
+// 1137 
+// 1138         default:
+// 1139              CPU_CRITICAL_EXIT();                               /* INVALID option                                     */
+// 1140             *p_err = OS_ERR_OPT_INVALID;
+// 1141              return ((OS_FLAGS)0);
+// 1142     }
+// 1143     p_grp->TS   = ts;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x16
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_TO_X
+// 1144     p_pend_list = &p_grp->PendList;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        ADD     A,#0x6
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOV     R1,A
+// 1145     if (p_pend_list->NbrEntries == 0u) {                        /* Any task waiting on event flag group?              */
+        MOV     DPL,R0
+        MOV     DPH,R1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        MOV     A,R2
+        ORL     A,R3
+        JNZ     ??OS_FlagPost_4
+// 1146         CPU_CRITICAL_EXIT();                                    /* No                                                 */
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+// 1147        *p_err = OS_ERR_NONE;
+        MOV     A,#0x1d
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1148         return (p_grp->Flags);
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R2345
+        LJMP    ??OS_FlagPost_5
+// 1149     }
+??OS_FlagPost_1:
+        MOV     R0,#?V0
+        LCALL   ?L_NOT
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_AND_TO_X
+        LJMP    ??OS_FlagPost_3
+??OS_FlagPost_2:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x1d
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        LJMP    ??OS_FlagPost_5
+// 1150 
+// 1151     OS_CRITICAL_ENTER_CPU_EXIT();
+// 1152     p_pend_data = p_pend_list->HeadPtr;
+??OS_FlagPost_4:
+        MOV     DPL,R0
+        MOV     DPH,R1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+// 1153     p_tcb       = p_pend_data->TCBPtr;
+        MOV     DPL,R0
+        MOV     DPH,R1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        SJMP    ??OS_FlagPost_6
+// 1154     while (p_tcb != (OS_TCB *)0) {                              /* Go through all tasks waiting on event flag(s)      */
+// 1155         p_pend_data_next = p_pend_data->NextPtr;
+// 1156         mode             = p_tcb->FlagsOpt & OS_OPT_PEND_FLAG_MASK;
+// 1157         switch (mode) {
+// 1158             case OS_OPT_PEND_FLAG_SET_ALL:                      /* See if all req. flags are set for current node     */
+// 1159                  flags_rdy = (OS_FLAGS)(p_grp->Flags & p_tcb->FlagsPend);
+// 1160                  if (flags_rdy == p_tcb->FlagsPend) {
+// 1161                      OS_FlagTaskRdy(p_tcb,                      /* Make task RTR, event(s) Rx'd                       */
+// 1162                                     flags_rdy,
+// 1163                                     ts);
+// 1164                  }
+// 1165                  break;
+// 1166 
+// 1167             case OS_OPT_PEND_FLAG_SET_ANY:                      /* See if any flag set                                */
+// 1168                  flags_rdy = (OS_FLAGS)(p_grp->Flags & p_tcb->FlagsPend);
+// 1169                  if (flags_rdy != (OS_FLAGS)0) {
+// 1170                      OS_FlagTaskRdy(p_tcb,                      /* Make task RTR, event(s) Rx'd                       */
+// 1171                                     flags_rdy,
+// 1172                                     ts);
+// 1173                  }
+// 1174                  break;
+// 1175 
+// 1176 #if OS_CFG_FLAG_MODE_CLR_EN > 0u
+// 1177             case OS_OPT_PEND_FLAG_CLR_ALL:                      /* See if all req. flags are set for current node     */
+// 1178                  flags_rdy = (OS_FLAGS)(~p_grp->Flags & p_tcb->FlagsPend);
+// 1179                  if (flags_rdy == p_tcb->FlagsPend) {
+// 1180                      OS_FlagTaskRdy(p_tcb,                      /* Make task RTR, event(s) Rx'd                       */
+// 1181                                     flags_rdy,
+// 1182                                     ts);
+// 1183                  }
+// 1184                  break;
+// 1185 
+// 1186             case OS_OPT_PEND_FLAG_CLR_ANY:                      /* See if any flag set                                */
+// 1187                  flags_rdy = (OS_FLAGS)(~p_grp->Flags & p_tcb->FlagsPend);
+// 1188                  if (flags_rdy != (OS_FLAGS)0) {
+// 1189                      OS_FlagTaskRdy(p_tcb,                      /* Make task RTR, event(s) Rx'd                       */
+// 1190                                     flags_rdy,
+// 1191                                     ts);
+// 1192                  }
+// 1193                  break;
+// 1194 #endif
+// 1195             default:
+// 1196                  OS_CRITICAL_EXIT();
+// 1197                 *p_err = OS_ERR_FLAG_PEND_OPT;
+// 1198                  return ((OS_FLAGS)0);
+// 1199         }
+// 1200         p_pend_data = p_pend_data_next;                         /* Point to next task waiting for event flag(s)       */
+// 1201         if (p_pend_data != (OS_PEND_DATA *)0) {
+// 1202             p_tcb = p_pend_data->TCBPtr;
+??OS_FlagPost_7:
+        MOV     DPL,R0
+        MOV     DPH,R1
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+// 1203         } else {
+??OS_FlagPost_6:
+        MOV     A,R2
+        ORL     A,R3
+        JNZ     $+5
+        LJMP    ??OS_FlagPost_8
+        MOV     DPL,R0
+        MOV     DPH,R1
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+        MOV     A,R2
+        ADD     A,#0x62
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        ANL     A,#0xf
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0x0
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_DENSE
+`?<Jumptable for OS_FlagPost>_1`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        1
+        DATA
+        DATA8
+        DATA
+        DATA8
+        DB        7
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_10
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_11
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_12
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_9
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OS_FlagPost_13
+        CODE
+??OS_FlagPost_12:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,R2
+        ADD     A,#0x5a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_AND_X
+        MOV     A,R2
+        ADD     A,#0x5a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_FlagPost_14
+        ; Setup parameters for call to function OS_FlagTaskRdy
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        LCALL   OS_FlagTaskRdy
+        MOV     A,#0x8
+        LCALL   ?DEALLOC_XSTACK8
+??OS_FlagPost_14:
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      $+5
+        LJMP    ??OS_FlagPost_7
+// 1204             p_tcb = (OS_TCB *)0;
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OS_FlagPost_6
+// 1205         }
+??OS_FlagPost_13:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,R2
+        ADD     A,#0x5a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_AND_X
+        MOV     A,?V0
+        ORL     A,?V1
+        ORL     A,?V2
+        ORL     A,?V3
+        JZ      ??OS_FlagPost_14
+        ; Setup parameters for call to function OS_FlagTaskRdy
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        LCALL   OS_FlagTaskRdy
+        MOV     A,#0x8
+        LCALL   ?DEALLOC_XSTACK8
+        SJMP    ??OS_FlagPost_14
+??OS_FlagPost_10:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V0
+        LCALL   ?L_NOT
+        MOV     A,R2
+        ADD     A,#0x5a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_AND_X
+        MOV     A,R2
+        ADD     A,#0x5a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OS_FlagPost_15
+        ; Setup parameters for call to function OS_FlagTaskRdy
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        LCALL   OS_FlagTaskRdy
+        MOV     A,#0x8
+        LCALL   ?DEALLOC_XSTACK8
+??OS_FlagPost_15:
+        LJMP    ??OS_FlagPost_14
+??OS_FlagPost_11:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     R0,#?V0
+        LCALL   ?L_NOT
+        MOV     A,R2
+        ADD     A,#0x5a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_AND_X
+        MOV     A,?V0
+        ORL     A,?V1
+        ORL     A,?V2
+        ORL     A,?V3
+        JZ      ??OS_FlagPost_16
+        ; Setup parameters for call to function OS_FlagTaskRdy
+        MOV     R0,#?V4
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        LCALL   OS_FlagTaskRdy
+        MOV     A,#0x8
+        LCALL   ?DEALLOC_XSTACK8
+??OS_FlagPost_16:
+        LJMP    ??OS_FlagPost_14
+??OS_FlagPost_9:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x1d
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x3a
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        SJMP    ??OS_FlagPost_5
+// 1206     }
+// 1207     OS_CRITICAL_EXIT_NO_SCHED();
+??OS_FlagPost_8:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+// 1208 
+// 1209     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0) {
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ANL     A,#0x0
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_FlagPost_17
+// 1210         OSSched();
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+// 1211     }
+// 1212 
+// 1213     CPU_CRITICAL_ENTER();
+??OS_FlagPost_17:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+// 1214     flags_cur = p_grp->Flags;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x12
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+// 1215     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+// 1216    *p_err     = OS_ERR_NONE;
+        MOV     A,#0x1d
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1217     return (flags_cur);
+        MOV     R2,?V0
+        MOV     R3,?V1
+        MOV     R4,?V2
+        MOV     R5,?V3
+??OS_FlagPost_5:
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+// 1218 }
+// 1219 
+// 1220 /*$PAGE*/
+// 1221 /*
+// 1222 ************************************************************************************************************************
+// 1223 *                                        MAKE TASK READY-TO-RUN, EVENT(s) OCCURRED
+// 1224 *
+// 1225 * Description: This function is internal to uC/OS-III and is used to make a task ready-to-run because the desired event
+// 1226 *              flag bits have been set.
+// 1227 *
+// 1228 * Arguments  : p_tcb         is a pointer to the OS_TCB of the task to remove
+// 1229 *              -----
+// 1230 *
+// 1231 *              flags_rdy     contains the bit pattern of the event flags that cause the task to become ready-to-run.
+// 1232 *
+// 1233 *              ts            is a timestamp associated with the post
+// 1234 *
+// 1235 * Returns    : none
+// 1236 *
+// 1237 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+// 1238 ************************************************************************************************************************
+// 1239 */
+// 1240 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+// 1241 void   OS_FlagTaskRdy (OS_TCB    *p_tcb,
+OS_FlagTaskRdy:
+        CODE
+// 1242                        OS_FLAGS   flags_rdy,
+// 1243                        CPU_TS     ts)
+// 1244 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+// 1245     p_tcb->FlagsRdy   = flags_rdy;
+        MOV     A,#0x8
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?XLOAD_R0123
+        MOV     A,R6
+        ADD     A,#0x5e
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+// 1246     p_tcb->PendStatus = OS_STATUS_PEND_OK;                  /* Clear pend status                                      */
+        MOV     A,R6
+        ADD     A,#0x1b
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1247     p_tcb->PendOn     = OS_TASK_PEND_ON_NOTHING;            /* Indicate no longer pending                             */
+        MOV     A,R6
+        ADD     A,#0x1a
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1248     p_tcb->TS         = ts;
+        MOV     A,#0xc
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?XLOAD_R0123
+        MOV     A,R6
+        ADD     A,#0x24
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        LCALL   ?XSTORE_R0123
+// 1249     switch (p_tcb->TaskState) {
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OS_FlagTaskRdy_0
+        DEC     A
+        JZ      ??OS_FlagTaskRdy_0
+        DEC     A
+        JZ      ??OS_FlagTaskRdy_1
+        DEC     A
+        JZ      ??OS_FlagTaskRdy_1
+        DEC     A
+        JZ      ??OS_FlagTaskRdy_0
+        DEC     A
+        JZ      ??OS_FlagTaskRdy_0
+        DEC     A
+        JZ      ??OS_FlagTaskRdy_2
+        DEC     A
+        JZ      ??OS_FlagTaskRdy_2
+        SJMP    ??OS_FlagTaskRdy_0
+// 1250         case OS_TASK_STATE_RDY:
+// 1251         case OS_TASK_STATE_DLY:
+// 1252         case OS_TASK_STATE_DLY_SUSPENDED:
+// 1253         case OS_TASK_STATE_SUSPENDED:
+// 1254              break;
+// 1255 
+// 1256         case OS_TASK_STATE_PEND:
+// 1257         case OS_TASK_STATE_PEND_TIMEOUT:
+// 1258              OS_TaskRdy(p_tcb);
+??OS_FlagTaskRdy_1:
+        ; Setup parameters for call to function OS_TaskRdy
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_TaskRdy
+// 1259              p_tcb->TaskState = OS_TASK_STATE_RDY;
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+// 1260              break;
+        SJMP    ??OS_FlagTaskRdy_0
+// 1261 
+// 1262         case OS_TASK_STATE_PEND_SUSPENDED:
+// 1263         case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+// 1264              p_tcb->TaskState = OS_TASK_STATE_SUSPENDED;
+??OS_FlagTaskRdy_2:
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x4
+        MOVX    @DPTR,A
+// 1265              break;
+// 1266 
+// 1267         default:
+// 1268              break;
+// 1269     }
+// 1270     OS_PendListRemove(p_tcb);
+??OS_FlagTaskRdy_0:
+        ; Setup parameters for call to function OS_PendListRemove
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_PendListRemove
+// 1271 }
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant "?FLAG">>`:
+        DB "?FLAG"
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant " ">>`:
+        DB " "
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_4c464741>`:
+        DATA32
+        DD 1279674177
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+`?<Constant "?FLAG">`:
+        DS 6
+        REQUIRE `?<Initializer for <Constant "?FLAG">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+`?<Constant " ">`:
+        DS 2
+        REQUIRE `?<Initializer for <Constant " ">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_4c464741:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_4c464741>`
+        REQUIRE __INIT_XDATA_I
+
+        END
+// 1272 #endif
+// 
+// 5 799 bytes in segment NEAR_CODE
+//    12 bytes in segment XDATA_I
+//    12 bytes in segment XDATA_ID
+// 
+// 5 807 bytes of CODE  memory (+ 4 bytes shared)
+//     8 bytes of XDATA memory (+ 4 bytes shared)
+//
+//Errors: none
+//Warnings: none

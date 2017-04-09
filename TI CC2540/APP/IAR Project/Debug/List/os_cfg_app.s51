@@ -1,0 +1,827 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:02
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_cfg_app.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\os_cfg_app.c" -lB "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_cfg_app.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_cfg_app
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN __INIT_XDATA_I
+        EXTERN __INIT_XDATA_Z
+
+        PUBLIC OSCfg_DataSizeRAM
+        PUBLIC OSCfg_ISRStk
+        PUBLIC OSCfg_ISRStkBasePtr
+        PUBLIC OSCfg_ISRStkSize
+        PUBLIC OSCfg_ISRStkSizeRAM
+        PUBLIC OSCfg_IdleTaskStk
+        PUBLIC OSCfg_IdleTaskStkBasePtr
+        PUBLIC OSCfg_IdleTaskStkLimit
+        PUBLIC OSCfg_IdleTaskStkSize
+        PUBLIC OSCfg_IdleTaskStkSizeRAM
+        PUBLIC OSCfg_Init
+        PUBLIC OSCfg_IntQBasePtr
+        PUBLIC OSCfg_IntQSize
+        PUBLIC OSCfg_IntQSizeRAM
+        PUBLIC OSCfg_IntQTaskStkBasePtr
+        PUBLIC OSCfg_IntQTaskStkLimit
+        PUBLIC OSCfg_IntQTaskStkSize
+        PUBLIC OSCfg_IntQTaskStkSizeRAM
+        PUBLIC OSCfg_MsgPool
+        PUBLIC OSCfg_MsgPoolBasePtr
+        PUBLIC OSCfg_MsgPoolSize
+        PUBLIC OSCfg_MsgPoolSizeRAM
+        PUBLIC OSCfg_StatTaskPrio
+        PUBLIC OSCfg_StatTaskRate_Hz
+        PUBLIC OSCfg_StatTaskStkBasePtr
+        PUBLIC OSCfg_StatTaskStkLimit
+        PUBLIC OSCfg_StatTaskStkSize
+        PUBLIC OSCfg_StatTaskStkSizeRAM
+        PUBLIC OSCfg_StkSizeMin
+        PUBLIC OSCfg_TickRate_Cnt
+        PUBLIC OSCfg_TickRate_Hz
+        PUBLIC OSCfg_TickTaskPrio
+        PUBLIC OSCfg_TickTaskStk
+        PUBLIC OSCfg_TickTaskStkBasePtr
+        PUBLIC OSCfg_TickTaskStkLimit
+        PUBLIC OSCfg_TickTaskStkSize
+        PUBLIC OSCfg_TickTaskStkSizeRAM
+        PUBLIC OSCfg_TickWheel
+        PUBLIC OSCfg_TickWheelSize
+        PUBLIC OSCfg_TickWheelSizeRAM
+        PUBLIC OSCfg_TmrTaskPrio
+        PUBLIC OSCfg_TmrTaskRate_Hz
+        PUBLIC OSCfg_TmrTaskStkBasePtr
+        PUBLIC OSCfg_TmrTaskStkLimit
+        PUBLIC OSCfg_TmrTaskStkSize
+        PUBLIC OSCfg_TmrTaskStkSizeRAM
+        PUBLIC OSCfg_TmrWheelSize
+        PUBLIC OSCfg_TmrWheelSizeRAM
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_cfg_app.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                       OS CONFIGURATION (APPLICATION SPECIFICS)
+//   10 *
+//   11 * File    : OS_CFG_APP.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 * Note(s) : DO NOT CHANGE THIS FILE!
+//   32 ************************************************************************************************************************
+//   33 */
+//   34 
+//   35 #define  MICRIUM_SOURCE
+//   36 #include <os_cfg_app.h>
+//   37 #include <os.h>
+//   38 
+//   39 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   40 const  CPU_CHAR  *os_cfg_app__c = "$Id: $";
+//   41 #endif
+//   42 
+//   43 #define  OS_CFG_IDLE_TASK_STK_LIMIT      ((OS_CFG_IDLE_TASK_STK_SIZE  * OS_CFG_TASK_STK_LIMIT_PCT_EMPTY) / 100u)
+//   44 #define  OS_CFG_INT_Q_TASK_STK_LIMIT     ((OS_CFG_INT_Q_TASK_STK_SIZE * OS_CFG_TASK_STK_LIMIT_PCT_EMPTY) / 100u)
+//   45 #define  OS_CFG_STAT_TASK_STK_LIMIT      ((OS_CFG_STAT_TASK_STK_SIZE  * OS_CFG_TASK_STK_LIMIT_PCT_EMPTY) / 100u)
+//   46 #define  OS_CFG_TICK_TASK_STK_LIMIT      ((OS_CFG_TICK_TASK_STK_SIZE  * OS_CFG_TASK_STK_LIMIT_PCT_EMPTY) / 100u)
+//   47 #define  OS_CFG_TMR_TASK_STK_LIMIT       ((OS_CFG_TMR_TASK_STK_SIZE   * OS_CFG_TASK_STK_LIMIT_PCT_EMPTY) / 100u)
+//   48 
+//   49 /*
+//   50 ************************************************************************************************************************
+//   51 *                                                    DATA STORAGE
+//   52 ************************************************************************************************************************
+//   53 */
+//   54 
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   55 CPU_STK        OSCfg_IdleTaskStk   [OS_CFG_IDLE_TASK_STK_SIZE];
+OSCfg_IdleTaskStk:
+        DS 128
+        REQUIRE __INIT_XDATA_Z
+//   56 
+//   57 #if (OS_CFG_ISR_POST_DEFERRED_EN > 0u)
+//   58 OS_INT_Q       OSCfg_IntQ          [OS_CFG_INT_Q_SIZE];
+//   59 CPU_STK        OSCfg_IntQTaskStk   [OS_CFG_INT_Q_TASK_STK_SIZE];
+//   60 #endif
+//   61 
+//   62 #if (OS_CFG_ISR_STK_SIZE > 0u)
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   63 CPU_STK        OSCfg_ISRStk        [OS_CFG_ISR_STK_SIZE];
+OSCfg_ISRStk:
+        DS 128
+        REQUIRE __INIT_XDATA_Z
+//   64 #endif
+//   65 
+//   66 #if (OS_MSG_EN > 0u)
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   67 OS_MSG         OSCfg_MsgPool       [OS_CFG_MSG_POOL_SIZE];
+OSCfg_MsgPool:
+        DS 1000
+        REQUIRE __INIT_XDATA_Z
+//   68 #endif
+//   69 
+//   70 #if (OS_CFG_STAT_TASK_EN > 0u)
+//   71 CPU_STK        OSCfg_StatTaskStk   [OS_CFG_STAT_TASK_STK_SIZE];
+//   72 #endif
+//   73 
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   74 CPU_STK        OSCfg_TickTaskStk   [OS_CFG_TICK_TASK_STK_SIZE];
+OSCfg_TickTaskStk:
+        DS 128
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//   75 OS_TICK_SPOKE  OSCfg_TickWheel     [OS_CFG_TICK_WHEEL_SIZE];
+OSCfg_TickWheel:
+        DS 102
+        REQUIRE __INIT_XDATA_Z
+//   76 
+//   77 #if (OS_CFG_TMR_EN > 0u)
+//   78 CPU_STK        OSCfg_TmrTaskStk    [OS_CFG_TMR_TASK_STK_SIZE];
+//   79 OS_TMR_SPOKE   OSCfg_TmrWheel      [OS_CFG_TMR_WHEEL_SIZE];
+//   80 #endif
+//   81 
+//   82 /*$PAGE*/
+//   83 /*
+//   84 ************************************************************************************************************************
+//   85 *                                                      CONSTANTS
+//   86 ************************************************************************************************************************
+//   87 */
+//   88 
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//   89 CPU_STK      * const  OSCfg_IdleTaskStkBasePtr   = (CPU_STK    *)&OSCfg_IdleTaskStk[0];
+OSCfg_IdleTaskStkBasePtr:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_IdleTaskStkBasePtr>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//   90 CPU_STK_SIZE   const  OSCfg_IdleTaskStkLimit     = (CPU_STK_SIZE)OS_CFG_IDLE_TASK_STK_LIMIT;
+OSCfg_IdleTaskStkLimit:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_IdleTaskStkLimit>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//   91 CPU_STK_SIZE   const  OSCfg_IdleTaskStkSize      = (CPU_STK_SIZE)OS_CFG_IDLE_TASK_STK_SIZE;
+OSCfg_IdleTaskStkSize:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_IdleTaskStkSize>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+//   92 CPU_INT32U     const  OSCfg_IdleTaskStkSizeRAM   = (CPU_INT32U  )sizeof(OSCfg_IdleTaskStk);
+OSCfg_IdleTaskStkSizeRAM:
+        DS 4
+        REQUIRE `?<Initializer for OSCfg_IdleTaskStkSizeRAM>`
+        REQUIRE __INIT_XDATA_I
+//   93 
+//   94 
+//   95 #if (OS_CFG_ISR_POST_DEFERRED_EN > 0u)
+//   96 OS_INT_Q     * const  OSCfg_IntQBasePtr          = (OS_INT_Q   *)&OSCfg_IntQ[0];
+//   97 OS_OBJ_QTY     const  OSCfg_IntQSize             = (OS_OBJ_QTY  )OS_CFG_INT_Q_SIZE;
+//   98 CPU_INT32U     const  OSCfg_IntQSizeRAM          = (CPU_INT32U  )sizeof(OSCfg_IntQ);
+//   99 CPU_STK      * const  OSCfg_IntQTaskStkBasePtr   = (CPU_STK    *)&OSCfg_IntQTaskStk[0];
+//  100 CPU_STK_SIZE   const  OSCfg_IntQTaskStkLimit     = (CPU_STK_SIZE)OS_CFG_INT_Q_TASK_STK_LIMIT;
+//  101 CPU_STK_SIZE   const  OSCfg_IntQTaskStkSize      = (CPU_STK_SIZE)OS_CFG_INT_Q_TASK_STK_SIZE;
+//  102 CPU_INT32U     const  OSCfg_IntQTaskStkSizeRAM   = (CPU_INT32U  )sizeof(OSCfg_IntQTaskStk);
+//  103 #else
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  104 OS_INT_Q     * const  OSCfg_IntQBasePtr          = (OS_INT_Q   *)0;
+OSCfg_IntQBasePtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  105 OS_OBJ_QTY     const  OSCfg_IntQSize             = (OS_OBJ_QTY  )0;
+OSCfg_IntQSize:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+//  106 CPU_INT32U     const  OSCfg_IntQSizeRAM          = (CPU_INT32U  )0;
+OSCfg_IntQSizeRAM:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  107 CPU_STK      * const  OSCfg_IntQTaskStkBasePtr   = (CPU_STK    *)0;
+OSCfg_IntQTaskStkBasePtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  108 CPU_STK_SIZE   const  OSCfg_IntQTaskStkLimit     = (CPU_STK_SIZE)0;
+OSCfg_IntQTaskStkLimit:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  109 CPU_STK_SIZE   const  OSCfg_IntQTaskStkSize      = (CPU_STK_SIZE)0;
+OSCfg_IntQTaskStkSize:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+//  110 CPU_INT32U     const  OSCfg_IntQTaskStkSizeRAM   = (CPU_INT32U  )0;
+OSCfg_IntQTaskStkSizeRAM:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+//  111 #endif
+//  112 
+//  113 
+//  114 #if (OS_CFG_ISR_STK_SIZE > 0u)
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  115 CPU_STK      * const  OSCfg_ISRStkBasePtr        = (CPU_STK    *)&OSCfg_ISRStk[0];
+OSCfg_ISRStkBasePtr:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_ISRStkBasePtr>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  116 CPU_STK_SIZE   const  OSCfg_ISRStkSize           = (CPU_STK_SIZE)OS_CFG_ISR_STK_SIZE;
+OSCfg_ISRStkSize:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_ISRStkSize>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+//  117 CPU_INT32U     const  OSCfg_ISRStkSizeRAM        = (CPU_INT32U  )sizeof(OSCfg_ISRStk);
+OSCfg_ISRStkSizeRAM:
+        DS 4
+        REQUIRE `?<Initializer for OSCfg_ISRStkSizeRAM>`
+        REQUIRE __INIT_XDATA_I
+//  118 #else
+//  119 CPU_STK      * const  OSCfg_ISRStkBasePtr        = (CPU_STK    *)0;
+//  120 CPU_STK_SIZE   const  OSCfg_ISRStkSize           = (CPU_STK_SIZE)0;
+//  121 CPU_INT32U     const  OSCfg_ISRStkSizeRAM        = (CPU_INT32U  )0;
+//  122 #endif
+//  123 
+//  124 
+//  125 #if (OS_MSG_EN > 0u)
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  126 OS_MSG_SIZE    const  OSCfg_MsgPoolSize          = (OS_MSG_SIZE)OS_CFG_MSG_POOL_SIZE;
+OSCfg_MsgPoolSize:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_MsgPoolSize>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+//  127 CPU_INT32U     const  OSCfg_MsgPoolSizeRAM       = (CPU_INT32U )sizeof(OSCfg_MsgPool);
+OSCfg_MsgPoolSizeRAM:
+        DS 4
+        REQUIRE `?<Initializer for OSCfg_MsgPoolSizeRAM>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  128 OS_MSG       * const  OSCfg_MsgPoolBasePtr       = (OS_MSG    *)&OSCfg_MsgPool[0];
+OSCfg_MsgPoolBasePtr:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_MsgPoolBasePtr>`
+        REQUIRE __INIT_XDATA_I
+//  129 #else
+//  130 OS_MSG_SIZE    const  OSCfg_MsgPoolSize          = (OS_MSG_SIZE)0;
+//  131 CPU_INT32U     const  OSCfg_MsgPoolSizeRAM       = (CPU_INT32U )0;
+//  132 OS_MSG       * const  OSCfg_MsgPoolBasePtr       = (OS_MSG    *)0;
+//  133 #endif
+//  134 
+//  135 
+//  136 #if (OS_CFG_STAT_TASK_EN > 0u)
+//  137 OS_PRIO        const  OSCfg_StatTaskPrio         = (OS_PRIO     )OS_CFG_STAT_TASK_PRIO;
+//  138 OS_RATE_HZ     const  OSCfg_StatTaskRate_Hz      = (OS_RATE_HZ  )OS_CFG_STAT_TASK_RATE_HZ;
+//  139 CPU_STK      * const  OSCfg_StatTaskStkBasePtr   = (CPU_STK    *)&OSCfg_StatTaskStk[0];
+//  140 CPU_STK_SIZE   const  OSCfg_StatTaskStkLimit     = (CPU_STK_SIZE)OS_CFG_STAT_TASK_STK_LIMIT;
+//  141 CPU_STK_SIZE   const  OSCfg_StatTaskStkSize      = (CPU_STK_SIZE)OS_CFG_STAT_TASK_STK_SIZE;
+//  142 CPU_INT32U     const  OSCfg_StatTaskStkSizeRAM   = (CPU_INT32U  )sizeof(OSCfg_StatTaskStk);
+//  143 #else
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//  144 OS_PRIO        const  OSCfg_StatTaskPrio         = (OS_PRIO     )0;
+OSCfg_StatTaskPrio:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+//  145 OS_RATE_HZ     const  OSCfg_StatTaskRate_Hz      = (OS_RATE_HZ  )0;
+OSCfg_StatTaskRate_Hz:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  146 CPU_STK      * const  OSCfg_StatTaskStkBasePtr   = (CPU_STK    *)0;
+OSCfg_StatTaskStkBasePtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  147 CPU_STK_SIZE   const  OSCfg_StatTaskStkLimit     = (CPU_STK_SIZE)0;
+OSCfg_StatTaskStkLimit:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  148 CPU_STK_SIZE   const  OSCfg_StatTaskStkSize      = (CPU_STK_SIZE)0;
+OSCfg_StatTaskStkSize:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+//  149 CPU_INT32U     const  OSCfg_StatTaskStkSizeRAM   = (CPU_INT32U  )0;
+OSCfg_StatTaskStkSizeRAM:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+//  150 #endif
+//  151 
+//  152 
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  153 CPU_STK_SIZE   const  OSCfg_StkSizeMin           = (CPU_STK_SIZE)OS_CFG_STK_SIZE_MIN;
+OSCfg_StkSizeMin:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_StkSizeMin>`
+        REQUIRE __INIT_XDATA_I
+//  154 
+//  155 
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+//  156 OS_RATE_HZ     const  OSCfg_TickRate_Hz          = (OS_RATE_HZ  )OS_CFG_TICK_RATE_HZ;
+OSCfg_TickRate_Hz:
+        DS 4
+        REQUIRE `?<Initializer for OSCfg_TickRate_Hz>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  157 CPU_INT16U     const  OSCfg_TickRate_Cnt         = (CPU_INT16U  )32768/OS_CFG_TICK_RATE_HZ; 
+OSCfg_TickRate_Cnt:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_TickRate_Cnt>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+//  158 OS_PRIO        const  OSCfg_TickTaskPrio         = (OS_PRIO     )OS_CFG_TICK_TASK_PRIO;
+OSCfg_TickTaskPrio:
+        DS 1
+        REQUIRE `?<Initializer for OSCfg_TickTaskPrio>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  159 CPU_STK      * const  OSCfg_TickTaskStkBasePtr   = (CPU_STK    *)&OSCfg_TickTaskStk[0];
+OSCfg_TickTaskStkBasePtr:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_TickTaskStkBasePtr>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  160 CPU_STK_SIZE   const  OSCfg_TickTaskStkLimit     = (CPU_STK_SIZE)OS_CFG_TICK_TASK_STK_LIMIT;
+OSCfg_TickTaskStkLimit:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_TickTaskStkLimit>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  161 CPU_STK_SIZE   const  OSCfg_TickTaskStkSize      = (CPU_STK_SIZE)OS_CFG_TICK_TASK_STK_SIZE;
+OSCfg_TickTaskStkSize:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_TickTaskStkSize>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+//  162 CPU_INT32U     const  OSCfg_TickTaskStkSizeRAM   = (CPU_INT32U  )sizeof(OSCfg_TickTaskStk);
+OSCfg_TickTaskStkSizeRAM:
+        DS 4
+        REQUIRE `?<Initializer for OSCfg_TickTaskStkSizeRAM>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+//  163 OS_OBJ_QTY     const  OSCfg_TickWheelSize        = (OS_OBJ_QTY  )OS_CFG_TICK_WHEEL_SIZE;
+OSCfg_TickWheelSize:
+        DS 2
+        REQUIRE `?<Initializer for OSCfg_TickWheelSize>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+//  164 CPU_INT32U     const  OSCfg_TickWheelSizeRAM     = (CPU_INT32U  )sizeof(OSCfg_TickWheel);
+OSCfg_TickWheelSizeRAM:
+        DS 4
+        REQUIRE `?<Initializer for OSCfg_TickWheelSizeRAM>`
+        REQUIRE __INIT_XDATA_I
+//  165 
+//  166 
+//  167 #if (OS_CFG_TMR_EN > 0u)
+//  168 OS_PRIO        const  OSCfg_TmrTaskPrio          = (OS_PRIO     )OS_CFG_TMR_TASK_PRIO;
+//  169 OS_RATE_HZ     const  OSCfg_TmrTaskRate_Hz       = (OS_RATE_HZ  )OS_CFG_TMR_TASK_RATE_HZ;
+//  170 CPU_STK      * const  OSCfg_TmrTaskStkBasePtr    = (CPU_STK    *)&OSCfg_TmrTaskStk[0];
+//  171 CPU_STK_SIZE   const  OSCfg_TmrTaskStkLimit      = (CPU_STK_SIZE)OS_CFG_TMR_TASK_STK_LIMIT;
+//  172 CPU_STK_SIZE   const  OSCfg_TmrTaskStkSize       = (CPU_STK_SIZE)OS_CFG_TMR_TASK_STK_SIZE;
+//  173 CPU_INT32U     const  OSCfg_TmrTaskStkSizeRAM    = (CPU_INT32U  )sizeof(OSCfg_TmrTaskStk);
+//  174 OS_OBJ_QTY     const  OSCfg_TmrWheelSize         = (OS_OBJ_QTY  )OS_CFG_TMR_WHEEL_SIZE;
+//  175 CPU_INT32U     const  OSCfg_TmrWheelSizeRAM      = (CPU_INT32U  )sizeof(OSCfg_TmrWheel);
+//  176 #else
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//  177 OS_PRIO        const  OSCfg_TmrTaskPrio          = (OS_PRIO     )0;
+OSCfg_TmrTaskPrio:
+        DS 1
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+//  178 OS_RATE_HZ     const  OSCfg_TmrTaskRate_Hz       = (OS_RATE_HZ  )0;
+OSCfg_TmrTaskRate_Hz:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  179 CPU_STK      * const  OSCfg_TmrTaskStkBasePtr    = (CPU_STK    *)0;
+OSCfg_TmrTaskStkBasePtr:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  180 CPU_STK_SIZE   const  OSCfg_TmrTaskStkLimit      = (CPU_STK_SIZE)0;
+OSCfg_TmrTaskStkLimit:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  181 CPU_STK_SIZE   const  OSCfg_TmrTaskStkSize       = (CPU_STK_SIZE)0;
+OSCfg_TmrTaskStkSize:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+//  182 CPU_INT32U     const  OSCfg_TmrTaskStkSizeRAM    = (CPU_INT32U  )0;
+OSCfg_TmrTaskStkSizeRAM:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+//  183 OS_OBJ_QTY     const  OSCfg_TmrWheelSize         = (OS_OBJ_QTY  )0;
+OSCfg_TmrWheelSize:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA32
+//  184 CPU_INT32U     const  OSCfg_TmrWheelSizeRAM      = (CPU_INT32U  )0;
+OSCfg_TmrWheelSizeRAM:
+        DS 4
+        REQUIRE __INIT_XDATA_Z
+//  185 #endif
+//  186 
+//  187 
+//  188 /*$PAGE*/
+//  189 /*
+//  190 ************************************************************************************************************************
+//  191 *                                         TOTAL SIZE OF APPLICATION CONFIGURATION
+//  192 ************************************************************************************************************************
+//  193 */
+//  194 
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+//  195 CPU_INT32U     const  OSCfg_DataSizeRAM          = sizeof(OSCfg_IdleTaskStk)
+OSCfg_DataSizeRAM:
+        DS 4
+        REQUIRE `?<Initializer for OSCfg_DataSizeRAM>`
+        REQUIRE __INIT_XDATA_I
+//  196 
+//  197 #if (OS_CFG_ISR_POST_DEFERRED_EN > 0u)
+//  198                                                  + sizeof(OSCfg_IntQ)
+//  199                                                  + sizeof(OSCfg_IntQTaskStk)
+//  200 #endif
+//  201 
+//  202 #if (OS_MSG_EN > 0u)
+//  203                                                  + sizeof(OSCfg_MsgPool)
+//  204 #endif
+//  205 
+//  206 #if (OS_CFG_STAT_TASK_EN > 0u)
+//  207                                                  + sizeof(OSCfg_StatTaskStk)
+//  208 #endif
+//  209 
+//  210 #if (OS_CFG_TMR_EN > 0u)
+//  211                                                  + sizeof(OSCfg_TmrTaskStk)
+//  212                                                  + sizeof(OSCfg_TmrWheel)
+//  213 #endif
+//  214 
+//  215 #if (OS_CFG_ISR_STK_SIZE > 0u)
+//  216                                                  + sizeof(OSCfg_ISRStk)
+//  217 #endif
+//  218                                                  + sizeof(OSCfg_TickTaskStk)
+//  219                                                  + sizeof(OSCfg_TickWheel);
+//  220 
+//  221 /*$PAGE*/
+//  222 /*
+//  223 ************************************************************************************************************************
+//  224 *                                             OS CONFIGURATION INITIALIZATION
+//  225 *
+//  226 * Description: This function is used to make sure that debug variables that are unused in the application are not
+//  227 *              optimized away.  This function might not be necessary for all compilers.  In this case, you should simply
+//  228 *              DELETE the code in this function while still leaving the declaration of the function itself.
+//  229 *
+//  230 * Arguments  : none
+//  231 *
+//  232 * Returns    : none
+//  233 *
+//  234 * Note(s)    : (1) This code doesn't do anything, it simply prevents the compiler from optimizing out the 'const'
+//  235 *                  variables which are declared in this file.
+//  236 *              (2) You may decide to 'compile out' the code (by using #if 0/#endif) INSIDE the function if your compiler
+//  237 *                  DOES NOT optimize out the 'const' variables above.
+//  238 ************************************************************************************************************************
+//  239 */
+//  240 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  241 void  OSCfg_Init (void)
+OSCfg_Init:
+        CODE
+//  242 {
+        ; Saved register size: 0
+        ; Auto size: 0
+//  243     (void)&OSCfg_DataSizeRAM;
+//  244 
+//  245     (void)&OSCfg_IdleTaskStkBasePtr;
+//  246     (void)&OSCfg_IdleTaskStkLimit;
+//  247     (void)&OSCfg_IdleTaskStkSize;
+//  248     (void)&OSCfg_IdleTaskStkSizeRAM;
+//  249 
+//  250 #if (OS_CFG_ISR_POST_DEFERRED_EN > 0u)
+//  251     (void)&OSCfg_IntQBasePtr;
+//  252     (void)&OSCfg_IntQSize;
+//  253     (void)&OSCfg_IntQSizeRAM;
+//  254     (void)&OSCfg_IntQTaskStkBasePtr;
+//  255     (void)&OSCfg_IntQTaskStkLimit;
+//  256     (void)&OSCfg_IntQTaskStkSize;
+//  257     (void)&OSCfg_IntQTaskStkSizeRAM;
+//  258 #endif
+//  259 
+//  260     (void)&OSCfg_ISRStkBasePtr;
+//  261     (void)&OSCfg_ISRStkSize;
+//  262     (void)&OSCfg_ISRStkSizeRAM;
+//  263 
+//  264 #if (OS_MSG_EN > 0u)
+//  265     (void)&OSCfg_MsgPoolSize;
+//  266     (void)&OSCfg_MsgPoolSizeRAM;
+//  267     (void)&OSCfg_MsgPoolBasePtr;
+//  268 #endif
+//  269 
+//  270 #if (OS_CFG_STAT_TASK_EN > 0u)
+//  271     (void)&OSCfg_StatTaskPrio;
+//  272     (void)&OSCfg_StatTaskRate_Hz;
+//  273     (void)&OSCfg_StatTaskStkBasePtr;
+//  274     (void)&OSCfg_StatTaskStkLimit;
+//  275     (void)&OSCfg_StatTaskStkSize;
+//  276     (void)&OSCfg_StatTaskStkSizeRAM;
+//  277 #endif
+//  278 
+//  279     (void)&OSCfg_StkSizeMin;
+//  280 
+//  281     (void)&OSCfg_TickRate_Hz;
+//  282     (void)&OSCfg_TickTaskPrio;
+//  283     (void)&OSCfg_TickTaskStkBasePtr;
+//  284     (void)&OSCfg_TickTaskStkLimit;
+//  285     (void)&OSCfg_TickTaskStkSize;
+//  286     (void)&OSCfg_TickTaskStkSizeRAM;
+//  287     (void)&OSCfg_TickWheelSize;
+//  288     (void)&OSCfg_TickWheelSizeRAM;
+//  289 
+//  290 #if (OS_CFG_TMR_EN > 0u)
+//  291     (void)&OSCfg_TmrTaskPrio;
+//  292     (void)&OSCfg_TmrTaskRate_Hz;
+//  293     (void)&OSCfg_TmrTaskStkBasePtr;
+//  294     (void)&OSCfg_TmrTaskStkLimit;
+//  295     (void)&OSCfg_TmrTaskStkSize;
+//  296     (void)&OSCfg_TmrTaskStkSizeRAM;
+//  297     (void)&OSCfg_TmrWheelSize;
+//  298     (void)&OSCfg_TmrWheelSizeRAM;
+//  299 #endif
+//  300 }
+        RET
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_IdleTaskStkBasePtr>`:
+        DATA16
+        DW OSCfg_IdleTaskStk
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_IdleTaskStkLimit>`:
+        DATA16
+        DW 12
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_IdleTaskStkSize>`:
+        DATA16
+        DW 128
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_IdleTaskStkSizeRAM>`:
+        DATA32
+        DD 128
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_ISRStkBasePtr>`:
+        DATA16
+        DW OSCfg_ISRStk
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_ISRStkSize>`:
+        DATA16
+        DW 128
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_ISRStkSizeRAM>`:
+        DATA32
+        DD 128
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_MsgPoolSize>`:
+        DATA16
+        DW 100
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_MsgPoolSizeRAM>`:
+        DATA32
+        DD 1000
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_MsgPoolBasePtr>`:
+        DATA16
+        DW OSCfg_MsgPool
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_StkSizeMin>`:
+        DATA16
+        DW 64
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickRate_Hz>`:
+        DATA32
+        DD 100
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickRate_Cnt>`:
+        DATA16
+        DW 327
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickTaskPrio>`:
+        DATA8
+        DB 10
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickTaskStkBasePtr>`:
+        DATA16
+        DW OSCfg_TickTaskStk
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickTaskStkLimit>`:
+        DATA16
+        DW 12
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickTaskStkSize>`:
+        DATA16
+        DW 128
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickTaskStkSizeRAM>`:
+        DATA32
+        DD 128
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickWheelSize>`:
+        DATA16
+        DW 17
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_TickWheelSizeRAM>`:
+        DATA32
+        DD 102
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for OSCfg_DataSizeRAM>`:
+        DATA32
+        DD 1486
+
+        END
+// 
+//     1 byte  in segment NEAR_CODE
+//    55 bytes in segment XDATA_I
+//    55 bytes in segment XDATA_ID
+// 1 540 bytes in segment XDATA_Z
+// 
+//    56 bytes of CODE  memory
+// 1 595 bytes of XDATA memory
+//
+//Errors: none
+//Warnings: none

@@ -1,0 +1,3665 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:04
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_mutex.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_mutex.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_mutex.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_mutex
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V1
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?L_EQ_X
+        EXTERN ?L_MOV_TO_X
+        EXTERN ?L_MOV_X
+        EXTERN ?PUSH_XSTACK8_X_FOUR
+        EXTERN ?PUSH_XSTACK_I_FOUR
+        EXTERN ?PUSH_XSTACK_I_TWO
+        EXTERN ?US_SWITCH_DENSE
+        EXTERN ?US_SWITCH_SPARSE
+        EXTERN ?XLOAD_R0123
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN ?XSTACK_DISP101_8
+        EXTERN ?XSTORE_R0123
+        EXTERN __INIT_XDATA_I
+
+        PUBLIC OSMutexCreate
+        PUBLIC OSMutexDel
+        PUBLIC OSMutexPend
+        PUBLIC OSMutexPendAbort
+        PUBLIC OSMutexPost
+        PUBLIC OS_MutexClr
+        PUBLIC OS_MutexDbgListAdd
+        PUBLIC OS_MutexDbgListRemove
+        PUBLIC OS_MutexInit
+        PUBWEAK __Constant_554d5854
+
+        EXTERN CPU_SR_Restore
+        EXTERN CPU_SR_Save
+        EXTERN OSIntNestingCtr
+        EXTERN OSMutexDbgListPtr
+        EXTERN OSMutexQty
+        EXTERN OSPrioCur
+        EXTERN OSSched
+        EXTERN OSSchedLockNestingCtr
+        EXTERN OSTCBCurPtr
+        EXTERN OS_Pend
+        EXTERN OS_PendAbort
+        EXTERN OS_PendListChangePrio
+        EXTERN OS_PendListInit
+        EXTERN OS_PendObjDel
+        EXTERN OS_Post
+        EXTERN OS_PrioInsert
+        EXTERN OS_RdyListInsertHead
+        EXTERN OS_RdyListInsertTail
+        EXTERN OS_RdyListRemove
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Source\os_mutex.c
+//    1 /*
+//    2 ************************************************************************************************************************
+//    3 *                                                      uC/OS-III
+//    4 *                                                 The Real-Time Kernel
+//    5 *
+//    6 *                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
+//    7 *                           All rights reserved.  Protected by international copyright laws.
+//    8 *
+//    9 *                                                   MUTEX MANAGEMENT
+//   10 *
+//   11 * File    : OS_MUTEX.C
+//   12 * By      : JJL
+//   13 * Version : V3.03.01
+//   14 *
+//   15 * LICENSING TERMS:
+//   16 * ---------------
+//   17 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   18 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   19 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   20 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   21 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   22 *           it commercially without paying a licensing fee.
+//   23 *
+//   24 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   25 *
+//   26 *           Please help us continue to provide the embedded community with the finest software available.
+//   27 *           Your honesty is greatly appreciated.
+//   28 *
+//   29 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   30 ************************************************************************************************************************
+//   31 */
+//   32 
+//   33 #define  MICRIUM_SOURCE
+//   34 #include <os.h>
+//   35 
+//   36 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   37 const  CPU_CHAR  *os_mutex__c = "$Id: $";
+//   38 #endif
+//   39 
+//   40 
+//   41 #if OS_CFG_MUTEX_EN > 0u
+//   42 /*
+//   43 ************************************************************************************************************************
+//   44 *                                                   CREATE A MUTEX
+//   45 *
+//   46 * Description: This function creates a mutex.
+//   47 *
+//   48 * Arguments  : p_mutex       is a pointer to the mutex to initialize.  Your application is responsible for allocating
+//   49 *                            storage for the mutex.
+//   50 *
+//   51 *              p_name        is a pointer to the name you would like to give the mutex.
+//   52 *
+//   53 *              p_err         is a pointer to a variable that will contain an error code returned by this function.
+//   54 *
+//   55 *                                OS_ERR_NONE                    if the call was successful
+//   56 *                                OS_ERR_CREATE_ISR              if you called this function from an ISR
+//   57 *                                OS_ERR_ILLEGAL_CREATE_RUN_TIME if you are trying to create the Mutex after you called
+//   58 *                                                                 OSSafetyCriticalStart().
+//   59 *                                OS_ERR_NAME                    if 'p_name'  is a NULL pointer
+//   60 *                                OS_ERR_OBJ_CREATED             if the mutex has already been created
+//   61 *                                OS_ERR_OBJ_PTR_NULL            if 'p_mutex' is a NULL pointer
+//   62 *
+//   63 * Returns    : none
+//   64 ************************************************************************************************************************
+//   65 */
+//   66 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   67 void  OSMutexCreate (OS_MUTEX  *p_mutex,
+OSMutexCreate:
+        CODE
+//   68                      CPU_CHAR  *p_name,
+//   69                      OS_ERR    *p_err)
+//   70 {
+        REQUIRE ?V0
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        MOV     A,#-0xd
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 13
+        ; Auto size: 0
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     ?V4,R4
+        MOV     ?V5,R5
+//   71     CPU_SR_ALLOC();
+        MOV     ?V0,#0x0
+        MOV     A,#0xd
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V3,A
+//   72 
+//   73 
+//   74 
+//   75 #ifdef OS_SAFETY_CRITICAL
+//   76     if (p_err == (OS_ERR *)0) {
+//   77         OS_SAFETY_CRITICAL_EXCEPTION();
+//   78         return;
+//   79     }
+//   80 #endif
+//   81 
+//   82 #ifdef OS_SAFETY_CRITICAL_IEC61508
+//   83     if (OSSafetyCriticalStartFlag == DEF_TRUE) {
+//   84        *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME;
+//   85         return;
+//   86     }
+//   87 #endif
+//   88 
+//   89 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//   90     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Not allowed to be called from an ISR                   */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSMutexCreate_0
+//   91        *p_err = OS_ERR_CREATE_ISR;
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        MOV     A,#-0x1f
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x2e
+        MOVX    @DPTR,A
+//   92         return;
+        LJMP    ??OSMutexCreate_1
+//   93     }
+//   94 #endif
+//   95 
+//   96 #if OS_CFG_ARG_CHK_EN > 0u
+//   97     if (p_mutex == (OS_MUTEX *)0) {                         /* Validate 'p_mutex'                                     */
+??OSMutexCreate_0:
+        MOV     A,R6
+        ORL     A,R7
+        JNZ     ??OSMutexCreate_2
+//   98        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//   99         return;
+        LJMP    ??OSMutexCreate_1
+//  100     }
+//  101 #endif
+//  102 
+//  103     OS_CRITICAL_ENTER();
+??OSMutexCreate_2:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V0,A
+//  104     p_mutex->Type              =  OS_OBJ_TYPE_MUTEX;        /* Mark the data structure as a mutex                     */
+        MOV     R2,#0x54
+        MOV     R3,#0x58
+        MOV     R4,#0x4d
+        MOV     R5,#0x55
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  105     p_mutex->NamePtr           =  p_name;
+        MOV     DPL,R6
+        MOV     DPH,R7
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,?V4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,?V5
+        MOVX    @DPTR,A
+//  106     p_mutex->OwnerTCBPtr       = (OS_TCB       *)0;
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  107     p_mutex->OwnerNestingCtr   = (OS_NESTING_CTR)0;         /* Mutex is available                                     */
+        MOV     A,R6
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  108     p_mutex->TS                = (CPU_TS        )0;
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     A,R6
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  109     p_mutex->OwnerOriginalPrio =  OS_CFG_PRIO_MAX;
+        MOV     A,R6
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x20
+        MOVX    @DPTR,A
+//  110     OS_PendListInit(&p_mutex->PendList);                    /* Initialize the waiting list                            */
+        ; Setup parameters for call to function OS_PendListInit
+        MOV     A,R6
+        ADD     A,#0x6
+        MOV     R2,A
+        CLR     A
+        ADDC    A,R7
+        MOV     R3,A
+        LCALL   OS_PendListInit
+//  111 
+//  112 #if OS_CFG_DBG_EN > 0u
+//  113     OS_MutexDbgListAdd(p_mutex);
+        ; Setup parameters for call to function OS_MutexDbgListAdd
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_MutexDbgListAdd
+//  114 #endif
+//  115     OSMutexQty++;
+        MOV     DPTR,#OSMutexQty
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  116 
+//  117     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V0
+        LCALL   CPU_SR_Restore
+//  118    *p_err = OS_ERR_NONE;
+        MOV     DPL,?V2
+        MOV     DPH,?V3
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  119 }
+??OSMutexCreate_1:
+        MOV     R7,#0x6
+        LJMP    ?FUNC_LEAVE_XDATA
+//  120 
+//  121 /*$PAGE*/
+//  122 /*
+//  123 ************************************************************************************************************************
+//  124 *                                                   DELETE A MUTEX
+//  125 *
+//  126 * Description: This function deletes a mutex and readies all tasks pending on the mutex.
+//  127 *
+//  128 * Arguments  : p_mutex       is a pointer to the mutex to delete
+//  129 *
+//  130 *              opt           determines delete options as follows:
+//  131 *
+//  132 *                                OS_OPT_DEL_NO_PEND          Delete mutex ONLY if no task pending
+//  133 *                                OS_OPT_DEL_ALWAYS           Deletes the mutex even if tasks are waiting.
+//  134 *                                                            In this case, all the tasks pending will be readied.
+//  135 *
+//  136 *              p_err         is a pointer to a variable that will contain an error code returned by this function.
+//  137 *
+//  138 *                                OS_ERR_NONE                 The call was successful and the mutex was deleted
+//  139 *                                OS_ERR_DEL_ISR              If you attempted to delete the mutex from an ISR
+//  140 *                                OS_ERR_OBJ_PTR_NULL         If 'p_mutex' is a NULL pointer.
+//  141 *                                OS_ERR_OBJ_TYPE             If 'p_mutex' is not pointing to a mutex
+//  142 *                                OS_ERR_OPT_INVALID          An invalid option was specified
+//  143 *                                OS_ERR_STATE_INVALID        Task is in an invalid state
+//  144 *                                OS_ERR_TASK_WAITING         One or more tasks were waiting on the mutex
+//  145 *
+//  146 * Returns    : == 0          if no tasks were waiting on the mutex, or upon error.
+//  147 *              >  0          if one or more tasks waiting on the mutex are now readied and informed.
+//  148 *
+//  149 * Note(s)    : 1) This function must be used with care.  Tasks that would normally expect the presence of the mutex MUST
+//  150 *                 check the return code of OSMutexPend().
+//  151 *
+//  152 *              2) OSMutexAccept() callers will not know that the intended mutex has been deleted.
+//  153 *
+//  154 *              3) Because ALL tasks pending on the mutex will be readied, you MUST be careful in applications where the
+//  155 *                 mutex is used for mutual exclusion because the resource(s) will no longer be guarded by the mutex.
+//  156 ************************************************************************************************************************
+//  157 */
+//  158 
+//  159 #if OS_CFG_MUTEX_DEL_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  160 OS_OBJ_QTY  OSMutexDel (OS_MUTEX  *p_mutex,
+OSMutexDel:
+        CODE
+//  161                         OS_OPT     opt,
+//  162                         OS_ERR    *p_err)
+//  163 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        MOV     A,#-0xe
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 14
+        ; Auto size: 6
+        MOV     A,#-0x6
+        LCALL   ?ALLOC_XSTACK8
+        MOV     ?V4,R2
+        MOV     ?V5,R3
+        MOV     A,R4
+        MOV     R6,A
+        MOV     A,R5
+        MOV     R7,A
+//  164     OS_OBJ_QTY     cnt;
+//  165     OS_OBJ_QTY     nbr_tasks;
+//  166     OS_PEND_DATA  *p_pend_data;
+//  167     OS_PEND_LIST  *p_pend_list;
+//  168     OS_TCB        *p_tcb;
+//  169     OS_TCB        *p_tcb_owner;
+//  170     CPU_TS         ts;
+//  171     CPU_SR_ALLOC();
+        MOV     ?V6,#0x0
+//  172 
+//  173 
+//  174 
+//  175 #ifdef OS_SAFETY_CRITICAL
+//  176     if (p_err == (OS_ERR *)0) {
+//  177         OS_SAFETY_CRITICAL_EXCEPTION();
+//  178         return ((OS_OBJ_QTY)0);
+//  179     }
+//  180 #endif
+//  181 
+//  182 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  183     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {                  /* Not allowed to delete a mutex from an ISR          */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSMutexDel_0
+//  184        *p_err = OS_ERR_DEL_ISR;
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x37
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x32
+        MOVX    @DPTR,A
+//  185         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexDel_1
+//  186     }
+//  187 #endif
+//  188 
+//  189 #if OS_CFG_ARG_CHK_EN > 0u
+//  190     if (p_mutex == (OS_MUTEX *)0) {                             /* Validate 'p_mutex'                                 */
+??OSMutexDel_0:
+        MOV     A,?V4
+        ORL     A,?V5
+        JNZ     ??OSMutexDel_2
+//  191        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  192         return ((OS_OBJ_QTY)0);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexDel_1
+//  193     }
+//  194     switch (opt) {                                              /* Validate 'opt'                                     */
+??OSMutexDel_2:
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_DENSE
+`?<Jumptable for OSMutexDel>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA8
+        DATA
+        DATA8
+        DB        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexDel_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexDel_4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexDel_4
+        CODE
+//  195         case OS_OPT_DEL_NO_PEND:
+//  196         case OS_OPT_DEL_ALWAYS:
+//  197              break;
+//  198 
+//  199         default:
+//  200             *p_err =  OS_ERR_OPT_INVALID;
+//  201              return ((OS_OBJ_QTY)0);
+//  202     }
+//  203 #endif
+//  204 
+//  205 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  206     if (p_mutex->Type != OS_OBJ_TYPE_MUTEX) {                   /* Make sure mutex was created                        */
+??OSMutexDel_4:
+        MOV     DPTR,#__Constant_554d5854
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JZ      $+5
+        LJMP    ??OSMutexDel_5
+//  207        *p_err = OS_ERR_OBJ_TYPE;
+//  208         return ((OS_OBJ_QTY)0);
+//  209     }
+//  210 #endif
+//  211 
+//  212     OS_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V6,A
+//  213     p_pend_list = &p_mutex->PendList;
+        MOV     A,?V4
+        ADD     A,#0x6
+        MOV     R0,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     R1,A
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  214     cnt         = p_pend_list->NbrEntries;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  215     nbr_tasks   = cnt;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  216     switch (opt) {
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_DENSE
+`?<Jumptable for OSMutexDel>_1`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA8
+        DATA
+        DATA8
+        DB        1
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexDel_6
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexDel_7
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexDel_8
+        CODE
+//  217         case OS_OPT_DEL_NO_PEND:                                /* Delete mutex only if no task waiting               */
+//  218              if (nbr_tasks == (OS_OBJ_QTY)0) {
+??OSMutexDel_7:
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSMutexDel_9
+//  219 #if OS_CFG_DBG_EN > 0u
+//  220                  OS_MutexDbgListRemove(p_mutex);
+        ; Setup parameters for call to function OS_MutexDbgListRemove
+        MOV     R2,?V4
+        MOV     R3,?V5
+        LCALL   OS_MutexDbgListRemove
+//  221 #endif
+//  222                  OSMutexQty--;
+        MOV     DPTR,#OSMutexQty
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  223                  OS_MutexClr(p_mutex);
+        ; Setup parameters for call to function OS_MutexClr
+        MOV     R2,?V4
+        MOV     R3,?V5
+        LCALL   OS_MutexClr
+//  224                  OS_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V6
+        LCALL   CPU_SR_Restore
+//  225                 *p_err = OS_ERR_NONE;
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OSMutexDel_10
+//  226              } else {
+??OSMutexDel_3:
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexDel_1
+??OSMutexDel_5:
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexDel_1
+//  227                  OS_CRITICAL_EXIT();
+??OSMutexDel_9:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V6
+        LCALL   CPU_SR_Restore
+//  228                 *p_err = OS_ERR_TASK_WAITING;
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x5f
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x71
+        MOVX    @DPTR,A
+//  229              }
+//  230              break;
+??OSMutexDel_10:
+        LJMP    ??OSMutexDel_11
+//  231 
+//  232         case OS_OPT_DEL_ALWAYS:                                            /* Always delete the mutex                 */
+//  233              p_tcb_owner = p_mutex->OwnerTCBPtr;                           /* Did we had to change the prio of owner? */
+??OSMutexDel_8:
+        MOV     A,?V4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+//  234              if ((p_tcb_owner       != (OS_TCB *)0) &&
+//  235                  (p_tcb_owner->Prio !=  p_mutex->OwnerOriginalPrio)) {
+        MOV     A,R6
+        ORL     A,R7
+        JZ      ??OSMutexDel_12
+        MOV     A,R6
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     A,?V4
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        XRL     A,R0
+        JZ      ??OSMutexDel_12
+//  236                  switch (p_tcb_owner->TaskState) {                         /* yes                                     */
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OSMutexDel_13
+        DEC     A
+        JZ      ??OSMutexDel_14
+        DEC     A
+        JZ      ??OSMutexDel_15
+        DEC     A
+        JZ      ??OSMutexDel_15
+        DEC     A
+        JZ      ??OSMutexDel_14
+        DEC     A
+        JZ      ??OSMutexDel_14
+        DEC     A
+        JZ      ??OSMutexDel_15
+        DEC     A
+        JZ      ??OSMutexDel_15
+        SJMP    ??OSMutexDel_16
+//  237                      case OS_TASK_STATE_RDY:
+//  238                           OS_RdyListRemove(p_tcb_owner);
+??OSMutexDel_13:
+        ; Setup parameters for call to function OS_RdyListRemove
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_RdyListRemove
+//  239                           p_tcb_owner->Prio = p_mutex->OwnerOriginalPrio;  /* Lower owner's prio back                 */
+        MOV     A,?V4
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     A,R6
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        POP     A
+        MOVX    @DPTR,A
+//  240                           OS_PrioInsert(p_tcb_owner->Prio);
+        ; Setup parameters for call to function OS_PrioInsert
+        MOV     A,R6
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   OS_PrioInsert
+//  241                           OS_RdyListInsertTail(p_tcb_owner);               /* Insert owner in ready list at new prio  */
+        ; Setup parameters for call to function OS_RdyListInsertTail
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_RdyListInsertTail
+//  242                           break;
+//  243 
+//  244                      case OS_TASK_STATE_DLY:
+//  245                      case OS_TASK_STATE_SUSPENDED:
+//  246                      case OS_TASK_STATE_DLY_SUSPENDED:
+//  247                           p_tcb_owner->Prio = p_mutex->OwnerOriginalPrio;  /* Not in any pend list, change the prio   */
+//  248                           break;
+//  249 
+//  250                      case OS_TASK_STATE_PEND:
+//  251                      case OS_TASK_STATE_PEND_TIMEOUT:
+//  252                      case OS_TASK_STATE_PEND_SUSPENDED:
+//  253                      case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+//  254                           OS_PendListChangePrio(p_tcb_owner,               /* Owner is pending on another object      */
+//  255                                                 p_mutex->OwnerOriginalPrio);
+//  256                           break;
+//  257 
+//  258                      default:
+//  259                           OS_CRITICAL_EXIT();
+//  260                          *p_err = OS_ERR_STATE_INVALID;
+//  261                           return ((OS_OBJ_QTY)0);
+//  262                  }
+//  263              }
+//  264 
+//  265              ts = OS_TS_GET();                                             /* Get timestamp                           */
+??OSMutexDel_12:
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     ?V2,R2
+        MOV     ?V3,R3
+        LJMP    ??OSMutexDel_17
+??OSMutexDel_14:
+        MOV     A,?V4
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     A,R6
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        POP     A
+        MOVX    @DPTR,A
+        SJMP    ??OSMutexDel_12
+??OSMutexDel_15:
+        ; Setup parameters for call to function OS_PendListChangePrio
+        MOV     A,?V4
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_PendListChangePrio
+        SJMP    ??OSMutexDel_12
+??OSMutexDel_16:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V6
+        LCALL   CPU_SR_Restore
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x2d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexDel_1
+//  266              while (cnt > 0u) {                                            /* Remove all tasks from the pend list     */
+//  267                  p_pend_data = p_pend_list->HeadPtr;
+??OSMutexDel_18:
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,R0
+        MOV     DPH,R1
+//  268                  p_tcb       = p_pend_data->TCBPtr;
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  269                  OS_PendObjDel((OS_PEND_OBJ *)((void *)p_mutex),
+//  270                                p_tcb,
+//  271                                ts);
+        ; Setup parameters for call to function OS_PendObjDel
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     R2,?V4
+        MOV     R3,?V5
+        LCALL   OS_PendObjDel
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  272                  cnt--;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  273              }
+??OSMutexDel_17:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSMutexDel_18
+//  274 #if OS_CFG_DBG_EN > 0u
+//  275              OS_MutexDbgListRemove(p_mutex);
+        ; Setup parameters for call to function OS_MutexDbgListRemove
+        MOV     R2,?V4
+        MOV     R3,?V5
+        LCALL   OS_MutexDbgListRemove
+//  276 #endif
+//  277              OSMutexQty--;
+        MOV     DPTR,#OSMutexQty
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#-0x1
+        MOVX    @DPTR,A
+//  278              OS_MutexClr(p_mutex);
+        ; Setup parameters for call to function OS_MutexClr
+        MOV     R2,?V4
+        MOV     R3,?V5
+        LCALL   OS_MutexClr
+//  279              OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V6
+        LCALL   CPU_SR_Restore
+//  280              OSSched();                                                    /* Find highest priority task ready to run */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  281             *p_err = OS_ERR_NONE;
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  282              break;
+        SJMP    ??OSMutexDel_11
+//  283 
+//  284         default:
+//  285              OS_CRITICAL_EXIT();
+??OSMutexDel_6:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V6
+        LCALL   CPU_SR_Restore
+//  286             *p_err = OS_ERR_OPT_INVALID;
+        MOV     A,#0x14
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+//  287              break;
+//  288     }
+//  289     return (nbr_tasks);
+??OSMutexDel_11:
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+??OSMutexDel_1:
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x7
+        LJMP    ?FUNC_LEAVE_XDATA
+//  290 }
+//  291 #endif
+//  292 
+//  293 /*$PAGE*/
+//  294 /*
+//  295 ************************************************************************************************************************
+//  296 *                                                    PEND ON MUTEX
+//  297 *
+//  298 * Description: This function waits for a mutex.
+//  299 *
+//  300 * Arguments  : p_mutex       is a pointer to the mutex
+//  301 *
+//  302 *              timeout       is an optional timeout period (in clock ticks).  If non-zero, your task will wait for the
+//  303 *                            resource up to the amount of time (in 'ticks') specified by this argument.  If you specify
+//  304 *                            0, however, your task will wait forever at the specified mutex or, until the resource
+//  305 *                            becomes available.
+//  306 *
+//  307 *              opt           determines whether the user wants to block if the mutex is not available or not:
+//  308 *
+//  309 *                                OS_OPT_PEND_BLOCKING
+//  310 *                                OS_OPT_PEND_NON_BLOCKING
+//  311 *
+//  312 *              p_ts          is a pointer to a variable that will receive the timestamp of when the mutex was posted or
+//  313 *                            pend aborted or the mutex deleted.  If you pass a NULL pointer (i.e. (CPU_TS *)0) then you
+//  314 *                            will not get the timestamp.  In other words, passing a NULL pointer is valid and indicates
+//  315 *                            that you don't need the timestamp.
+//  316 *
+//  317 *              p_err         is a pointer to a variable that will contain an error code returned by this function.
+//  318 *
+//  319 *                                OS_ERR_NONE               The call was successful and your task owns the resource
+//  320 *                                OS_ERR_MUTEX_OWNER        If calling task already owns the mutex
+//  321 *                                OS_ERR_OBJ_DEL            If 'p_mutex' was deleted
+//  322 *                                OS_ERR_OBJ_PTR_NULL       If 'p_mutex' is a NULL pointer.
+//  323 *                                OS_ERR_OBJ_TYPE           If 'p_mutex' is not pointing at a mutex
+//  324 *                                OS_ERR_OPT_INVALID        If you didn't specify a valid option
+//  325 *                                OS_ERR_PEND_ABORT         If the pend was aborted by another task
+//  326 *                                OS_ERR_PEND_ISR           If you called this function from an ISR and the result
+//  327 *                                                          would lead to a suspension.
+//  328 *                                OS_ERR_PEND_WOULD_BLOCK   If you specified non-blocking but the mutex was not
+//  329 *                                                          available.
+//  330 *                                OS_ERR_SCHED_LOCKED       If you called this function when the scheduler is locked
+//  331 *                                OS_ERR_STATE_INVALID      If the task is in an invalid state
+//  332 *                                OS_ERR_STATUS_INVALID     If the pend status has an invalid value
+//  333 *                                OS_ERR_TIMEOUT            The mutex was not received within the specified timeout.
+//  334 *
+//  335 * Returns    : none
+//  336 ************************************************************************************************************************
+//  337 */
+//  338 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  339 void  OSMutexPend (OS_MUTEX  *p_mutex,
+OSMutexPend:
+        CODE
+//  340                    OS_TICK    timeout,
+//  341                    OS_OPT     opt,
+//  342                    CPU_TS    *p_ts,
+//  343                    OS_ERR    *p_err)
+//  344 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 18
+        MOV     A,#-0x12
+        LCALL   ?ALLOC_XSTACK8
+        MOV     ?V4,R2
+        MOV     ?V5,R3
+        MOV     A,R4
+        MOV     R6,A
+        MOV     A,R5
+        MOV     R7,A
+//  345     OS_PEND_DATA  pend_data;
+//  346     OS_TCB       *p_tcb;
+//  347     CPU_SR_ALLOC();
+        MOV     ?V2,#0x0
+        MOV     A,#0x27
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V7,A
+//  348 
+//  349 
+//  350 
+//  351 #ifdef OS_SAFETY_CRITICAL
+//  352     if (p_err == (OS_ERR *)0) {
+//  353         OS_SAFETY_CRITICAL_EXCEPTION();
+//  354         return;
+//  355     }
+//  356 #endif
+//  357 
+//  358 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  359     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Not allowed to call from an ISR                        */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSMutexPend_0
+//  360        *p_err = OS_ERR_PEND_ISR;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x52
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  361         return;
+        LJMP    ??OSMutexPend_1
+//  362     }
+//  363 #endif
+//  364 
+//  365 #if OS_CFG_ARG_CHK_EN > 0u
+//  366     if (p_mutex == (OS_MUTEX *)0) {                         /* Validate arguments                                     */
+??OSMutexPend_0:
+        MOV     A,?V4
+        ORL     A,?V5
+        JNZ     ??OSMutexPend_2
+//  367        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  368         return;
+        LJMP    ??OSMutexPend_1
+//  369     }
+//  370     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSMutexPend_2:
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSMutexPend>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPend_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPend_4
+        CODE
+//  371         case OS_OPT_PEND_BLOCKING:
+//  372         case OS_OPT_PEND_NON_BLOCKING:
+//  373              break;
+//  374 
+//  375         default:
+//  376             *p_err = OS_ERR_OPT_INVALID;
+//  377              return;
+//  378     }
+//  379 #endif
+//  380 
+//  381 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  382     if (p_mutex->Type != OS_OBJ_TYPE_MUTEX) {               /* Make sure mutex was created                            */
+??OSMutexPend_3:
+        MOV     DPTR,#__Constant_554d5854
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,?V4
+        MOV     DPH,?V5
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JZ      $+5
+        LJMP    ??OSMutexPend_5
+        MOV     A,#0x25
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V1,A
+//  383        *p_err = OS_ERR_OBJ_TYPE;
+//  384         return;
+//  385     }
+//  386 #endif
+//  387 
+//  388     if (p_ts != (CPU_TS *)0) {
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OSMutexPend_6
+//  389        *p_ts  = (CPU_TS  )0;                                /* Initialize the returned timestamp                      */
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  390     }
+//  391 
+//  392     CPU_CRITICAL_ENTER();
+??OSMutexPend_6:
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V2,A
+//  393     if (p_mutex->OwnerNestingCtr == (OS_NESTING_CTR)0) {    /* Resource available?                                    */
+        MOV     A,?V4
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      $+5
+        LJMP    ??OSMutexPend_7
+//  394         p_mutex->OwnerTCBPtr       =  OSTCBCurPtr;          /* Yes, caller may proceed                                */
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,?V4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  395         p_mutex->OwnerOriginalPrio =  OSTCBCurPtr->Prio;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     A,?V4
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        POP     A
+        MOVX    @DPTR,A
+//  396         p_mutex->OwnerNestingCtr   = (OS_NESTING_CTR)1;
+        MOV     A,?V4
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+//  397         if (p_ts != (CPU_TS *)0) {
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OSMutexPend_8
+//  398            *p_ts  = p_mutex->TS;
+        MOV     A,?V4
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        LCALL   ?XSTORE_R0123
+//  399         }
+//  400         CPU_CRITICAL_EXIT();
+??OSMutexPend_8:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  401        *p_err = OS_ERR_NONE;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  402         return;
+        LJMP    ??OSMutexPend_1
+//  403     }
+??OSMutexPend_4:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        LJMP    ??OSMutexPend_1
+??OSMutexPend_5:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        LJMP    ??OSMutexPend_1
+//  404 
+//  405     if (OSTCBCurPtr == p_mutex->OwnerTCBPtr) {              /* See if current task is already the owner of the mutex  */
+??OSMutexPend_7:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,?V4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        XRL     A,R0
+        JNZ     ??OSMutexPend_9
+        INC     DPTR
+        MOVX    A,@DPTR
+        XRL     A,R1
+??OSMutexPend_9:
+        JNZ     ??OSMutexPend_10
+//  406         p_mutex->OwnerNestingCtr++;
+        MOV     A,?V4
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+//  407         if (p_ts != (CPU_TS *)0) {
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OSMutexPend_11
+//  408            *p_ts  = p_mutex->TS;
+        MOV     A,?V4
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        LCALL   ?XSTORE_R0123
+//  409         }
+//  410         CPU_CRITICAL_EXIT();
+??OSMutexPend_11:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  411        *p_err = OS_ERR_MUTEX_OWNER;                         /* Indicate that current task already owns the mutex      */
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x7e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x57
+        MOVX    @DPTR,A
+//  412         return;
+        LJMP    ??OSMutexPend_1
+//  413     }
+//  414 
+//  415     if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) {    /* Caller wants to block if not available?                */
+??OSMutexPend_10:
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSMutexPend_12
+//  416         CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  417        *p_err = OS_ERR_PEND_WOULD_BLOCK;                    /* No                                                     */
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x50
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  418         return;
+        LJMP    ??OSMutexPend_1
+//  419     } else {
+//  420         if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {    /* Can't pend when the scheduler is locked                */
+??OSMutexPend_12:
+        MOV     DPTR,#OSSchedLockNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSMutexPend_13
+//  421             CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  422            *p_err = OS_ERR_SCHED_LOCKED;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x63
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6d
+        MOVX    @DPTR,A
+//  423             return;
+        LJMP    ??OSMutexPend_1
+//  424         }
+//  425     }
+//  426                                                             /* Lock the scheduler/re-enable interrupts                */
+//  427     OS_CRITICAL_ENTER_CPU_EXIT();
+//  428     p_tcb = p_mutex->OwnerTCBPtr;                           /* Point to the TCB of the Mutex owner                    */
+??OSMutexPend_13:
+        MOV     A,?V4
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,?V5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R7,A
+//  429     if (p_tcb->Prio > OSTCBCurPtr->Prio) {                  /* See if mutex owner has a lower priority than current   */
+        MOV     A,R6
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        CLR     C
+        SUBB    A,R1
+        JNC     ??OSMutexPend_14
+//  430         switch (p_tcb->TaskState) {
+        MOV     A,R6
+        ADD     A,#0x1c
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OSMutexPend_15
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_16
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_17
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_17
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_16
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_16
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_17
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_17
+        LJMP    ??OSMutexPend_18
+//  431             case OS_TASK_STATE_RDY:
+//  432                  OS_RdyListRemove(p_tcb);                   /* Remove from ready list at current priority             */
+??OSMutexPend_15:
+        ; Setup parameters for call to function OS_RdyListRemove
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_RdyListRemove
+//  433                  p_tcb->Prio = OSTCBCurPtr->Prio;           /* Raise owner's priority                                 */
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     A,R6
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        POP     A
+        MOVX    @DPTR,A
+//  434                  OS_PrioInsert(p_tcb->Prio);
+        ; Setup parameters for call to function OS_PrioInsert
+        MOV     A,R6
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   OS_PrioInsert
+//  435                  OS_RdyListInsertHead(p_tcb);               /* Insert in ready list at new priority                   */
+        ; Setup parameters for call to function OS_RdyListInsertHead
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_RdyListInsertHead
+//  436                  break;
+//  437 
+//  438             case OS_TASK_STATE_DLY:
+//  439             case OS_TASK_STATE_DLY_SUSPENDED:
+//  440             case OS_TASK_STATE_SUSPENDED:
+//  441                  p_tcb->Prio = OSTCBCurPtr->Prio;           /* Only need to raise the owner's priority                */
+//  442                  break;
+//  443 
+//  444             case OS_TASK_STATE_PEND:                        /* Change the position of the task in the wait list       */
+//  445             case OS_TASK_STATE_PEND_TIMEOUT:
+//  446             case OS_TASK_STATE_PEND_SUSPENDED:
+//  447             case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+//  448                  OS_PendListChangePrio(p_tcb,
+//  449                                        OSTCBCurPtr->Prio);
+//  450                  break;
+//  451 
+//  452             default:
+//  453                  OS_CRITICAL_EXIT();
+//  454                 *p_err = OS_ERR_STATE_INVALID;
+//  455                  return;
+//  456         }
+//  457     }
+//  458 
+//  459     OS_Pend(&pend_data,                                     /* Block task pending on Mutex                            */
+//  460             (OS_PEND_OBJ *)((void *)p_mutex),
+//  461              OS_TASK_PEND_ON_MUTEX,
+//  462              timeout);
+??OSMutexPend_14:
+        ; Setup parameters for call to function OS_Pend
+        MOV     A,#0x21
+        LCALL   ?XSTACK_DISP0_8
+        LCALL   ?PUSH_XSTACK8_X_FOUR
+        MOV     R1,#0x4
+        MOV     R4,?V4
+        MOV     R5,?V5
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP101_8
+        LCALL   OS_Pend
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  463 
+//  464     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  465 
+//  466     OSSched();                                              /* Find the next highest priority task ready to run       */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  467 
+//  468     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V2,A
+//  469     switch (OSTCBCurPtr->PendStatus) {
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1b
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OSMutexPend_19
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_20
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_21
+        DEC     A
+        JNZ     $+5
+        LJMP    ??OSMutexPend_22
+        LJMP    ??OSMutexPend_23
+//  470         case OS_STATUS_PEND_OK:                             /* We got the mutex                                       */
+//  471              if (p_ts != (CPU_TS *)0) {
+??OSMutexPend_19:
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OSMutexPend_24
+//  472                 *p_ts  = OSTCBCurPtr->TS;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        LCALL   ?XSTORE_R0123
+//  473              }
+//  474             *p_err = OS_ERR_NONE;
+??OSMutexPend_24:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  475              break;
+        LJMP    ??OSMutexPend_25
+??OSMutexPend_16:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     A,R6
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        POP     A
+        MOVX    @DPTR,A
+        LJMP    ??OSMutexPend_14
+??OSMutexPend_17:
+        ; Setup parameters for call to function OS_PendListChangePrio
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_PendListChangePrio
+        LJMP    ??OSMutexPend_14
+??OSMutexPend_18:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x2d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6e
+        MOVX    @DPTR,A
+        LJMP    ??OSMutexPend_1
+//  476 
+//  477         case OS_STATUS_PEND_ABORT:                          /* Indicate that we aborted                               */
+//  478              if (p_ts != (CPU_TS *)0) {
+??OSMutexPend_20:
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OSMutexPend_26
+//  479                 *p_ts  = OSTCBCurPtr->TS;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        LCALL   ?XSTORE_R0123
+//  480              }
+//  481             *p_err = OS_ERR_PEND_ABORT;
+??OSMutexPend_26:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x57
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  482              break;
+        SJMP    ??OSMutexPend_25
+//  483 
+//  484         case OS_STATUS_PEND_TIMEOUT:                        /* Indicate that we didn't get mutex within timeout       */
+//  485              if (p_ts != (CPU_TS *)0) {
+??OSMutexPend_22:
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OSMutexPend_27
+//  486                 *p_ts  = (CPU_TS  )0;
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        MOV     R7,A
+        MOV     A,R0
+        MOV     R4,A
+        MOV     A,R1
+        MOV     R5,A
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        XCH     A,R7
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  487              }
+//  488             *p_err = OS_ERR_TIMEOUT;
+??OSMutexPend_27:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x27
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x72
+        MOVX    @DPTR,A
+//  489              break;
+        SJMP    ??OSMutexPend_25
+//  490 
+//  491         case OS_STATUS_PEND_DEL:                            /* Indicate that object pended on has been deleted        */
+//  492              if (p_ts != (CPU_TS *)0) {
+??OSMutexPend_21:
+        MOV     A,?V0
+        ORL     A,?V1
+        JZ      ??OSMutexPend_28
+//  493                 *p_ts  = OSTCBCurPtr->TS;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x24
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        LCALL   ?XLOAD_R0123
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+        LCALL   ?XSTORE_R0123
+//  494              }
+//  495             *p_err = OS_ERR_OBJ_DEL;
+??OSMutexPend_28:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  496              break;
+        SJMP    ??OSMutexPend_25
+//  497 
+//  498         default:
+//  499             *p_err = OS_ERR_STATUS_INVALID;
+??OSMutexPend_23:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x2e
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x6e
+        MOVX    @DPTR,A
+//  500              break;
+//  501     }
+//  502     CPU_CRITICAL_EXIT();
+??OSMutexPend_25:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V2
+        LCALL   CPU_SR_Restore
+//  503 }
+??OSMutexPend_1:
+        MOV     A,#0x12
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  504 
+//  505 /*$PAGE*/
+//  506 /*
+//  507 ************************************************************************************************************************
+//  508 *                                               ABORT WAITING ON A MUTEX
+//  509 *
+//  510 * Description: This function aborts & readies any tasks currently waiting on a mutex.  This function should be used
+//  511 *              to fault-abort the wait on the mutex, rather than to normally signal the mutex via OSMutexPost().
+//  512 *
+//  513 * Arguments  : p_mutex   is a pointer to the mutex
+//  514 *
+//  515 *              opt       determines the type of ABORT performed:
+//  516 *
+//  517 *                            OS_OPT_PEND_ABORT_1          ABORT wait for a single task (HPT) waiting on the mutex
+//  518 *                            OS_OPT_PEND_ABORT_ALL        ABORT wait for ALL tasks that are  waiting on the mutex
+//  519 *                            OS_OPT_POST_NO_SCHED         Do not call the scheduler
+//  520 *
+//  521 *              p_err     is a pointer to a variable that will contain an error code returned by this function.
+//  522 *
+//  523 *                            OS_ERR_NONE                  At least one task waiting on the mutex was readied and
+//  524 *                                                         informed of the aborted wait; check return value for the
+//  525 *                                                         number of tasks whose wait on the mutex was aborted.
+//  526 *                            OS_ERR_OBJ_PTR_NULL          If 'p_mutex' is a NULL pointer.
+//  527 *                            OS_ERR_OBJ_TYPE              If 'p_mutex' is not pointing at a mutex
+//  528 *                            OS_ERR_OPT_INVALID           If you specified an invalid option
+//  529 *                            OS_ERR_PEND_ABORT_ISR        If you attempted to call this function from an ISR
+//  530 *                            OS_ERR_PEND_ABORT_NONE       No task were pending
+//  531 *
+//  532 * Returns    : == 0          if no tasks were waiting on the mutex, or upon error.
+//  533 *              >  0          if one or more tasks waiting on the mutex are now readied and informed.
+//  534 ************************************************************************************************************************
+//  535 */
+//  536 
+//  537 #if OS_CFG_MUTEX_PEND_ABORT_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  538 OS_OBJ_QTY  OSMutexPendAbort (OS_MUTEX  *p_mutex,
+OSMutexPendAbort:
+        CODE
+//  539                               OS_OPT     opt,
+//  540                               OS_ERR    *p_err)
+//  541 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 6
+        MOV     A,#-0x6
+        LCALL   ?ALLOC_XSTACK8
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        MOV     A,R4
+        MOV     R6,A
+        MOV     A,R5
+        MOV     R7,A
+//  542     OS_PEND_LIST  *p_pend_list;
+//  543     OS_TCB        *p_tcb;
+//  544     CPU_TS         ts;
+//  545     OS_OBJ_QTY     nbr_tasks;
+//  546     CPU_SR_ALLOC();
+        MOV     ?V4,#0x0
+        MOV     A,#0x15
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V7,A
+//  547 
+//  548 
+//  549 
+//  550 #ifdef OS_SAFETY_CRITICAL
+//  551     if (p_err == (OS_ERR *)0) {
+//  552         OS_SAFETY_CRITICAL_EXCEPTION();
+//  553         return ((OS_OBJ_QTY)0u);
+//  554     }
+//  555 #endif
+//  556 
+//  557 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  558     if (OSIntNestingCtr > (OS_NESTING_CTR)0u) {             /* Not allowed to Pend Abort from an ISR                  */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSMutexPendAbort_0
+//  559        *p_err =  OS_ERR_PEND_ABORT_ISR;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x56
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  560         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexPendAbort_1
+//  561     }
+//  562 #endif
+//  563 
+//  564 #if OS_CFG_ARG_CHK_EN > 0u
+//  565     if (p_mutex == (OS_MUTEX *)0) {                         /* Validate 'p_mutex'                                     */
+??OSMutexPendAbort_0:
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSMutexPendAbort_2
+//  566        *p_err =  OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  567         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexPendAbort_1
+//  568     }
+//  569     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSMutexPendAbort_2:
+        MOV     ?V0,R6
+        MOV     ?V1,R7
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSMutexPendAbort>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        4
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        256
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        33024
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPendAbort_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPendAbort_4
+        CODE
+//  570         case OS_OPT_PEND_ABORT_1:
+//  571         case OS_OPT_PEND_ABORT_ALL:
+//  572         case OS_OPT_PEND_ABORT_1   | OS_OPT_POST_NO_SCHED:
+//  573         case OS_OPT_PEND_ABORT_ALL | OS_OPT_POST_NO_SCHED:
+//  574              break;
+//  575 
+//  576         default:
+//  577             *p_err =  OS_ERR_OPT_INVALID;
+//  578              return ((OS_OBJ_QTY)0u);
+//  579     }
+//  580 #endif
+//  581 
+//  582 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  583     if (p_mutex->Type != OS_OBJ_TYPE_MUTEX) {               /* Make sure mutex was created                            */
+??OSMutexPendAbort_3:
+        MOV     DPTR,#__Constant_554d5854
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OSMutexPendAbort_5
+//  584        *p_err =  OS_ERR_OBJ_TYPE;
+//  585         return ((OS_OBJ_QTY)0u);
+//  586     }
+//  587 #endif
+//  588 
+//  589     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     ?V4,A
+//  590     p_pend_list = &p_mutex->PendList;
+        MOV     A,#0x2
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#0x6
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOV     R1,A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  591     if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0u) {        /* Any task waiting on mutex?                             */
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSMutexPendAbort_6
+//  592         CPU_CRITICAL_EXIT();                                /* No                                                     */
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V4
+        LCALL   CPU_SR_Restore
+//  593        *p_err =  OS_ERR_PEND_ABORT_NONE;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x55
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x61
+        MOVX    @DPTR,A
+//  594         return ((OS_OBJ_QTY)0u);
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexPendAbort_1
+//  595     }
+??OSMutexPendAbort_4:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexPendAbort_1
+??OSMutexPendAbort_5:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        LJMP    ??OSMutexPendAbort_1
+//  596 
+//  597     OS_CRITICAL_ENTER_CPU_EXIT();
+//  598     nbr_tasks = 0u;
+??OSMutexPendAbort_6:
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  599     ts        = OS_TS_GET();                                /* Get local time stamp so all tasks get the same time    */
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     ?V2,R2
+        MOV     ?V3,R3
+//  600     while (p_pend_list->NbrEntries > (OS_OBJ_QTY)0u) {
+??OSMutexPendAbort_7:
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSMutexPendAbort_8
+//  601         p_tcb = p_pend_list->HeadPtr->TCBPtr;
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  602         OS_PendAbort((OS_PEND_OBJ *)((void *)p_mutex),
+//  603                      p_tcb,
+//  604                      ts);
+        ; Setup parameters for call to function OS_PendAbort
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_PendAbort
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+//  605         nbr_tasks++;
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,#0x0
+        MOVX    @DPTR,A
+//  606         if (opt != OS_OPT_PEND_ABORT_ALL) {                 /* Pend abort all tasks waiting?                          */
+        MOV     A,#0x0
+        XRL     A,R6
+        JNZ     ??OSMutexPendAbort_9
+        MOV     A,#0x1
+        XRL     A,R7
+??OSMutexPendAbort_9:
+        JZ      ??OSMutexPendAbort_7
+//  607             break;                                          /* No                                                     */
+//  608         }
+//  609     }
+//  610     OS_CRITICAL_EXIT_NO_SCHED();
+??OSMutexPendAbort_8:
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     R1,?V4
+        LCALL   CPU_SR_Restore
+//  611 
+//  612     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0u) {
+        MOV     A,R6
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,R7
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSMutexPendAbort_10
+//  613         OSSched();                                          /* Run the scheduler                                      */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  614     }
+//  615 
+//  616    *p_err = OS_ERR_NONE;
+??OSMutexPendAbort_10:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  617     return (nbr_tasks);
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+??OSMutexPendAbort_1:
+        MOV     A,#0x6
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  618 }
+//  619 #endif
+//  620 
+//  621 /*$PAGE*/
+//  622 /*
+//  623 ************************************************************************************************************************
+//  624 *                                                   POST TO A MUTEX
+//  625 *
+//  626 * Description: This function signals a mutex
+//  627 *
+//  628 * Arguments  : p_mutex  is a pointer to the mutex
+//  629 *
+//  630 *              opt      is an option you can specify to alter the behavior of the post.  The choices are:
+//  631 *
+//  632 *                           OS_OPT_POST_NONE        No special option selected
+//  633 *                           OS_OPT_POST_NO_SCHED    If you don't want the scheduler to be called after the post.
+//  634 *
+//  635 *              p_err    is a pointer to a variable that will contain an error code returned by this function.
+//  636 *
+//  637 *                           OS_ERR_NONE             The call was successful and the mutex was signaled.
+//  638 *                           OS_ERR_MUTEX_NESTING    Mutex owner nested its use of the mutex
+//  639 *                           OS_ERR_MUTEX_NOT_OWNER  If the task posting is not the Mutex owner
+//  640 *                           OS_ERR_OBJ_PTR_NULL     If 'p_mutex' is a NULL pointer.
+//  641 *                           OS_ERR_OBJ_TYPE         If 'p_mutex' is not pointing at a mutex
+//  642 *                           OS_ERR_POST_ISR         If you attempted to post from an ISR
+//  643 *
+//  644 * Returns    : none
+//  645 ************************************************************************************************************************
+//  646 */
+//  647 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  648 void  OSMutexPost (OS_MUTEX  *p_mutex,
+OSMutexPost:
+        CODE
+//  649                    OS_OPT     opt,
+//  650                    OS_ERR    *p_err)
+//  651 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 3
+        MOV     A,#-0x3
+        LCALL   ?ALLOC_XSTACK8
+        MOV     A,R2
+        MOV     R6,A
+        MOV     A,R3
+        MOV     R7,A
+        MOV     ?V4,R4
+        MOV     ?V5,R5
+//  652     OS_PEND_LIST  *p_pend_list;
+//  653     OS_TCB        *p_tcb;
+//  654     CPU_TS         ts;
+//  655     CPU_SR_ALLOC();
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     A,#0x12
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     ?V6,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     ?V7,A
+//  656 
+//  657 
+//  658 
+//  659 #ifdef OS_SAFETY_CRITICAL
+//  660     if (p_err == (OS_ERR *)0) {
+//  661         OS_SAFETY_CRITICAL_EXCEPTION();
+//  662         return;
+//  663     }
+//  664 #endif
+//  665 
+//  666 #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
+//  667     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Not allowed to call from an ISR                        */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        JZ      ??OSMutexPost_0
+//  668        *p_err = OS_ERR_POST_ISR;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0xe
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x62
+        MOVX    @DPTR,A
+//  669         return;
+        LJMP    ??OSMutexPost_1
+//  670     }
+//  671 #endif
+//  672 
+//  673 #if OS_CFG_ARG_CHK_EN > 0u
+//  674     if (p_mutex == (OS_MUTEX *)0) {                         /* Validate 'p_mutex'                                     */
+??OSMutexPost_0:
+        MOV     A,R6
+        ORL     A,R7
+        JNZ     ??OSMutexPost_2
+//  675        *p_err = OS_ERR_OBJ_PTR_NULL;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+//  676         return;
+        LJMP    ??OSMutexPost_1
+//  677     }
+//  678     switch (opt) {                                          /* Validate 'opt'                                         */
+??OSMutexPost_2:
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        MOV     R0,#?V0
+        LCALL   ?US_SWITCH_SPARSE
+`?<Jumptable for OSMutexPost>_0`:
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        2
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        0
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPost_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        32768
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPost_3
+        DATA
+        DATA16
+        DATA
+        DATA16
+        DW        ??OSMutexPost_4
+        CODE
+//  679         case OS_OPT_POST_NONE:
+//  680         case OS_OPT_POST_NO_SCHED:
+//  681              break;
+//  682 
+//  683         default:
+//  684             *p_err =  OS_ERR_OPT_INVALID;
+//  685              return;
+//  686     }
+//  687 #endif
+//  688 
+//  689 #if OS_CFG_OBJ_TYPE_CHK_EN > 0u
+//  690     if (p_mutex->Type != OS_OBJ_TYPE_MUTEX) {               /* Make sure mutex was created                            */
+??OSMutexPost_3:
+        MOV     DPTR,#__Constant_554d5854
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_X
+        MOV     DPL,R6
+        MOV     DPH,R7
+        MOV     R0,#?V0
+        LCALL   ?L_EQ_X
+        JNZ     ??OSMutexPost_5
+//  691        *p_err = OS_ERR_OBJ_TYPE;
+//  692         return;
+//  693     }
+//  694 #endif
+//  695 
+//  696     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        PUSH    A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        POP     A
+        MOVX    @DPTR,A
+//  697     if (OSTCBCurPtr != p_mutex->OwnerTCBPtr) {              /* Make sure the mutex owner is releasing the mutex       */
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        XRL     A,R0
+        JNZ     ??OSMutexPost_6
+        INC     DPTR
+        MOVX    A,@DPTR
+        XRL     A,R1
+??OSMutexPost_6:
+        JZ      ??OSMutexPost_7
+//  698         CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  699        *p_err = OS_ERR_MUTEX_NOT_OWNER;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x7f
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x57
+        MOVX    @DPTR,A
+//  700         return;
+        LJMP    ??OSMutexPost_1
+//  701     }
+??OSMutexPost_4:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x25
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5e
+        MOVX    @DPTR,A
+        LJMP    ??OSMutexPost_1
+??OSMutexPost_5:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x3c
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x5d
+        MOVX    @DPTR,A
+        LJMP    ??OSMutexPost_1
+//  702 
+//  703     OS_CRITICAL_ENTER_CPU_EXIT();
+//  704     ts          = OS_TS_GET();                              /* Get timestamp                                          */
+??OSMutexPost_7:
+        MOV     R0,#0x0
+        MOV     R1,#0x0
+        MOV     R2,#0x0
+        MOV     R3,#0x0
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     ?V2,R2
+        MOV     ?V3,R3
+//  705     p_mutex->TS = ts;
+        MOV     A,R6
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+//  706     p_mutex->OwnerNestingCtr--;                             /* Decrement owner's nesting counter                      */
+        MOV     A,R6
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        ADD     A,#-0x1
+        MOVX    @DPTR,A
+//  707     if (p_mutex->OwnerNestingCtr > (OS_NESTING_CTR)0) {     /* Are we done with all nestings?                         */
+        MOV     A,R6
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        JZ      ??OSMutexPost_8
+//  708         OS_CRITICAL_EXIT();                                 /* No                                                     */
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  709        *p_err = OS_ERR_MUTEX_NESTING;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#-0x7d
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x57
+        MOVX    @DPTR,A
+//  710         return;
+        LJMP    ??OSMutexPost_1
+//  711     }
+//  712 
+//  713     p_pend_list = &p_mutex->PendList;
+??OSMutexPost_8:
+        MOV     A,R6
+        ADD     A,#0x6
+        MOV     R0,A
+        CLR     A
+        ADDC    A,R7
+        MOV     R1,A
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  714     if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0) {         /* Any task waiting on mutex?                             */
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSMutexPost_9
+//  715         p_mutex->OwnerTCBPtr     = (OS_TCB       *)0;       /* No                                                     */
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  716         p_mutex->OwnerNestingCtr = (OS_NESTING_CTR)0;
+        MOV     A,R6
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  717         OS_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  718        *p_err = OS_ERR_NONE;
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  719         return;
+        LJMP    ??OSMutexPost_1
+//  720     }
+//  721                                                             /* Yes                                                    */
+//  722     if (OSTCBCurPtr->Prio != p_mutex->OwnerOriginalPrio) {
+??OSMutexPost_9:
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     A,R6
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        XRL     A,R0
+        JZ      ??OSMutexPost_10
+//  723         OS_RdyListRemove(OSTCBCurPtr);
+        ; Setup parameters for call to function OS_RdyListRemove
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_RdyListRemove
+//  724         OSTCBCurPtr->Prio = p_mutex->OwnerOriginalPrio;     /* Lower owner's priority back to its original one        */
+        MOV     A,R6
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        POP     A
+        MOVX    @DPTR,A
+//  725         OS_PrioInsert(OSTCBCurPtr->Prio);
+        ; Setup parameters for call to function OS_PrioInsert
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   OS_PrioInsert
+//  726         OS_RdyListInsertTail(OSTCBCurPtr);                  /* Insert owner in ready list at new priority             */
+        ; Setup parameters for call to function OS_RdyListInsertTail
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        LCALL   OS_RdyListInsertTail
+//  727         OSPrioCur         = OSTCBCurPtr->Prio;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x1d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     DPTR,#OSPrioCur
+        MOVX    @DPTR,A
+//  728     }
+//  729                                                             /* Get TCB from head of pend list                         */
+//  730     p_tcb                      = p_pend_list->HeadPtr->TCBPtr;
+??OSMutexPost_10:
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  731     p_mutex->OwnerTCBPtr       = p_tcb;                     /* Give mutex to new owner                                */
+        MOV     A,R6
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  732     p_mutex->OwnerOriginalPrio = p_tcb->Prio;
+        MOV     A,R4
+        ADD     A,#0x1d
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     A,R6
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        POP     A
+        MOVX    @DPTR,A
+//  733     p_mutex->OwnerNestingCtr   = (OS_NESTING_CTR)1;
+        MOV     A,R6
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R7
+        MOV     DPH,A
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+//  734                                                             /* Post to mutex                                          */
+//  735     OS_Post((OS_PEND_OBJ *)((void *)p_mutex),
+//  736             (OS_TCB      *)p_tcb,
+//  737             (void        *)0,
+//  738             (OS_MSG_SIZE  )0,
+//  739             (CPU_TS       )ts);
+        ; Setup parameters for call to function OS_Post
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_FOUR
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        CLR     A
+        MOV     ?V0,A
+        MOV     ?V1,A
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     A,R6
+        MOV     R2,A
+        MOV     A,R7
+        MOV     R3,A
+        LCALL   OS_Post
+        MOV     A,#0x8
+        LCALL   ?DEALLOC_XSTACK8
+//  740 
+//  741     OS_CRITICAL_EXIT_NO_SCHED();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  742 
+//  743     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0) {
+        MOV     A,?V4
+        ANL     A,#0x0
+        MOV     R0,A
+        MOV     A,?V5
+        ANL     A,#0x80
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OSMutexPost_11
+//  744         OSSched();                                          /* Run the scheduler                                      */
+        ; Setup parameters for call to function OSSched
+        LCALL   OSSched
+//  745     }
+//  746 
+//  747    *p_err = OS_ERR_NONE;
+??OSMutexPost_11:
+        MOV     DPL,?V6
+        MOV     DPH,?V7
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  748 }
+??OSMutexPost_1:
+        MOV     A,#0x3
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  749 
+//  750 /*$PAGE*/
+//  751 /*
+//  752 ************************************************************************************************************************
+//  753 *                                            CLEAR THE CONTENTS OF A MUTEX
+//  754 *
+//  755 * Description: This function is called by OSMutexDel() to clear the contents of a mutex
+//  756 *
+//  757 
+//  758 * Argument(s): p_mutex      is a pointer to the mutex to clear
+//  759 *              -------
+//  760 *
+//  761 * Returns    : none
+//  762 *
+//  763 * Note(s)    : This function is INTERNAL to uC/OS-III and your application should not call it.
+//  764 ************************************************************************************************************************
+//  765 */
+//  766 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  767 void  OS_MutexClr (OS_MUTEX  *p_mutex)
+OS_MutexClr:
+        CODE
+//  768 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+//  769     p_mutex->Type              =  OS_OBJ_TYPE_NONE;         /* Mark the data structure as a NONE                      */
+        MOV     R4,#0x4e
+        MOV     R5,#0x45
+        MOV     R6,#0x4e
+        MOV     R7,#0x4f
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  770     p_mutex->NamePtr           = (CPU_CHAR     *)((void *)"?MUTEX");
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#`?<Constant "?MUTEX">` & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(`?<Constant "?MUTEX">` >> 8) & 0xff
+        MOVX    @DPTR,A
+//  771     p_mutex->OwnerTCBPtr       = (OS_TCB       *)0;
+        MOV     A,R2
+        ADD     A,#0x12
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  772     p_mutex->OwnerNestingCtr   = (OS_NESTING_CTR)0;
+        MOV     A,R2
+        ADD     A,#0x15
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  773     p_mutex->TS                = (CPU_TS        )0;
+        MOV     R4,#0x0
+        MOV     R5,#0x0
+        MOV     R6,#0x0
+        MOV     R7,#0x0
+        MOV     A,R2
+        ADD     A,#0x16
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  774     p_mutex->OwnerOriginalPrio =  OS_CFG_PRIO_MAX;
+        MOV     A,R2
+        ADD     A,#0x14
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x20
+        MOVX    @DPTR,A
+//  775     OS_PendListInit(&p_mutex->PendList);                    /* Initialize the waiting list                            */
+        ; Setup parameters for call to function OS_PendListInit
+        MOV     A,R2
+        ADD     A,#0x6
+        MOV     R2,A
+        JNC     ??OS_MutexClr_0
+        INC     R3
+??OS_MutexClr_0:
+        LCALL   OS_PendListInit
+//  776 }
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+//  777 
+//  778 /*$PAGE*/
+//  779 /*
+//  780 ************************************************************************************************************************
+//  781 *                                          ADD/REMOVE MUTEX TO/FROM DEBUG LIST
+//  782 *
+//  783 * Description: These functions are called by uC/OS-III to add or remove a mutex to/from the debug list.
+//  784 *
+//  785 * Arguments  : p_mutex     is a pointer to the mutex to add/remove
+//  786 *
+//  787 * Returns    : none
+//  788 *
+//  789 * Note(s)    : These functions are INTERNAL to uC/OS-III and your application should not call it.
+//  790 ************************************************************************************************************************
+//  791 */
+//  792 
+//  793 
+//  794 #if OS_CFG_DBG_EN > 0u
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  795 void  OS_MutexDbgListAdd (OS_MUTEX  *p_mutex)
+OS_MutexDbgListAdd:
+        CODE
+//  796 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  797     p_mutex->DbgNamePtr               = (CPU_CHAR *)((void *)" ");
+        MOV     A,R2
+        ADD     A,#0x10
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#`?<Constant " ">` & 0xff
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#(`?<Constant " ">` >> 8) & 0xff
+        MOVX    @DPTR,A
+//  798     p_mutex->DbgPrevPtr               = (OS_MUTEX *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  799     if (OSMutexDbgListPtr == (OS_MUTEX *)0) {
+        MOV     DPTR,#OSMutexDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_MutexDbgListAdd_0
+//  800         p_mutex->DbgNextPtr           = (OS_MUTEX *)0;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_MutexDbgListAdd_1
+//  801     } else {
+//  802         p_mutex->DbgNextPtr           =  OSMutexDbgListPtr;
+??OS_MutexDbgListAdd_0:
+        MOV     DPTR,#OSMutexDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  803         OSMutexDbgListPtr->DbgPrevPtr =  p_mutex;
+        MOV     DPTR,#OSMutexDbgListPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0xc
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//  804     }
+//  805     OSMutexDbgListPtr                 =  p_mutex;
+??OS_MutexDbgListAdd_1:
+        MOV     DPTR,#OSMutexDbgListPtr
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+//  806 }
+        POP     DPH
+        POP     DPL
+        RET
+//  807 
+//  808 
+//  809 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  810 void  OS_MutexDbgListRemove (OS_MUTEX  *p_mutex)
+OS_MutexDbgListRemove:
+        CODE
+//  811 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  812     OS_MUTEX  *p_mutex_next;
+//  813     OS_MUTEX  *p_mutex_prev;
+//  814 
+//  815 
+//  816     p_mutex_prev = p_mutex->DbgPrevPtr;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+//  817     p_mutex_next = p_mutex->DbgNextPtr;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+//  818 
+//  819     if (p_mutex_prev == (OS_MUTEX *)0) {
+        MOV     A,R0
+        ORL     A,R1
+        JNZ     ??OS_MutexDbgListRemove_0
+//  820         OSMutexDbgListPtr = p_mutex_next;
+        MOV     DPTR,#OSMutexDbgListPtr
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  821         if (p_mutex_next != (OS_MUTEX *)0) {
+        MOV     A,R4
+        ORL     A,R5
+        JZ      ??OS_MutexDbgListRemove_1
+//  822             p_mutex_next->DbgPrevPtr = (OS_MUTEX *)0;
+        MOV     A,R4
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  823         }
+//  824         p_mutex->DbgNextPtr = (OS_MUTEX *)0;
+??OS_MutexDbgListRemove_1:
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_MutexDbgListRemove_2
+//  825 
+//  826     } else if (p_mutex_next == (OS_MUTEX *)0) {
+??OS_MutexDbgListRemove_0:
+        MOV     A,R4
+        ORL     A,R5
+        JNZ     ??OS_MutexDbgListRemove_3
+//  827         p_mutex_prev->DbgNextPtr = (OS_MUTEX *)0;
+        MOV     A,R0
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R1
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  828         p_mutex->DbgPrevPtr      = (OS_MUTEX *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??OS_MutexDbgListRemove_2
+//  829 
+//  830     } else {
+//  831         p_mutex_prev->DbgNextPtr =  p_mutex_next;
+??OS_MutexDbgListRemove_3:
+        MOV     A,R0
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R1
+        MOV     DPH,A
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  832         p_mutex_next->DbgPrevPtr =  p_mutex_prev;
+        MOV     A,R4
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  833         p_mutex->DbgNextPtr      = (OS_MUTEX *)0;
+        MOV     A,R2
+        ADD     A,#0xe
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  834         p_mutex->DbgPrevPtr      = (OS_MUTEX *)0;
+        MOV     A,R2
+        ADD     A,#0xc
+        MOV     DPL,A
+        CLR     A
+        ADDC    A,R3
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  835     }
+//  836 }
+??OS_MutexDbgListRemove_2:
+        POP     DPH
+        POP     DPL
+        RET
+//  837 #endif
+//  838 
+//  839 /*$PAGE*/
+//  840 /*
+//  841 ************************************************************************************************************************
+//  842 *                                                MUTEX INITIALIZATION
+//  843 *
+//  844 * Description: This function is called by OSInit() to initialize the mutex management.
+//  845 *
+//  846 
+//  847 * Argument(s): p_err        is a pointer to a variable that will contain an error code returned by this function.
+//  848 *
+//  849 *                                OS_ERR_NONE     the call was successful
+//  850 *
+//  851 * Returns    : none
+//  852 *
+//  853 * Note(s)    : 1) This function is INTERNAL to uC/OS-III and your application MUST NOT call it.
+//  854 ************************************************************************************************************************
+//  855 */
+//  856 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  857 void  OS_MutexInit (OS_ERR  *p_err)
+OS_MutexInit:
+        CODE
+//  858 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  859 #ifdef OS_SAFETY_CRITICAL
+//  860     if (p_err == (OS_ERR *)0) {
+//  861         OS_SAFETY_CRITICAL_EXCEPTION();
+//  862         return;
+//  863     }
+//  864 #endif
+//  865 
+//  866 #if OS_CFG_DBG_EN > 0u
+//  867     OSMutexDbgListPtr = (OS_MUTEX *)0;
+        MOV     DPTR,#OSMutexDbgListPtr
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  868 #endif
+//  869 
+//  870     OSMutexQty        = (OS_OBJ_QTY)0;
+        MOV     DPTR,#OSMutexQty
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  871    *p_err             =  OS_ERR_NONE;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  872 }
+        POP     DPH
+        POP     DPL
+        RET
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant "?MUTEX">>`:
+        DB "?MUTEX"
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for <Constant " ">>`:
+        DB " "
+
+        RSEG XDATA_ID:CODE:NOROOT(0)
+`?<Initializer for __Constant_554d5854>`:
+        DATA32
+        DD 1431132244
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA8
+`?<Constant "?MUTEX">`:
+        DS 7
+        REQUIRE `?<Initializer for <Constant "?MUTEX">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA16
+`?<Constant " ">`:
+        DS 2
+        REQUIRE `?<Initializer for <Constant " ">>`
+        REQUIRE __INIT_XDATA_I
+
+        RSEG XDATA_I:XDATA:NOROOT(0)
+        DATA32
+__Constant_554d5854:
+        DS 4
+        REQUIRE `?<Initializer for __Constant_554d5854>`
+        REQUIRE __INIT_XDATA_I
+
+        END
+//  873 
+//  874 #endif                                                      /* OS_CFG_MUTEX_EN                                        */
+// 
+// 3 732 bytes in segment NEAR_CODE
+//    13 bytes in segment XDATA_I
+//    13 bytes in segment XDATA_ID
+// 
+// 3 741 bytes of CODE  memory (+ 4 bytes shared)
+//     9 bytes of XDATA memory (+ 4 bytes shared)
+//
+//Errors: none
+//Warnings: none

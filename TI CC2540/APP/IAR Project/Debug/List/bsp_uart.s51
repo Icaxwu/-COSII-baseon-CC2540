@@ -1,0 +1,1584 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  15:54:00
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\bsp_uart.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\bsp_uart.c"
+//        -lB "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\bsp_uart.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME bsp_uart
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?PUSH_XSTACK_I_TWO
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP100_8
+        EXTERN __INIT_XDATA_Z
+
+        PUBLIC BSPUARTInitDMA
+        PUBLIC BSPUARTOpenDMA
+        PUBLIC BSPUARTReadDMA
+        PUBLIC BSPUARTRxAvailDMA
+        PUBLIC BSPUARTWriteISR
+        PUBLIC BSPUart0TxIsr
+        PUBWEAK DMA1CFGH
+        PUBWEAK DMA1CFGL
+        PUBWEAK DMAARM
+        PUBWEAK DMAIRQ
+        PUBWEAK IEN2
+        PUBWEAK P0DIR
+        PUBWEAK P0SEL
+        PUBWEAK P2DIR
+        PUBWEAK PERCFG
+        PUBWEAK U0BAUD
+        PUBWEAK U0CSR
+        PUBWEAK U0DBUF
+        PUBWEAK U0GCR
+        PUBWEAK U0UCR
+        PUBWEAK _A_IRCON2
+        PUBWEAK _A_P0
+        PUBLIC dmaCh1234
+
+        EXTERN memset
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\bsp_uart.c
+//    1 #include "BSP_uart.h"
+
+        ASEGN SFR_AN:DATA:NOROOT,080H
+// union <unnamed> volatile __sfr _A_P0
+_A_P0:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,086H
+// unsigned char volatile __sfr U0CSR
+U0CSR:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,09aH
+// unsigned char volatile __sfr IEN2
+IEN2:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0c1H
+// unsigned char volatile __sfr U0DBUF
+U0DBUF:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0c2H
+// unsigned char volatile __sfr U0BAUD
+U0BAUD:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0c4H
+// unsigned char volatile __sfr U0UCR
+U0UCR:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0c5H
+// unsigned char volatile __sfr U0GCR
+U0GCR:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0d1H
+// unsigned char volatile __sfr DMAIRQ
+DMAIRQ:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0d2H
+// unsigned char volatile __sfr DMA1CFGL
+DMA1CFGL:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0d3H
+// unsigned char volatile __sfr DMA1CFGH
+DMA1CFGH:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0d6H
+// unsigned char volatile __sfr DMAARM
+DMAARM:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0e8H
+// union <unnamed> volatile __sfr _A_IRCON2
+_A_IRCON2:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0f1H
+// unsigned char volatile __sfr PERCFG
+PERCFG:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0f3H
+// unsigned char volatile __sfr P0SEL
+P0SEL:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0fdH
+// unsigned char volatile __sfr P0DIR
+P0DIR:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0ffH
+// unsigned char volatile __sfr P2DIR
+P2DIR:
+        DATA8
+        DS 1
+//    2 #include <string.h>
+//    3 #define st(x)      do { x } while (__LINE__ == -1)
+//    4 #define HI_UINT16(a) (((a) >> 8) & 0xFF)
+//    5 #define LO_UINT16(a) ((a) & 0xFF)
+//    6 
+//    7 /*
+//    8 #define _PRAGMA(x) _Pragma(#x)
+//    9 #define BSP_ISR_FUNC_DECLARATION(f,v)   _PRAGMA(vector=v) __near_func __interrupt void f(void)
+//   10 #define BSP_ISR_FUNC_PROTOTYPE(f,v)     _PRAGMA(vector=v) __near_func __interrupt void f(void)
+//   11 #define BSP_ISR_FUNCTION(f,v)           BSP_ISR_FUNC_PROTOTYPE(f,v); BSP_ISR_FUNC_DECLARATION(f,v)
+//   12 */
+//   13 
+//   14 #define BSP_UART_DMA_RX_MAX        128
+//   15 #define BSP_UART_ISR_TX_MAX        BSP_UART_DMA_RX_MAX
+//   16 
+//   17 /* 
+//   18     计算还有多少空余空间（与计算有多少数据相反） 
+//   19     txHead和txTail都是指向数据的，所以下面的等式中需要-1
+//   20 */
+//   21 #define BSP_UART_ISR_TX_AVAIL() \ 
+//   22   ((uartCfg.txHead > uartCfg.txTail) ? \ 
+//   23   (uartCfg.txHead - uartCfg.txTail - 1) : \ 
+//   24   (BSP_UART_ISR_TX_MAX - uartCfg.txTail + uartCfg.txHead - 1))
+//   25     
+//   26 #define UTX0IE                     0x04
+//   27 
+//   28 #define BSP_UART_PERCFG_BIT        0x01         // USART0 on P0, Alt-1; so clear this bit.
+//   29 #define BSP_UART_PRIPO             0x00         // USART0 priority over UART1.
+//   30 #define BSP_UART_Px_CTS            0x10         // Peripheral I/O Select for CTS flow control.
+//   31 #define BSP_UART_Px_RTS            0x20         // Peripheral I/O Select for RTS must be manual.
+//   32 #define BSP_UART_Px_SEL            0x0C         // Peripheral I/O Select for Rx/Tx.
+//   33 
+//   34     
+//   35 #define DMA_RDYIn                  P0_4
+//   36 #define DMA_RDYOut                 P0_5   
+//   37 #define DMA_RDYIn_BIT              BV(4)        // Same as the I/O Select for CTS flow control.
+//   38 #define DMA_RDYOut_BIT             BV(5)        // Same as the I/O Select for manual RTS flow ctrl.
+//   39 #define BSP_UART_DMA_CLR_RDY_OUT()     (DMA_RDYOut = 1)
+//   40 #define BSP_UART_DMA_SET_RDY_OUT()     (DMA_RDYOut = 0)
+//   41 
+//   42 #define BSP_UART_DMA_RDY_IN()          (DMA_RDYIn == 0)
+//   43 #define BSP_UART_DMA_RDY_OUT()         (DMA_RDYOut == 0)   
+//   44     
+//   45 // UxUCR - USART UART Control Register.
+//   46 #define UCR_FLUSH                  0x80
+//   47 #define UCR_FLOW                   0x40    
+//   48 #define UCR_STOP                   0x02
+//   49     
+//   50 // UxCSR - USART Control and Status Register.
+//   51 #define CSR_MODE                   0x80   
+//   52 #define CSR_RE                     0x40
+//   53     
+//   54 #define P2DIR_PRIPO                0xC0    
+//   55     
+//   56 #define BSP_DMA_CH_RX                  3   
+//   57 #define BSP_DMA_U0DBUF             0x70C1
+//   58 #define DMA_UxDBUF                 BSP_DMA_U0DBUF    
+//   59 #define BSP_DMA_VLEN_USE_LEN            0x00   // Use LEN for transfer count
+//   60 // Bit fields of the 'lenModeH'
+//   61 #define BSP_DMA_LEN_V     0xE0
+//   62 #define BSP_DMA_LEN_H     0x1F
+//   63 
+//   64 // Bit fields of the 'ctrlA'
+//   65 #define BSP_DMA_WORD_SIZE 0x80
+//   66 #define BSP_DMA_TRIG_MODE 0x60
+//   67 #define BSP_DMA_TRIG_SRC  0x1F
+//   68 
+//   69 // Bit fields of the 'ctrlB'
+//   70 #define BSP_DMA_SRC_INC   0xC0
+//   71 #define BSP_DMA_DST_INC   0x30
+//   72 #define BSP_DMA_IRQ_MASK  0x08
+//   73 #define BSP_DMA_M8        0x04
+//   74 #define BSP_DMA_PRIORITY  0x03
+//   75     
+//   76 #define BSP_DMA_WORDSIZE_WORD           0x01 /* Transfer a 16-bit word at a time. */   
+//   77 #define BSP_DMA_TMODE_SINGLE_REPEATED   0x02 /* Transfer single byte/word (after len transfers, rearm DMA). */
+//   78 #define BSP_DMA_TRIG_URX0          14   /* USART0 RX complete. */
+//   79 #define DMATRIG_RX                 BSP_DMA_TRIG_URX0
+//   80 #define BSP_DMA_SRCINC_0         0x00 /* Increment source pointer by 0 bytes/words after each transfer. */
+//   81 #define BSP_DMA_DSTINC_1         0x01 /* Increment destination pointer by 1 bytes/words after each transfer. */
+//   82 #define BSP_DMA_IRQMASK_DISABLE  0x00 /* Disable interrupt generation. */    
+//   83 #define BSP_DMA_M8_USE_8_BITS    0x00 /* Use all 8 bits for transfer count. */
+//   84 #define BSP_DMA_PRI_HIGH         0x02 /* High, DMA has priority. */
+//   85 #define DMA_PAD                    U0BAUD    
+//   86  
+//   87 #define BSP_DMA_GET_DESC1234( a )     (dmaCh1234+((a)-1))
+//   88 #define BSP_DMA_ABORT_CH( ch )         DMAARM = (0x80 | (0x01 << (ch)))
+//   89     
+//   90 #define BSP_DMA_SET_ADDR_DESC1234( a ) \ 
+//   91   st( \ 
+//   92     DMA1CFGH = (CPU_INT08U)( (CPU_INT16U)(a) >> 8 );  \ 
+//   93     DMA1CFGL = (CPU_INT08U)( (CPU_INT16U)(a) & 0xFF); \ 
+//   94   ) 
+//   95 // Macro for quickly setting the source address of a DMA structure.
+//   96 #define BSP_DMA_SET_SOURCE( pDesc, src ) \ 
+//   97   st( \ 
+//   98     pDesc->srcAddrH = (CPU_INT08U)((CPU_INT16U)(src) >> 8); \ 
+//   99     pDesc->srcAddrL = (CPU_INT08U)((CPU_INT16U)(src) & 0xFF); \ 
+//  100   )
+//  101 // Macro for quickly setting the destination address of a DMA structure.
+//  102 #define BSP_DMA_SET_DEST( pDesc, dst ) \ 
+//  103   st( \ 
+//  104     pDesc->dstAddrH = (CPU_INT08U)((CPU_INT16U)(dst) >> 8); \ 
+//  105     pDesc->dstAddrL = (CPU_INT08U)((CPU_INT16U)(dst) & 0xFF); \ 
+//  106   )
+//  107     // xferLenV的bit[5:7]对应于VLEN[0:2]
+//  108 #define BSP_DMA_SET_VLEN( pDesc, vMode ) \ 
+//  109   st( \ 
+//  110     pDesc->xferLenV &= ~BSP_DMA_LEN_V; \ 
+//  111     pDesc->xferLenV |= (vMode << 5); \ 
+//  112   )
+//  113 // Macro for quickly setting the number of bytes to be transferred by the DMA,
+//  114 // max length is 0x1FFF.
+//  115 #define BSP_DMA_SET_LEN( pDesc, len ) \ 
+//  116   st( \ 
+//  117     pDesc->xferLenL = (CPU_INT08U)(CPU_INT16U)(len); \ 
+//  118     pDesc->xferLenV &= ~BSP_DMA_LEN_H; \ 
+//  119     pDesc->xferLenV |= (CPU_INT08U)((CPU_INT16U)(len) >> 8); \ 
+//  120   )
+//  121 #define BSP_DMA_SET_WORD_SIZE( pDesc, xSz ) \ 
+//  122   st( \ 
+//  123     pDesc->ctrlA &= ~BSP_DMA_WORD_SIZE; \ 
+//  124     pDesc->ctrlA |= (xSz << 7); \ 
+//  125   )
+//  126 
+//  127 #define BSP_DMA_SET_TRIG_MODE( pDesc, tMode ) \ 
+//  128   st( \ 
+//  129     pDesc->ctrlA &= ~BSP_DMA_TRIG_MODE; \ 
+//  130     pDesc->ctrlA |= (tMode << 5); \ 
+//  131   )
+//  132 
+//  133 #define BSP_DMA_GET_TRIG_MODE( pDesc ) ((pDesc->ctrlA >> 5) & 0x3)
+//  134 
+//  135 #define BSP_DMA_SET_TRIG_SRC( pDesc, tSrc ) \ 
+//  136   st( \ 
+//  137     pDesc->ctrlA &= ~BSP_DMA_TRIG_SRC; \ 
+//  138     pDesc->ctrlA |= tSrc; \ 
+//  139   )
+//  140 
+//  141 #define BSP_DMA_SET_SRC_INC( pDesc, srcInc ) \ 
+//  142   st( \ 
+//  143     pDesc->ctrlB &= ~BSP_DMA_SRC_INC; \ 
+//  144     pDesc->ctrlB |= (srcInc << 6); \ 
+//  145   )
+//  146 
+//  147 #define BSP_DMA_SET_DST_INC( pDesc, dstInc ) \ 
+//  148   st( \ 
+//  149     pDesc->ctrlB &= ~BSP_DMA_DST_INC; \ 
+//  150     pDesc->ctrlB |= (dstInc << 4); \ 
+//  151   )
+//  152 
+//  153 #define BSP_DMA_SET_IRQ( pDesc, enable ) \ 
+//  154   st( \ 
+//  155     pDesc->ctrlB &= ~BSP_DMA_IRQ_MASK; \ 
+//  156     pDesc->ctrlB |= (enable << 3); \ 
+//  157   )
+//  158 
+//  159 #define BSP_DMA_SET_M8( pDesc, m8 ) \ 
+//  160   st( \ 
+//  161     pDesc->ctrlB &= ~BSP_DMA_M8; \ 
+//  162     pDesc->ctrlB |= (m8 << 2); \ 
+//  163   )
+//  164 
+//  165 #define BSP_DMA_SET_PRIORITY( pDesc, pri ) \ 
+//  166   st( \ 
+//  167     pDesc->ctrlB &= ~BSP_DMA_PRIORITY; \ 
+//  168     pDesc->ctrlB |= pri; \ 
+//  169   )  
+//  170 #define BSP_DMA_CLEAR_IRQ( ch )        DMAIRQ = (~(1 << (ch)) & 0x1F)
+//  171 #define BSP_DMA_ARM_CH( ch )           DMAARM = (0x01 << (ch))
+//  172 
+//  173 #define BUILD_UINT16(loByte, hiByte) \ 
+//  174           ((CPU_INT16U)(((loByte) & 0x00FF) + (((hiByte) & 0x00FF) << 8)))    
+//  175 #define BSP_UART_DMA_NEW_RX_BYTE(IDX)  ((CPU_INT08U)DMA_PAD == HI_UINT16(uartCfg.rxBuf[(IDX)]))
+//  176 #define BSP_UART_DMA_GET_RX_BYTE(IDX)  (*(volatile CPU_INT08U *)(uartCfg.rxBuf+(IDX)))
+//  177 #define BSP_UART_DMA_CLR_RX_BYTE(IDX)  (uartCfg.rxBuf[(IDX)] = BUILD_UINT16(0, (DMA_PAD ^ 0xFF)))
+//  178 #define BSP_UART_RX_IDX_T_INCR(IDX) st (  \ 
+//  179   if (++(IDX) >= BSP_UART_DMA_RX_MAX) \ 
+//  180   { \ 
+//  181     (IDX) = 0; \ 
+//  182   } \ 
+//  183 )       
+//  184     
+//  185 typedef struct {
+//  186   CPU_INT08U srcAddrH;
+//  187   CPU_INT08U srcAddrL;
+//  188   CPU_INT08U dstAddrH;
+//  189   CPU_INT08U dstAddrL;
+//  190   CPU_INT08U xferLenV;  // bit[0:4]作为len的[8:12]用 bit[5:7]作为VLEN[0:2]用
+//  191   CPU_INT08U xferLenL;  // len的bit[0:7]
+//  192   CPU_INT08U ctrlA;
+//  193   CPU_INT08U ctrlB;
+//  194 } BSPDMADesc_t;    
+//  195     
+//  196 typedef struct
+//  197 {
+//  198   CPU_INT16U rxBuf[BSP_UART_DMA_RX_MAX];  // 注意这里是CPU_INT16U，与txBuf不同
+//  199   CPU_INT08U rxHead;
+//  200   CPU_INT08U rxTail;
+//  201 
+//  202   CPU_INT08U txBuf[BSP_UART_ISR_TX_MAX];
+//  203   volatile CPU_INT08U txHead;
+//  204   CPU_INT08U txTail;
+//  205   CPU_INT08U txMT;    // true表示txBuf为空   false表示txBuf不为空        
+//  206 
+//  207   BSPUARTCBack_t uartCB;
+//  208 } uartCfg_t;
+//  209 
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//  210 static uartCfg_t uartCfg;
+uartCfg:
+        DS 391
+        REQUIRE __INIT_XDATA_Z
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA8
+//  211 BSPDMADesc_t dmaCh1234[4];
+dmaCh1234:
+        DS 32
+        REQUIRE __INIT_XDATA_Z
+//  212 
+//  213 /* 
+//  214 	NPI_InitTransport 会调用 BSPUARTOpenDMA 函数 
+//  215 	在本函数前，在BSP uart初始化时会调用 BSPUARTInitDMA 先初始化一下串口
+//  216 */
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  217 void BSPUARTOpenDMA(BSPUARTInfo_t *config)
+BSPUARTOpenDMA:
+        CODE
+//  218 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  219   uartCfg.uartCB = config->callBackFunc;
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPTR,#uartCfg + 389
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//  220 
+//  221 
+//  222   if (config->baudRate == BSP_UART_BR_57600 ||
+//  223       config->baudRate == BSP_UART_BR_115200)
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        XRL     A,#0x3
+        JZ      ??BSPUARTOpenDMA_0
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        XRL     A,#0x4
+        JNZ     ??BSPUARTOpenDMA_1
+//  224   {
+//  225     U0BAUD = 216;
+??BSPUARTOpenDMA_0:
+        MOV     0xc2,#-0x28
+        SJMP    ??BSPUARTOpenDMA_2
+//  226   }
+//  227   else
+//  228   {
+//  229     U0BAUD = 59;
+??BSPUARTOpenDMA_1:
+        MOV     0xc2,#0x3b
+//  230   }
+//  231 
+//  232   switch (config->baudRate)
+??BSPUARTOpenDMA_2:
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        JZ      ??BSPUARTOpenDMA_3
+        DEC     A
+        JZ      ??BSPUARTOpenDMA_4
+        DEC     A
+        JZ      ??BSPUARTOpenDMA_5
+        DEC     A
+        JZ      ??BSPUARTOpenDMA_5
+        SJMP    ??BSPUARTOpenDMA_6
+//  233   {
+//  234     case BSP_UART_BR_9600:
+//  235       U0GCR = 8;
+??BSPUARTOpenDMA_3:
+        MOV     0xc5,#0x8
+//  236       break;
+        SJMP    ??BSPUARTOpenDMA_7
+//  237     case BSP_UART_BR_19200:
+//  238       U0GCR = 9;
+??BSPUARTOpenDMA_4:
+        MOV     0xc5,#0x9
+//  239       break;
+        SJMP    ??BSPUARTOpenDMA_7
+//  240     case BSP_UART_BR_38400:
+//  241     case BSP_UART_BR_57600:
+//  242       U0GCR = 10;
+??BSPUARTOpenDMA_5:
+        MOV     0xc5,#0xa
+//  243       break;
+        SJMP    ??BSPUARTOpenDMA_7
+//  244     default:
+//  245       // BSP_UART_BR_115200
+//  246       U0GCR = 11;
+??BSPUARTOpenDMA_6:
+        MOV     0xc5,#0xb
+//  247       break;
+//  248   }
+//  249   /*
+//  250     当打开 POWER_SAVING 宏打开时，DMA_PM的值为1
+//  251   */
+//  252   if (config->flowControl)
+??BSPUARTOpenDMA_7:
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        MOVX    A,@DPTR
+        JZ      ??BSPUARTOpenDMA_8
+//  253   {
+//  254     U0UCR = UCR_FLOW | UCR_STOP;      // 流控;  8 bits/char; no parity; 1 stop bit; stop bit high.
+        MOV     0xc4,#0x42
+//  255     P0SEL |= BSP_UART_Px_CTS;         // Enable Peripheral control of CTS flow control on Px.使能CTS引脚的外设功能
+        ORL     0xf3,#0x10
+//  256     
+//  257     // DMA Rx is always on (self-resetting). So flow must be controlled by the S/W polling the
+//  258     // circular Rx queue depth. Start by allowing flow.
+//  259     BSP_UART_DMA_SET_RDY_OUT();  // RTS 拉低
+        CLR     0x80.5
+//  260     P0DIR |= BSP_UART_Px_RTS;   //  RTS pin配置为输出
+        ORL     0xfd,#0x20
+//  261   }
+//  262 
+//  263   U0CSR = (CSR_MODE | CSR_RE);       // uart模式；使能接收
+??BSPUARTOpenDMA_8:
+        MOV     0x86,#-0x40
+//  264 
+//  265   UTX0IF = 1;  // Prime the ISR pump.     // 手动pend一个TX interrupt
+        SETB    0xe8.1
+//  266 }    
+        POP     DPH
+        POP     DPL
+        RET
+        REQUIRE U0BAUD
+        REQUIRE U0GCR
+        REQUIRE U0UCR
+        REQUIRE P0SEL
+        REQUIRE _A_P0
+        REQUIRE P0DIR
+        REQUIRE U0CSR
+        REQUIRE _A_IRCON2
+//  267  
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  268 void BSPUARTInitDMA(void)
+BSPUARTInitDMA:
+        CODE
+//  269 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        MOV     A,#-0x9
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 9
+        ; Auto size: 9
+        MOV     A,#-0x9
+        LCALL   ?ALLOC_XSTACK8
+//  270   BSPDMADesc_t *ch, dmaCh;
+//  271   ch = &dmaCh;
+        MOV     A,#0x1
+        LCALL   ?XSTACK_DISP100_8
+        MOV     ?V0,R0
+        MOV     ?V1,R1
+        MOV     R2,?V0
+        MOV     R3,?V1
+//  272 
+//  273   PERCFG &= ~BSP_UART_PERCFG_BIT;    // Set UART0 I/O to Alt. 1 location on P0.
+        ANL     0xf1,#0xfe
+//  274   P0SEL  |= BSP_UART_Px_SEL;         // Enable Peripheral control of Rx/Tx on Px.
+        ORL     0xf3,#0xc
+//  275   U0CSR = CSR_MODE;                  // Mode is UART Mode.
+        MOV     0x86,#-0x80
+//  276   U0UCR = UCR_FLUSH;                 // Flush it.
+        MOV     0xc4,#-0x80
+//  277 
+//  278   P2DIR &= ~P2DIR_PRIPO;             // 清空 PRIP0[1:0]
+        ANL     0xff,#0x3f
+//  279   P2DIR |= BSP_UART_PRIPO;           // 设置 1st priority: USART 0 2nd priority: USART 1
+        MOV     0xff,0xff
+//  280 
+//  281   BSP_UART_DMA_CLR_RDY_OUT();
+        SETB    0x80.5
+//  282   P0DIR |= DMA_RDYOut_BIT;   // RTS pin配置为输出
+        ORL     0xfd,#0x20
+//  283   
+//  284   // 配置DMA的config 内存块地址
+//  285   BSP_DMA_SET_ADDR_DESC1234(dmaCh1234);
+        MOV     R0,#dmaCh1234 & 0xff
+        MOV     R1,#(dmaCh1234 >> 8) & 0xff
+        CLR     A
+        XCH     A,R1
+        MOV     R0,A
+        MOV     A,R0
+        MOV     0xd3,A
+        MOV     0xd2,#dmaCh1234 & 0xff
+//  286   
+//  287   ch = BSP_DMA_GET_DESC1234( BSP_DMA_CH_RX );
+        MOV     R2,#(dmaCh1234 + 16) & 0xff
+        MOV     R3,#((dmaCh1234 + 16) >> 8) & 0xff
+//  288   // Abort any pending DMA operations (in case of a soft reset).
+//  289   BSP_DMA_ABORT_CH( BSP_DMA_CH_RX );
+        MOV     0xd6,#-0x78
+//  290 
+//  291   // The start address of the source.
+//  292   BSP_DMA_SET_SOURCE(ch, DMA_UxDBUF );         //源地址 寄存器UxDBUF在xdata空间的地址   
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOV     A,#0x70
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        MOV     A,#-0x3f
+        MOVX    @DPTR,A
+//  293 
+//  294   // Using the length field to determine how many bytes to transfer.
+//  295   BSP_DMA_SET_VLEN( ch, BSP_DMA_VLEN_USE_LEN );
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0x1f
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        POP     A
+        MOVX    @DPTR,A
+//  296 
+//  297   /* The trick is to cfg DMA to xfer 2 bytes for every 1 byte of Rx.
+//  298    * The byte after the Rx Data Buffer is the Baud Cfg Register, U0DBUF寄存器和U0BAUD寄存器的地址是连续的
+//  299    * which always has a known value. So init Rx buffer to inverse of that
+//  300    * known value. DMA word xfer will flip the bytes, so every valid Rx byte
+//  301    * in the Rx buffer will be preceded by a DMA_PAD char equal to the
+//  302    * Baud Cfg Register value.
+//  303    */
+//  304   BSP_DMA_SET_WORD_SIZE( ch, BSP_DMA_WORDSIZE_WORD );   // 16bit 为传输单元
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        CLR     0xE0 /* A   */.7
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        SETB    0xE0 /* A   */.7
+        MOVX    @DPTR,A
+//  305 
+//  306   // The bytes are transferred 1-by-1 on Rx Complete trigger.
+//  307   /* 每搬运完len个字节数据，就会重复前面的动作，源地址不变，目的地址恢复到开始的值 */
+//  308   BSP_DMA_SET_TRIG_MODE( ch, BSP_DMA_TMODE_SINGLE_REPEATED );  // 单个重复传输模式
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0x9f
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        SETB    0xE0 /* A   */.6
+        MOVX    @DPTR,A
+//  309   BSP_DMA_SET_TRIG_SRC( ch, DMATRIG_RX );
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0xe0
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ORL     A,#0xe
+        MOVX    @DPTR,A
+//  310 
+//  311   // The source address is constant - the Rx Data Buffer.
+//  312   BSP_DMA_SET_SRC_INC( ch, BSP_DMA_SRCINC_0 );
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0x3f
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        POP     A
+        MOVX    @DPTR,A
+//  313 
+//  314   // The destination address is incremented by 1 word after each transfer.
+//  315   BSP_DMA_SET_DST_INC( ch, BSP_DMA_DSTINC_1 );
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0xcf
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        SETB    0xE0 /* A   */.4
+        MOVX    @DPTR,A
+//  316   BSP_DMA_SET_DEST( ch, uartCfg.rxBuf );                      // 目的地址 dmaCfg.rxBuf
+        MOV     R0,#uartCfg & 0xff
+        MOV     R1,#(uartCfg >> 8) & 0xff
+        CLR     A
+        XCH     A,R1
+        MOV     R0,A
+        MOV     A,R0
+        PUSH    A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        POP     A
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#uartCfg & 0xff
+        MOVX    @DPTR,A
+//  317   BSP_DMA_SET_LEN( ch, BSP_UART_DMA_RX_MAX );                // 
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOV     A,#-0x80
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0xe0
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        POP     A
+        MOVX    @DPTR,A
+//  318 
+//  319   // The DMA is to be polled and sBSPl not issue an IRQ upon completion.
+//  320   BSP_DMA_SET_IRQ( ch, BSP_DMA_IRQMASK_DISABLE );           // 禁止中断
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        CLR     0xE0 /* A   */.3
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        POP     A
+        MOVX    @DPTR,A
+//  321 
+//  322   // Xfer all 8 bits of a byte xfer.
+//  323   BSP_DMA_SET_M8( ch, BSP_DMA_M8_USE_8_BITS );
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        CLR     0xE0 /* A   */.2
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        POP     A
+        MOVX    @DPTR,A
+//  324 
+//  325   // DMA has highest priority for memory access.
+//  326   BSP_DMA_SET_PRIORITY( ch, BSP_DMA_PRI_HIGH);
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        ANL     A,#0xfc
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        INC     DPTR
+        MOVX    A,@DPTR
+        SETB    0xE0 /* A   */.1
+        MOVX    @DPTR,A
+//  327 
+//  328   volatile CPU_INT08U dummy = *(volatile CPU_INT08U *)DMA_UxDBUF;  // Clear the DMA Rx trigger.
+        MOV     DPTR,#0x70c1
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        POP     A
+        MOVX    @DPTR,A
+//  329   BSP_DMA_CLEAR_IRQ(BSP_DMA_CH_RX);
+        MOV     0xd1,#0x17
+//  330   BSP_DMA_ARM_CH(BSP_DMA_CH_RX);
+        MOV     0xd6,#0x8
+//  331   (void)memset(uartCfg.rxBuf, (DMA_PAD ^ 0xFF), BSP_UART_DMA_RX_MAX * sizeof(CPU_INT16U));   // 设置的初始值(DMA_PAD ^ 0xFF)
+        ; Setup parameters for call to function memset
+        MOV     ?V0,#0x0
+        MOV     ?V1,#0x1
+        MOV     R0,#?V0
+        LCALL   ?PUSH_XSTACK_I_TWO
+        MOV     A,0xc2
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R0
+        XRL     A,#0xff
+        MOV     R4,A
+        MOV     A,R1
+        XRL     A,#0x0
+        MOV     R5,A
+        MOV     R2,#uartCfg & 0xff
+        MOV     R3,#(uartCfg >> 8) & 0xff
+        LCALL   memset
+        MOV     A,#0x2
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     ?V0,R2
+        MOV     ?V1,R3
+        MOV     DPL,?V0
+        MOV     DPH,?V1
+//  332 }
+        MOV     A,#0x9
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x2
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE PERCFG
+        REQUIRE P0SEL
+        REQUIRE U0CSR
+        REQUIRE U0UCR
+        REQUIRE P2DIR
+        REQUIRE _A_P0
+        REQUIRE P0DIR
+        REQUIRE DMA1CFGH
+        REQUIRE DMA1CFGL
+        REQUIRE DMAARM
+        REQUIRE DMAIRQ
+        REQUIRE U0BAUD
+//  333       
+//  334 
+//  335     
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  336 CPU_INT08U BSPUARTWriteISR(const CPU_INT08U *buf, CPU_INT08U len)
+BSPUARTWriteISR:
+        CODE
+//  337 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+        MOV     A,R1
+        MOV     R6,A
+//  338   // Enforce all or none.要么全部传输，要么不传输
+//  339   if (BSP_UART_ISR_TX_AVAIL() < len) // 如果剩余的tx buf不足len，则不发送
+        MOV     DPTR,#uartCfg + 386
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     DPTR,#uartCfg + 387
+        MOVX    A,@DPTR
+        CLR     C
+        SUBB    A,R0
+        JNC     ??BSPUARTWriteISR_0
+        MOV     DPTR,#uartCfg + 386
+        MOVX    A,@DPTR
+        MOV     R4,A
+        MOV     R5,#0x0
+        MOV     DPTR,#uartCfg + 387
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R4
+        CLR     C
+        SUBB    A,R0
+        MOV     R0,A
+        MOV     A,R5
+        SUBB    A,R1
+        MOV     R1,A
+        MOV     A,R0
+        ADD     A,#-0x1
+        MOV     R0,A
+        MOV     A,R1
+        ADDC    A,#-0x1
+        MOV     R1,A
+        SJMP    ??BSPUARTWriteISR_1
+??BSPUARTWriteISR_0:
+        MOV     DPTR,#uartCfg + 387
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     R1,#0x0
+        CLR     C
+        CLR     A
+        SUBB    A,R0
+        MOV     R4,A
+        CLR     A
+        SUBB    A,R1
+        MOV     R5,A
+        MOV     DPTR,#uartCfg + 386
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,R4
+        ADD     A,R0
+        MOV     R0,A
+        MOV     A,R5
+        ADDC    A,R1
+        MOV     R1,A
+        MOV     A,R0
+        ADD     A,#0x7f
+        MOV     R0,A
+        JNC     ??BSPUARTWriteISR_1
+        INC     R1
+??BSPUARTWriteISR_1:
+        MOV     A,R6
+        MOV     R4,A
+        MOV     R5,#0x0
+        CLR     C
+        MOV     A,R0
+        SUBB    A,R4
+        MOV     A,R1
+        SUBB    A,R5
+        MOV     C,0xD0 /* PSW */.2
+        XRL     A,PSW
+        RLC     A
+        JNC     ??BSPUARTWriteISR_2
+//  340   {
+//  341     return 0;
+        MOV     R1,#0x0
+        SJMP    ??BSPUARTWriteISR_3
+//  342   }
+//  343 
+//  344   for (CPU_INT08U cnt = 0; cnt < len; cnt++)
+??BSPUARTWriteISR_2:
+        MOV     R4,#0x0
+        SJMP    ??BSPUARTWriteISR_4
+//  345   {
+//  346     uartCfg.txBuf[uartCfg.txTail] = *buf++;
+//  347     uartCfg.txMT = 0;
+//  348 
+//  349     if (uartCfg.txTail >= BSP_UART_ISR_TX_MAX-1)
+//  350     {
+//  351       uartCfg.txTail = 0;
+//  352     }
+//  353     else
+//  354     {
+//  355       uartCfg.txTail++;
+??BSPUARTWriteISR_5:
+        MOV     DPTR,#uartCfg + 387
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+//  356     }
+//  357 
+//  358     // Keep re-enabling ISR as it might be keeping up with this loop due to other ints.
+//  359 	/* 
+//  360 	  使能TX interrupt，这里立即会产生中断，中断程序也会很快被执行完毕，返回到这儿
+//  361 	  但是并不意味着中断里面的“UxDBUF = dmaCfg.txBuf[dmaCfg.txHead++];”执行完后，就会马上产生下一个
+//  362 	  TX interrupt中断，因为CPU的速度远比串口外设要快，TX interrupt中断的再次产生是当串口真正的从
+//  363 	  TX引脚上发送完毕之后。
+//  364 	*/
+//  365     IEN2 |= UTX0IE;   
+??BSPUARTWriteISR_6:
+        ORL     0x9a,#0x4
+        INC     R4
+??BSPUARTWriteISR_4:
+        MOV     A,R4
+        CLR     C
+        SUBB    A,R6
+        JNC     ??BSPUARTWriteISR_7
+        MOV     DPL,R2
+        MOV     DPH,R3
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPTR,#uartCfg + 387
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     R1,#0x0
+        MOV     A,#(uartCfg + 2) & 0xff
+        ADD     A,R0
+        MOV     DPL,A
+        MOV     A,#((uartCfg + 258) >> 8) & 0xff
+        ADDC    A,R1
+        MOV     DPH,A
+        POP     A
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        MOV     R2,DPL
+        MOV     R3,DPH
+        MOV     DPTR,#uartCfg + 388
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        MOV     DPTR,#uartCfg + 387
+        MOVX    A,@DPTR
+        CLR     C
+        SUBB    A,#0x7f
+        JC      ??BSPUARTWriteISR_5
+        MOV     DPTR,#uartCfg + 387
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+        SJMP    ??BSPUARTWriteISR_6
+//  366   }
+//  367 
+//  368   return len;
+??BSPUARTWriteISR_7:
+        MOV     A,R6
+        MOV     R1,A
+??BSPUARTWriteISR_3:
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE IEN2
+//  369 }
+//  370 
+//  371 /*
+//  372   获取当前接收缓冲区rxBuf中的有数数据的数量
+//  373 */		  
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  374 CPU_INT08U BSPUARTRxAvailDMA(void)
+BSPUARTRxAvailDMA:
+        CODE
+//  375 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  376   CPU_INT08U cnt = 0;
+        MOV     R1,#0x0
+//  377   // First, synchronize the Rx tail marker with where the DMA Rx engine is working.
+//  378   CPU_INT08U tail = uartCfg.rxTail;
+        MOV     DPTR,#uartCfg + 257
+        MOVX    A,@DPTR
+        MOV     R0,A
+//  379 
+//  380   if (U0UCR & UCR_FLOW)
+        MOV     A,0xc4
+        MOV     C,0xE0 /* A   */.6
+        JNC     ??BSPUARTRxAvailDMA_0
+//  381   {
+//  382     BSP_UART_DMA_CLR_RDY_OUT();  // Stop the inflow for counting the bytes
+        SETB    0x80.5
+//  383   }
+//  384 
+//  385   do
+//  386   {
+//  387 	  /*
+//  388 	    BSP_UART_DMA_NEW_RX_BYTE判断的根据详细的介绍参见BSPUARTInitDMA函数中的注释
+//  389 	  */
+//  390     if (!BSP_UART_DMA_NEW_RX_BYTE(tail))
+??BSPUARTRxAvailDMA_0:
+        MOV     A,R0
+        MOV     R2,A
+        MOV     R3,#0x0
+        MOV     A,R2
+        MOV     B,#0x2
+        MUL     AB
+        XCH     A,R2
+        MOV     R4,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R4
+        MOV     R4,A
+        MOV     B,#0x2
+        MOV     A,R3
+        MUL     AB
+        ADD     A,R4
+        MOV     R3,A
+        MOV     A,#uartCfg & 0xff
+        ADD     A,R2
+        MOV     DPL,A
+        MOV     A,#(uartCfg >> 8) & 0xff
+        ADDC    A,R3
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R2,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R3,A
+        CLR     A
+        XCH     A,R3
+        MOV     R2,A
+        MOV     A,R2
+        XRL     A,0xc2
+        JNZ     ??BSPUARTRxAvailDMA_1
+//  391     {
+//  392       break;
+//  393     }
+//  394     else
+//  395     {
+//  396       cnt++;
+        INC     R1
+//  397     }
+//  398     BSP_UART_RX_IDX_T_INCR(tail);
+        INC     R0
+        MOV     A,R0
+        CLR     C
+        SUBB    A,#-0x80
+        JC      ??BSPUARTRxAvailDMA_2
+        MOV     R0,#0x0
+//  399   } while (cnt  < BSP_UART_DMA_RX_MAX);  //  接受数量不能大于 BSP_UART_DMA_RX_MAX
+??BSPUARTRxAvailDMA_2:
+        MOV     A,R1
+        CLR     C
+        SUBB    A,#-0x80
+        JC      ??BSPUARTRxAvailDMA_0
+//  400 
+//  401 
+//  402   if (U0UCR & UCR_FLOW) 
+??BSPUARTRxAvailDMA_1:
+        MOV     A,0xc4
+        MOV     C,0xE0 /* A   */.6
+        JNC     ??BSPUARTRxAvailDMA_3
+//  403   {
+//  404     BSP_UART_DMA_SET_RDY_OUT();  // Re-enable the flow asap
+        CLR     0x80.5
+//  405   }
+//  406   return cnt;
+??BSPUARTRxAvailDMA_3:
+        POP     DPH
+        POP     DPL
+        RET
+        REQUIRE U0UCR
+        REQUIRE _A_P0
+        REQUIRE U0BAUD
+//  407 }
+//  408 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  409 CPU_INT08U BSPUARTReadDMA(CPU_INT08U *buf, CPU_INT08U len)
+BSPUARTReadDMA:
+        CODE
+//  410 {
+        REQUIRE ?V0
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+        MOV     A,R1
+        MOV     R0,A
+//  411   CPU_INT08U cnt;
+//  412 
+//  413   for (cnt = 0; cnt < len; cnt++)
+        MOV     R1,#0x0
+        LJMP    ??BSPUARTReadDMA_0
+//  414   {
+//  415     if (!BSP_UART_DMA_NEW_RX_BYTE(uartCfg.rxHead))
+//  416     {
+//  417       break;
+//  418     }
+//  419     *buf++ = BSP_UART_DMA_GET_RX_BYTE(uartCfg.rxHead);
+??BSPUARTReadDMA_1:
+        MOV     DPTR,#uartCfg + 256
+        MOVX    A,@DPTR
+        MOV     R4,A
+        MOV     R5,#0x0
+        MOV     A,R4
+        MOV     B,#0x2
+        MUL     AB
+        XCH     A,R4
+        MOV     R6,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R6
+        MOV     R6,A
+        MOV     B,#0x2
+        MOV     A,R5
+        MUL     AB
+        ADD     A,R6
+        MOV     R5,A
+        MOV     A,#uartCfg & 0xff
+        ADD     A,R4
+        MOV     DPL,A
+        MOV     A,#(uartCfg >> 8) & 0xff
+        ADDC    A,R5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        PUSH    A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        POP     A
+        MOVX    @DPTR,A
+        MOV     DPL,R2
+        MOV     DPH,R3
+        INC     DPTR
+        MOV     R2,DPL
+        MOV     R3,DPH
+//  420 	/*
+//  421     	读完之后就清除，清除的方式是设置为 BUILD_UINT16(0, (DMA_PAD ^ 0xFF)
+//  422 		相当于设置一个标志，表示avail
+//  423 	*/
+//  424     BSP_UART_DMA_CLR_RX_BYTE(uartCfg.rxHead); 
+        MOV     A,0xc2
+        MOV     R4,A
+        MOV     R5,#0x0
+        MOV     A,R4
+        XRL     A,#0xff
+        MOV     R6,A
+        MOV     A,R5
+        XRL     A,#0x0
+        MOV     R7,A
+        CLR     A
+        XCH     A,R6
+        MOV     R7,A
+        MOV     DPTR,#uartCfg + 256
+        MOVX    A,@DPTR
+        MOV     R4,A
+        MOV     R5,#0x0
+        MOV     A,R4
+        MOV     B,#0x2
+        MUL     AB
+        XCH     A,R4
+        MOV     ?V0,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,?V0
+        MOV     ?V0,A
+        MOV     B,#0x2
+        MOV     A,R5
+        MUL     AB
+        ADD     A,?V0
+        MOV     R5,A
+        MOV     A,#uartCfg & 0xff
+        ADD     A,R4
+        MOV     DPL,A
+        MOV     A,#(uartCfg >> 8) & 0xff
+        ADDC    A,R5
+        MOV     DPH,A
+        MOV     A,R6
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R7
+        MOVX    @DPTR,A
+//  425     /*
+//  426 	  rxHead只有在这里会被更新，也就是说BSPUARTReadDMA的每次调用都是会从上次读完的地方开始读
+//  427 	*/    
+//  428     BSP_UART_RX_IDX_T_INCR(uartCfg.rxHead);
+        MOV     DPTR,#uartCfg + 256
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+        MOV     DPTR,#uartCfg + 256
+        MOVX    A,@DPTR
+        CLR     C
+        SUBB    A,#-0x80
+        JC      ??BSPUARTReadDMA_2
+        MOV     DPTR,#uartCfg + 256
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+??BSPUARTReadDMA_2:
+        INC     R1
+??BSPUARTReadDMA_0:
+        MOV     A,R1
+        CLR     C
+        SUBB    A,R0
+        JNC     ??BSPUARTReadDMA_3
+        MOV     DPTR,#uartCfg + 256
+        MOVX    A,@DPTR
+        MOV     R4,A
+        MOV     R5,#0x0
+        MOV     A,R4
+        MOV     B,#0x2
+        MUL     AB
+        XCH     A,R4
+        MOV     R6,B
+        MOV     B,#0x0
+        MUL     AB
+        ADD     A,R6
+        MOV     R6,A
+        MOV     B,#0x2
+        MOV     A,R5
+        MUL     AB
+        ADD     A,R6
+        MOV     R5,A
+        MOV     A,#uartCfg & 0xff
+        ADD     A,R4
+        MOV     DPL,A
+        MOV     A,#(uartCfg >> 8) & 0xff
+        ADDC    A,R5
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     R4,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R5,A
+        CLR     A
+        XCH     A,R5
+        MOV     R4,A
+        MOV     A,R4
+        XRL     A,0xc2
+        JNZ     $+5
+        LJMP    ??BSPUARTReadDMA_1
+//  429   }
+//  430 
+//  431   /* Update pointers after reading the bytes 
+//  432      队首出，队尾入。但是需要注意的是，由于此时接收是由DMA完成UxDBUF到rxBuf的传送，但是DMA硬件并不会更新
+//  433 	 rxTail变量，因此这里rxTail的需要在此更新，但是此时的rxTail并不是执行队尾的元素，而是指向上次读的最后
+//  434 	 位置，这一点很重要。
+//  435 	 所以在 BSPUARTRxAvailDMA函数中，是利用BSP_UART_RX_IDX_T_INCR(tail)而不是head来统计接受数据的个数
+//  436   */
+//  437   uartCfg.rxTail = uartCfg.rxHead;
+??BSPUARTReadDMA_3:
+        MOV     DPTR,#uartCfg + 256
+        MOVX    A,@DPTR
+        MOV     DPTR,#uartCfg + 257
+        MOVX    @DPTR,A
+//  438 
+//  439   if (U0UCR & UCR_FLOW)
+        MOV     A,0xc4
+        MOV     C,0xE0 /* A   */.6
+        JNC     ??BSPUARTReadDMA_4
+//  440   {
+//  441 	/*
+//  442 	  Re-enable the flow asap (i.e. not wait until next uart poll).
+//  443 	  上
+//  444 	*/
+//  445     BSP_UART_DMA_SET_RDY_OUT();       
+        CLR     0x80.5
+//  446   }
+//  447 
+//  448   return cnt;
+??BSPUARTReadDMA_4:
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE U0BAUD
+        REQUIRE U0UCR
+        REQUIRE _A_P0
+//  449 }
+//  450 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  451 void BSPUart0TxIsr(void)
+BSPUart0TxIsr:
+        CODE
+//  452 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  453 
+//  454   if (uartCfg.txHead == uartCfg.txTail)
+        MOV     DPTR,#uartCfg + 386
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     DPTR,#uartCfg + 387
+        MOVX    A,@DPTR
+        XRL     A,R0
+        JNZ     ??BSPUart0TxIsr_0
+//  455   {
+//  456 	/* 
+//  457 	  如果txBuf为空的话，则会屏蔽 TX Interrupt。
+//  458 	  但是并不清除中断标志，这样当屏蔽再次被打开时就会立刻发生中断。
+//  459 	  BSPUARTOpenDMA函数中会通过“UTXxIF = 1;”pend起一个中断
+//  460 	*/
+//  461     IEN2 &= ~UTX0IE;   
+        ANL     0x9a,#0xfb
+//  462     uartCfg.txMT = 1;
+        MOV     DPTR,#uartCfg + 388
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+        SJMP    ??BSPUart0TxIsr_1
+//  463   }
+//  464   else
+//  465   {
+//  466     UTX0IF = 0;
+??BSPUart0TxIsr_0:
+        CLR     0xe8.1
+//  467 	/*
+//  468 	  这里向UxDBUF寄存器写数据是很快的，但是只有当串口tx数据线上的数据发送完毕后才会pend起UTXxIF标志。
+//  469 	  也就说当前中断服务程序返回到 BSPUARTWriteDMA，可能还会装载很多数据到txBuf后，UTXxIF标志才被置起，然后继续执行本中断服务程序。
+//  470 	  这也就以为着上层程序写的是BSP层的缓冲区，而不是直接写串口寄存器，这样就不需要等待UTXxIF完成标志，极大的增加了发送效率（CPU不需要等待速度很慢的串口）。
+//  471 	*/
+//  472     U0DBUF = uartCfg.txBuf[uartCfg.txHead++];
+        MOV     DPTR,#uartCfg + 386
+        MOVX    A,@DPTR
+        MOV     R0,A
+        MOV     A,#0x1
+        ADD     A,R0
+        MOV     DPTR,#uartCfg + 386
+        MOVX    @DPTR,A
+        MOV     R1,#0x0
+        MOV     A,#(uartCfg + 2) & 0xff
+        ADD     A,R0
+        MOV     DPL,A
+        MOV     A,#((uartCfg + 258) >> 8) & 0xff
+        ADDC    A,R1
+        MOV     DPH,A
+        MOVX    A,@DPTR
+        MOV     0xc1,A
+//  473 
+//  474     if ((BSP_UART_ISR_TX_MAX != 256) && (uartCfg.txHead >= BSP_UART_ISR_TX_MAX))
+        MOV     DPTR,#uartCfg + 386
+        MOVX    A,@DPTR
+        CLR     C
+        SUBB    A,#-0x80
+        JC      ??BSPUart0TxIsr_1
+//  475     {
+//  476       uartCfg.txHead = 0;
+        MOV     DPTR,#uartCfg + 386
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  477     }
+//  478   }
+//  479 
+//  480 }  
+??BSPUart0TxIsr_1:
+        POP     DPH
+        POP     DPL
+        RET
+        REQUIRE IEN2
+        REQUIRE _A_IRCON2
+        REQUIRE U0DBUF
+
+        END
+// 
+// 1 252 bytes in segment NEAR_CODE
+//    16 bytes in segment SFR_AN
+//   423 bytes in segment XDATA_Z
+// 
+// 1 252 bytes of CODE  memory
+//     0 bytes of DATA  memory (+ 16 bytes shared)
+//   423 bytes of XDATA memory
+//
+//Errors: none
+//Warnings: none

@@ -1,0 +1,1305 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  16:33:00
+// Copyright 2004-2015 IAR Systems AB.
+// Standalone license - IAR Embedded Workbench for 8051
+//
+//    Core               =  plain
+//    Code model         =  near
+//    Data model         =  large
+//    Calling convention =  xdata reentrant
+//    Constant location  =  data
+//    Dptr setup         =  1,16
+//                          
+//    Source file        =  
+//        H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_c.c
+//    Command line       =  
+//        "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_c.c" -lB
+//        "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\" -o "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI
+//        CC2540\APP\IAR Project\Debug\Obj\" -e --no_cse --no_unroll
+//        --no_inline --no_code_motion --no_tbaa --debug --core=plain
+//        --dptr=16,1 --data_model=large --code_model=near
+//        --calling_convention=xdata_reentrant --place_constants=data
+//        --nr_virtual_regs 8 -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Source\" -I "H:\TI ble环境搭建\工程\13
+//        μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-CPU\51-CC2540\IAR\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\BSP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\" -I "H:\TI
+//        ble环境搭建\工程\13 μCOS-iii移植2\uC-LIB\" -Ol
+//    List file          =  
+//        H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC2540\APP\IAR
+//        Project\Debug\List\os_cpu_c.s51
+//
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME os_cpu_c
+
+        RSEG DOVERLAY:DATA:NOROOT(0)
+        RSEG IOVERLAY:IDATA:NOROOT(0)
+        RSEG ISTACK:IDATA:NOROOT(0)
+        RSEG PSTACK:XDATA:NOROOT(0)
+        RSEG XSTACK:XDATA:NOROOT(0)
+
+        EXTERN ?V0
+        EXTERN ?V1
+        EXTERN ?V2
+        EXTERN ?V3
+        EXTERN ?V4
+        EXTERN ?V5
+        EXTERN ?V6
+        EXTERN ?V7
+        EXTERN ?ALLOC_XSTACK8
+        EXTERN ?CALL_IND
+        EXTERN ?DEALLOC_XSTACK8
+        EXTERN ?FUNC_ENTER_XDATA
+        EXTERN ?FUNC_LEAVE_XDATA
+        EXTERN ?L_ADD_TO_X
+        EXTERN ?L_ADD_X
+        EXTERN ?L_IOR
+        EXTERN ?L_MOV_TO_X
+        EXTERN ?L_MOV_X
+        EXTERN ?L_SHL
+        EXTERN ?L_SUB_X
+        EXTERN ?UL_SHR
+        EXTERN ?XSP
+        EXTERN ?XSTACK_DISP0_8
+        EXTERN __INIT_XDATA_Z
+
+        PUBLIC OSIdleTaskHook
+        PUBLIC OSInitHook
+        PUBLIC OSStatTaskHook
+        PUBLIC OSTaskCreateHook
+        PUBLIC OSTaskDelHook
+        PUBLIC OSTaskReturnHook
+        PUBLIC OSTaskStkInit
+        PUBLIC OSTaskSwHook
+        PUBLIC OSTimeTickHook
+        PUBLIC OS_CPU_ExceptStkBase
+        PUBLIC OS_CPU_SysTickHandler
+        PUBLIC OS_CPU_SysTickInit
+        PUBWEAK ST0
+        PUBWEAK ST1
+        PUBWEAK ST2
+        PUBWEAK _A_IEN0
+        PUBWEAK _A_IRCON
+
+        EXTERN CPU_SR_Restore
+        EXTERN CPU_SR_Save
+        EXTERN OSCfg_ISRStkBasePtr
+        EXTERN OSCfg_ISRStkSize
+        EXTERN OSIntExit
+        EXTERN OSIntNestingCtr
+        EXTERN OSTCBCurPtr
+        EXTERN OSTCBHighRdyPtr
+        EXTERN OSTimeTick
+        EXTERN OS_AppIdleTaskHookPtr
+        EXTERN OS_AppStatTaskHookPtr
+        EXTERN OS_AppTaskCreateHookPtr
+        EXTERN OS_AppTaskDelHookPtr
+        EXTERN OS_AppTaskReturnHookPtr
+        EXTERN OS_AppTaskSwHookPtr
+        EXTERN OS_AppTimeTickHookPtr
+
+// H:\TI ble环境搭建\工程\13 μCOS-iii移植2\uCOS-III\Ports\51-CC2540\Generic\IAR\os_cpu_c.c
+//    1 /*
+//    2 *********************************************************************************************************
+//    3 *                                                uC/OS-III
+//    4 *                                          The Real-Time Kernel
+//    5 *
+//    6 *
+//    7 *                           (c) Copyright 2009-2010; Micrium, Inc.; Weston, FL
+//    8 *                    All rights reserved.  Protected by international copyright laws.
+//    9 *
+//   10 *                                           ARM Cortex-M3 Port
+//   11 *
+//   12 * File    : OS_CPU_C.C
+//   13 * Version : V3.02.01
+//   14 * By      : JJL
+//   15 *           BAN
+//   16 *
+//   17 * LICENSING TERMS:
+//   18 * ---------------
+//   19 *           uC/OS-III is provided in source form for FREE short-term evaluation, for educational use or 
+//   20 *           for peaceful research.  If you plan or intend to use uC/OS-III in a commercial application/
+//   21 *           product then, you need to contact Micrium to properly license uC/OS-III for its use in your 
+//   22 *           application/product.   We provide ALL the source code for your convenience and to help you 
+//   23 *           experience uC/OS-III.  The fact that the source is provided does NOT mean that you can use 
+//   24 *           it commercially without paying a licensing fee.
+//   25 *
+//   26 *           Knowledge of the source code may NOT be used to develop a similar product.
+//   27 *
+//   28 *           Please help us continue to provide the embedded community with the finest software available.
+//   29 *           Your honesty is greatly appreciated.
+//   30 *
+//   31 *           You can contact us at www.micrium.com, or by phone at +1 (954) 217-2036.
+//   32 *
+//   33 * For       : ARMv7M Cortex-M3
+//   34 * Mode      : Thumb2
+//   35 * Toolchain : IAR EWARM
+//   36 *********************************************************************************************************
+//   37 */
+//   38 
+//   39 #define   OS_CPU_GLOBALS
+//   40 
+//   41 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
+//   42 const  CPU_CHAR  *os_cpu_c__c = "$Id: $";
+//   43 #endif
+//   44 
+//   45 /*$PAGE*/
+//   46 /*
+//   47 *********************************************************************************************************
+//   48 *                                             INCLUDE FILES
+//   49 *********************************************************************************************************
+//   50 */
+//   51 
+//   52 #include  <os.h>
+
+        ASEGN SFR_AN:DATA:NOROOT,095H
+// unsigned char volatile __sfr ST0
+ST0:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,096H
+// unsigned char volatile __sfr ST1
+ST1:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,097H
+// unsigned char volatile __sfr ST2
+ST2:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0a8H
+// union <unnamed> volatile __sfr _A_IEN0
+_A_IEN0:
+        DATA8
+        DS 1
+
+        ASEGN SFR_AN:DATA:NOROOT,0c0H
+// union <unnamed> volatile __sfr _A_IRCON
+_A_IRCON:
+        DATA8
+        DS 1
+
+        RSEG XDATA_Z:XDATA:NOROOT(0)
+        DATA16
+// unsigned char *__xdata OS_CPU_ExceptStkBase
+OS_CPU_ExceptStkBase:
+        DS 2
+        REQUIRE __INIT_XDATA_Z
+//   53 
+//   54 /*
+//   55 *********************************************************************************************************
+//   56 *                                           IDLE TASK HOOK
+//   57 *
+//   58 * Description: This function is called by the idle task.  This hook has been added to allow you to do
+//   59 *              such things as STOP the CPU to conserve power.
+//   60 *
+//   61 * Arguments  : None.
+//   62 *
+//   63 * Note(s)    : None.
+//   64 *********************************************************************************************************
+//   65 */
+//   66 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   67 void  OSIdleTaskHook (void)
+OSIdleTaskHook:
+        CODE
+//   68 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//   69     
+//   70 #if OS_CFG_APP_HOOKS_EN > 0u
+//   71     if (OS_AppIdleTaskHookPtr != (OS_APP_HOOK_VOID)0) {
+        MOV     DPTR,#OS_AppIdleTaskHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSIdleTaskHook_0
+//   72         (*OS_AppIdleTaskHookPtr)();
+        ; Setup parameters for indirect call
+        MOV     DPTR,#OS_AppIdleTaskHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        LCALL   ?CALL_IND
+//   73     }
+//   74 #endif
+//   75 }
+??OSIdleTaskHook_0:
+        POP     DPH
+        POP     DPL
+        RET
+//   76 
+//   77 
+//   78 /*$PAGE*/
+//   79 /*
+//   80 *********************************************************************************************************
+//   81 *                                       OS INITIALIZATION HOOK
+//   82 *
+//   83 * Description: This function is called by OSInit() at the beginning of OSInit().
+//   84 *
+//   85 * Arguments  : None.
+//   86 *
+//   87 * Note(s)    : None.
+//   88 *********************************************************************************************************
+//   89 */
+//   90 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//   91 void  OSInitHook (void)
+OSInitHook:
+        CODE
+//   92 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//   93     OS_CPU_ExceptStkBase = (CPU_STK *)(OSCfg_ISRStkBasePtr + OSCfg_ISRStkSize - 1u);
+        MOV     DPTR,#OSCfg_ISRStkSize
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPTR,#OSCfg_ISRStkBasePtr
+        MOVX    A,@DPTR
+        ADD     A,R0
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,R1
+        MOV     R1,A
+        MOV     A,R0
+        ADD     A,#-0x1
+        MOV     R0,A
+        MOV     A,R1
+        ADDC    A,#-0x1
+        MOV     R1,A
+        MOV     DPTR,#OS_CPU_ExceptStkBase
+        MOV     A,R0
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R1
+        MOVX    @DPTR,A
+//   94 }
+        POP     DPH
+        POP     DPL
+        RET
+//   95 
+//   96 
+//   97 /*$PAGE*/
+//   98 /*
+//   99 *********************************************************************************************************
+//  100 *                                         STATISTIC TASK HOOK
+//  101 *
+//  102 * Description: This function is called every second by uC/OS-III's statistics task.  This allows your
+//  103 *              application to add functionality to the statistics task.
+//  104 *
+//  105 * Arguments  : None.
+//  106 *
+//  107 * Note(s)    : None.
+//  108 *********************************************************************************************************
+//  109 */
+//  110 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  111 void  OSStatTaskHook (void)
+OSStatTaskHook:
+        CODE
+//  112 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  113 #if OS_CFG_APP_HOOKS_EN > 0u
+//  114     if (OS_AppStatTaskHookPtr != (OS_APP_HOOK_VOID)0) {
+        MOV     DPTR,#OS_AppStatTaskHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSStatTaskHook_0
+//  115         (*OS_AppStatTaskHookPtr)();
+        ; Setup parameters for indirect call
+        MOV     DPTR,#OS_AppStatTaskHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        LCALL   ?CALL_IND
+//  116     }
+//  117 #endif
+//  118 }
+??OSStatTaskHook_0:
+        POP     DPH
+        POP     DPL
+        RET
+//  119 
+//  120 
+//  121 /*$PAGE*/
+//  122 /*
+//  123 *********************************************************************************************************
+//  124 *                                          TASK CREATION HOOK
+//  125 *
+//  126 * Description: This function is called when a task is created.
+//  127 *
+//  128 * Arguments  : p_tcb        Pointer to the task control block of the task being created.
+//  129 *
+//  130 * Note(s)    : None.
+//  131 *********************************************************************************************************
+//  132 */
+//  133 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  134 void  OSTaskCreateHook (OS_TCB  *p_tcb)
+OSTaskCreateHook:
+        CODE
+//  135 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  136 #if OS_CFG_APP_HOOKS_EN > 0u
+//  137     if (OS_AppTaskCreateHookPtr != (OS_APP_HOOK_TCB)0) {
+        MOV     DPTR,#OS_AppTaskCreateHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSTaskCreateHook_0
+//  138         (*OS_AppTaskCreateHookPtr)(p_tcb);
+        ; Setup parameters for indirect call
+        MOV     DPTR,#OS_AppTaskCreateHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        LCALL   ?CALL_IND
+//  139     }
+//  140 #else
+//  141     (void)p_tcb;                                            /* Prevent compiler warning                               */
+//  142 #endif
+//  143 }
+??OSTaskCreateHook_0:
+        POP     DPH
+        POP     DPL
+        RET
+//  144 
+//  145 
+//  146 /*$PAGE*/
+//  147 /*
+//  148 *********************************************************************************************************
+//  149 *                                           TASK DELETION HOOK
+//  150 *
+//  151 * Description: This function is called when a task is deleted.
+//  152 *
+//  153 * Arguments  : p_tcb        Pointer to the task control block of the task being deleted.
+//  154 *
+//  155 * Note(s)    : None.
+//  156 *********************************************************************************************************
+//  157 */
+//  158 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  159 void  OSTaskDelHook (OS_TCB  *p_tcb)
+OSTaskDelHook:
+        CODE
+//  160 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  161 #if OS_CFG_APP_HOOKS_EN > 0u
+//  162     if (OS_AppTaskDelHookPtr != (OS_APP_HOOK_TCB)0) {
+        MOV     DPTR,#OS_AppTaskDelHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSTaskDelHook_0
+//  163         (*OS_AppTaskDelHookPtr)(p_tcb);
+        ; Setup parameters for indirect call
+        MOV     DPTR,#OS_AppTaskDelHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        LCALL   ?CALL_IND
+//  164     }
+//  165 #else
+//  166     (void)p_tcb;                                            /* Prevent compiler warning                               */
+//  167 #endif
+//  168 }
+??OSTaskDelHook_0:
+        POP     DPH
+        POP     DPL
+        RET
+//  169 
+//  170 
+//  171 /*$PAGE*/
+//  172 /*
+//  173 *********************************************************************************************************
+//  174 *                                            TASK RETURN HOOK
+//  175 *
+//  176 * Description: This function is called if a task accidentally returns.  In other words, a task should
+//  177 *              either be an infinite loop or delete itself when done.
+//  178 *
+//  179 * Arguments  : p_tcb        Pointer to the task control block of the task that is returning.
+//  180 *
+//  181 * Note(s)    : None.
+//  182 *********************************************************************************************************
+//  183 */
+//  184 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  185 void  OSTaskReturnHook (OS_TCB  *p_tcb)
+OSTaskReturnHook:
+        CODE
+//  186 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  187 #if OS_CFG_APP_HOOKS_EN > 0u
+//  188     if (OS_AppTaskReturnHookPtr != (OS_APP_HOOK_TCB)0) {
+        MOV     DPTR,#OS_AppTaskReturnHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSTaskReturnHook_0
+//  189         (*OS_AppTaskReturnHookPtr)(p_tcb);
+        ; Setup parameters for indirect call
+        MOV     DPTR,#OS_AppTaskReturnHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        LCALL   ?CALL_IND
+//  190     }
+//  191 #else
+//  192     (void)p_tcb;                                            /* Prevent compiler warning                               */
+//  193 #endif
+//  194 }
+??OSTaskReturnHook_0:
+        POP     DPH
+        POP     DPL
+        RET
+//  195 
+//  196 
+//  197 /*$PAGE*/
+//  198 /*
+//  199 **********************************************************************************************************
+//  200 *                                       INITIALIZE A TASK'S STACK
+//  201 *
+//  202 * Description: This function is called by OS_Task_Create() or OSTaskCreateExt() to initialize the stack
+//  203 *              frame of the task being created. This function is highly processor specific.
+//  204 *
+//  205 * Arguments  : p_task       Pointer to the task entry point address.
+//  206 *
+//  207 *              p_arg        Pointer to a user supplied data area that will be passed to the task
+//  208 *                               when the task first executes.
+//  209 *
+//  210 *              p_stk_base   Pointer to the base address of the stack.
+//  211 *
+//  212 *              stk_size     Size of the stack, in number of CPU_STK elements.
+//  213 *
+//  214 *              opt          Options used to alter the behavior of OS_Task_StkInit().
+//  215 *                            (see OS.H for OS_TASK_OPT_xxx).
+//  216 *
+//  217 * Returns    : Always returns the location of the new top-of-stack' once the processor registers have
+//  218 *              been placed on the stack in the proper order.
+//  219 *
+//  220 * Note(s)    : 1) Interrupts are enabled when task starts executing.
+//  221 *
+//  222 *              2) All tasks run in Thread mode, using process stack.
+//  223 **********************************************************************************************************
+//  224 */
+//  225 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  226 CPU_STK  *OSTaskStkInit (OS_TASK_PTR    p_task,
+OSTaskStkInit:
+        CODE
+//  227                          void          *p_arg,
+//  228                          CPU_STK       *p_stk_base,
+//  229                          CPU_STK       *p_stk_limit,
+//  230                          CPU_STK_SIZE   stk_size,
+//  231                          OS_OPT         opt)
+//  232 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  233     CPU_STK  *p_stk;
+//  234     CPU_INT16U tmp;
+//  235 
+//  236 
+//  237     (void)opt;                                              /* Prevent compiler warning                               */
+//  238 
+//  239     p_stk = &p_stk_base[stk_size];                          /* Load stack pointer                                     */
+        MOV     A,#0x4
+        LCALL   ?XSTACK_DISP0_8
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOVX    A,@DPTR
+        ADD     A,R0
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        ADDC    A,R1
+        MOV     R1,A
+        MOV     DPL,R0
+        MOV     DPH,R1
+//  240                                                             /* Registers stacked as if auto-saved on exception        */
+//  241     /* 
+//  242         高低存高字节，地地址存低字节
+//  243         跳过开头的5个字节 
+//  244         fix bug1: 下面的写法是有bug的，假如p_task刚好等于0x08FB, 那么下面的代码将初始化一个错误的入口地址————0x800
+//  245         *--p_stk = (CPU_STK)((CPU_INT16U)p_task >> 8);          
+//  246         *--p_stk = (CPU_STK)(((CPU_INT16U)p_task & 0xFF)+5);   
+//  247     */
+//  248     tmp = (CPU_INT16U)p_task;  // 指针为2个字节
+        MOV     A,R2
+        MOV     R0,A
+        MOV     A,R3
+        MOV     R1,A
+//  249     tmp += 5;
+        MOV     A,R0
+        ADD     A,#0x5
+        MOV     R0,A
+        MOV     A,R1
+        ADDC    A,#0x0
+        MOV     R1,A
+//  250     *--p_stk = (CPU_STK)((tmp >> 8) & 0xFF);                  /* Entry Point                                                   */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,R0
+        MOV     R2,A
+        MOV     A,R1
+        MOV     R3,A
+        CLR     A
+        XCH     A,R3
+        MOV     R2,A
+        MOV     A,R2
+        PUSH    A
+        POP     A
+        MOVX    @DPTR,A
+//  251     *--p_stk = (CPU_STK)(tmp & 0xFF);   
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,R0
+        PUSH    A
+        POP     A
+        MOVX    @DPTR,A
+//  252     *--p_stk = (CPU_STK)0x00;                        /* PSW, 填其他的初始值似乎有问题                      */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x0
+        MOVX    @DPTR,A
+//  253     *--p_stk = (CPU_STK)0xaa;                        /* A                                               */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#-0x56
+        MOVX    @DPTR,A
+//  254     *--p_stk = (CPU_STK)0xbb;                        /* B                                               */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#-0x45
+        MOVX    @DPTR,A
+//  255     *--p_stk = (CPU_STK)0x1b;                        /* VB                                              */                                                  
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x1b
+        MOVX    @DPTR,A
+//  256     *--p_stk = (CPU_STK)'D';                         /* DPTR                                            */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x44
+        MOVX    @DPTR,A
+//  257     *--p_stk = (CPU_STK)'P';                        
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x50
+        MOVX    @DPTR,A
+//  258                                                       
+//  259     *--p_stk = (CPU_STK)0x07u;                        /* R7                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x7
+        MOVX    @DPTR,A
+//  260     *--p_stk = (CPU_STK)0x06u;                        /* R6                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x6
+        MOVX    @DPTR,A
+//  261     *--p_stk = (CPU_STK)0x05u;                        /* R5                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x5
+        MOVX    @DPTR,A
+//  262     *--p_stk = (CPU_STK)0x04u;                        /* R4                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x4
+        MOVX    @DPTR,A
+//  263     *--p_stk = (CPU_STK)0x70u;                        /* V7                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x70
+        MOVX    @DPTR,A
+//  264     *--p_stk = (CPU_STK)0x60u;                        /* V6                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x60
+        MOVX    @DPTR,A
+//  265     *--p_stk = (CPU_STK)0x50u;                        /* V5                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x50
+        MOVX    @DPTR,A
+//  266     *--p_stk = (CPU_STK)0x40u;                        /* V4                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x40
+        MOVX    @DPTR,A
+//  267     *--p_stk = (CPU_STK)0x30u;                        /* V3                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x30
+        MOVX    @DPTR,A
+//  268     *--p_stk = (CPU_STK)0x20u;                        /* V2                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x20
+        MOVX    @DPTR,A
+//  269     *--p_stk = (CPU_STK)0x10u;                        /* V1                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x10
+        MOVX    @DPTR,A
+//  270     *--p_stk = (CPU_STK)0x80u;                        /* V0                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#-0x80
+        MOVX    @DPTR,A
+//  271     *--p_stk = (CPU_STK)((CPU_INT16U)p_arg >> 8);     /* R3                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,R4
+        MOV     R0,A
+        MOV     A,R5
+        MOV     R1,A
+        CLR     A
+        XCH     A,R1
+        MOV     R0,A
+        MOV     A,R0
+        PUSH    A
+        POP     A
+        MOVX    @DPTR,A
+//  272     *--p_stk = (CPU_STK)((CPU_INT16U)p_arg & 0xFF);   /* R2                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,R4
+        PUSH    A
+        POP     A
+        MOVX    @DPTR,A
+//  273     *--p_stk = (CPU_STK)0x01u;                        /* R1                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x1
+        MOVX    @DPTR,A
+//  274     *--p_stk = (CPU_STK)0x08u;                        /* R0                                             */
+        MOV     A,DPL
+        ADD     A,#-0x1
+        MOV     DPL,A
+        MOV     A,DPH
+        ADDC    A,#-0x1
+        MOV     DPH,A
+        MOV     A,#0x8
+        MOVX    @DPTR,A
+//  275     
+//  276     
+//  277     
+//  278     return (p_stk);    
+        MOV     R2,DPL
+        MOV     R3,DPH
+        POP     DPH
+        POP     DPL
+        RET
+//  279 }
+//  280 /*$PAGE*/
+//  281 /*
+//  282 *********************************************************************************************************
+//  283 *                                           TASK SWITCH HOOK
+//  284 *
+//  285 * Description: This function is called when a task switch is performed.  This allows you to perform other
+//  286 *              operations during a context switch.
+//  287 *
+//  288 * Arguments  : None.
+//  289 *
+//  290 * Note(s)    : 1) Interrupts are disabled during this call.
+//  291 *              2) It is assumed that the global pointer 'OSTCBHighRdyPtr' points to the TCB of the task
+//  292 *                 that will be 'switched in' (i.e. the highest priority task) and, 'OSTCBCurPtr' points
+//  293 *                 to the task being switched out (i.e. the preempted task).
+//  294 *********************************************************************************************************
+//  295 */
+//  296 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  297 void  OSTaskSwHook (void)
+OSTaskSwHook:
+        CODE
+//  298 {
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 0
+//  299 #if OS_CFG_TASK_PROFILE_EN > 0u
+//  300     CPU_TS  ts;
+//  301 #endif
+//  302 #ifdef  CPU_CFG_INT_DIS_MEAS_EN
+//  303     CPU_TS  int_dis_time;
+//  304 #endif
+//  305 
+//  306 
+//  307 
+//  308 #if OS_CFG_APP_HOOKS_EN > 0u
+//  309     if (OS_AppTaskSwHookPtr != (OS_APP_HOOK_VOID)0) {
+        MOV     DPTR,#OS_AppTaskSwHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSTaskSwHook_0
+//  310         (*OS_AppTaskSwHookPtr)();
+        ; Setup parameters for indirect call
+        MOV     DPTR,#OS_AppTaskSwHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        LCALL   ?CALL_IND
+//  311     }
+//  312 #endif
+//  313 
+//  314 #if OS_CFG_TASK_PROFILE_EN > 0u
+//  315     ts = OS_TS_GET();
+??OSTaskSwHook_0:
+        MOV     ?V0,#0x0
+        MOV     ?V1,#0x0
+        MOV     ?V2,#0x0
+        MOV     ?V3,#0x0
+//  316     if (OSTCBCurPtr != OSTCBHighRdyPtr) {
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     DPTR,#OSTCBHighRdyPtr
+        MOVX    A,@DPTR
+        XRL     A,R0
+        JNZ     ??OSTaskSwHook_1
+        INC     DPTR
+        MOVX    A,@DPTR
+        XRL     A,R1
+??OSTaskSwHook_1:
+        JZ      ??OSTaskSwHook_2
+//  317         OSTCBCurPtr->CyclesDelta  = ts - OSTCBCurPtr->CyclesStart;
+        MOV     ?V4,?V0
+        MOV     ?V5,?V1
+        MOV     ?V6,?V2
+        MOV     ?V7,?V3
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x71
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_SUB_X
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x6d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_TO_X
+//  318         OSTCBCurPtr->CyclesTotal += (OS_CYCLES)OSTCBCurPtr->CyclesDelta;
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x6d
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_MOV_X
+        MOV     DPTR,#OSTCBCurPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x75
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V4
+        LCALL   ?L_ADD_TO_X
+//  319     }
+//  320 
+//  321     OSTCBHighRdyPtr->CyclesStart = ts;
+??OSTaskSwHook_2:
+        MOV     DPTR,#OSTCBHighRdyPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        XCH     A,R0
+        ADD     A,#0x71
+        MOV     DPL,A
+        XCH     A,R0
+        ADDC    A,#0x0
+        MOV     DPH,A
+        MOV     R0,#?V0
+        LCALL   ?L_MOV_TO_X
+//  322 #endif
+//  323 
+//  324 #ifdef  CPU_CFG_INT_DIS_MEAS_EN
+//  325     int_dis_time = CPU_IntDisMeasMaxCurReset();             /* Keep track of per-task interrupt disable time          */
+//  326     if (OSTCBCurPtr->IntDisTimeMax < int_dis_time) {
+//  327         OSTCBCurPtr->IntDisTimeMax = int_dis_time;
+//  328     }
+//  329 #endif
+//  330 
+//  331 #if OS_CFG_SCHED_LOCK_TIME_MEAS_EN > 0u
+//  332                                                             /* Keep track of per-task scheduler lock time             */
+//  333     if (OSTCBCurPtr->SchedLockTimeMax < OSSchedLockTimeMaxCur) {
+//  334         OSTCBCurPtr->SchedLockTimeMax = OSSchedLockTimeMaxCur;
+//  335     }
+//  336     OSSchedLockTimeMaxCur = (CPU_TS)0;                      /* Reset the per-task value                               */
+//  337 #endif
+//  338 }
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+//  339 
+//  340 
+//  341 /*$PAGE*/
+//  342 /*
+//  343 *********************************************************************************************************
+//  344 *                                              TICK HOOK
+//  345 *
+//  346 * Description: This function is called every tick.
+//  347 *
+//  348 * Arguments  : None.
+//  349 *
+//  350 * Note(s)    : 1) This function is assumed to be called from the Tick ISR.
+//  351 *********************************************************************************************************
+//  352 */
+//  353 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  354 void  OSTimeTickHook (void)
+OSTimeTickHook:
+        CODE
+//  355 {
+        PUSH    DPL
+        PUSH    DPH
+        ; Saved register size: 2
+        ; Auto size: 0
+//  356 #if OS_CFG_APP_HOOKS_EN > 0u
+//  357     if (OS_AppTimeTickHookPtr != (OS_APP_HOOK_VOID)0) {
+        MOV     DPTR,#OS_AppTimeTickHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     R1,A
+        MOV     A,R0
+        ORL     A,R1
+        JZ      ??OSTimeTickHook_0
+//  358         (*OS_AppTimeTickHookPtr)();
+        ; Setup parameters for indirect call
+        MOV     DPTR,#OS_AppTimeTickHookPtr
+        MOVX    A,@DPTR
+        MOV     R0,A
+        INC     DPTR
+        MOVX    A,@DPTR
+        MOV     DPH,A
+        MOV     DPL,R0
+        LCALL   ?CALL_IND
+//  359     }
+//  360 #endif
+//  361 }
+??OSTimeTickHook_0:
+        POP     DPH
+        POP     DPL
+        RET
+//  362 
+//  363 
+//  364 /*$PAGE*/
+//  365 /*
+//  366 *********************************************************************************************************
+//  367 *                                          SYS TICK HANDLER
+//  368 *
+//  369 * Description: Handle the system tick (SysTick) interrupt, which is used to generate the uC/OS-II tick
+//  370 *              interrupt.
+//  371 *
+//  372 * Arguments  : None.
+//  373 *
+//  374 * Note(s)    : 1) This function MUST be placed on entry 15 of the Cortex-M3 vector table.
+//  375 *********************************************************************************************************
+//  376 */
+//  377 
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  378 void  OS_CPU_SysTickHandler (void)
+OS_CPU_SysTickHandler:
+        CODE
+//  379 {
+        MOV     A,#-0x8
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 8
+        ; Auto size: 0
+//  380 #if 1
+//  381     CPU_SR_ALLOC();
+        MOV     R6,#0x0
+//  382 
+//  383 
+//  384     CPU_CRITICAL_ENTER();
+        ; Setup parameters for call to function CPU_SR_Save
+        LCALL   CPU_SR_Save
+        MOV     A,R1
+        MOV     R6,A
+//  385     OSIntNestingCtr++;                                      /* Tell uC/OS-III that we are starting an ISR             */
+        MOV     DPTR,#OSIntNestingCtr
+        MOVX    A,@DPTR
+        ADD     A,#0x1
+        MOVX    @DPTR,A
+//  386     CPU_CRITICAL_EXIT();
+        ; Setup parameters for call to function CPU_SR_Restore
+        MOV     A,R6
+        MOV     R1,A
+        LCALL   CPU_SR_Restore
+//  387     
+//  388     OSTimeTick();                                           /* Call uC/OS-III's OSTimeTick()                          */
+        ; Setup parameters for call to function OSTimeTick
+        LCALL   OSTimeTick
+//  389 
+//  390     OSIntExit();                                            /* Tell uC/OS-III that we are leaving the ISR             */
+        ; Setup parameters for call to function OSIntExit
+        LCALL   OSIntExit
+//  391 #endif  
+//  392 }
+        MOV     R7,#0x1
+        LJMP    ?FUNC_LEAVE_XDATA
+//  393 
+//  394 
+//  395 /*$PAGE*/
+//  396 /*
+//  397 *********************************************************************************************************
+//  398 *                                         INITIALIZE SYS TICK
+//  399 *
+//  400 * Description: Initialize the SysTick.
+//  401 *
+//  402 * Arguments  : cnts         Number of SysTick counts between two OS tick interrupts.
+//  403 *
+//  404 * Note(s)    : 1) This function MUST be called after OSStart() & after processor initialization.
+//  405 *********************************************************************************************************
+//  406 */
+
+        RSEG NEAR_CODE:CODE:NOROOT(0)
+//  407 void  OS_CPU_SysTickInit (CPU_INT32U  cnts)
+OS_CPU_SysTickInit:
+        CODE
+//  408 {   
+        REQUIRE ?V0
+        REQUIRE ?V1
+        REQUIRE ?V2
+        REQUIRE ?V3
+        REQUIRE ?V4
+        REQUIRE ?V5
+        REQUIRE ?V6
+        REQUIRE ?V7
+        MOV     A,#-0xf
+        LCALL   ?FUNC_ENTER_XDATA
+        ; Saved register size: 15
+        ; Auto size: 4
+        MOV     A,#-0x4
+        LCALL   ?ALLOC_XSTACK8
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     A,R2
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R3
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R4
+        MOVX    @DPTR,A
+        INC     DPTR
+        MOV     A,R5
+        MOVX    @DPTR,A
+//  409    CPU_INT32U sleepTimer = 0; 
+        MOV     ?V4,#0x0
+        MOV     ?V5,#0x0
+        MOV     ?V6,#0x0
+        MOV     ?V7,#0x0
+//  410    sleepTimer |= ST0; 
+        MOV     A,0x95
+        MOV     ?V0,A
+        CLR     A
+        MOV     ?V1,A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_IOR
+//  411    sleepTimer |= (CPU_INT32U)ST1 <<  8; 
+        MOV     A,0x96
+        MOV     ?V0,A
+        CLR     A
+        MOV     ?V1,A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     A,#0x8
+        MOV     R0,#?V0
+        LCALL   ?L_SHL
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_IOR
+//  412    sleepTimer |= (CPU_INT32U)ST2 << 16; 
+        MOV     A,0x97
+        MOV     ?V0,A
+        CLR     A
+        MOV     ?V1,A
+        MOV     ?V2,A
+        MOV     ?V3,A
+        MOV     A,#0x10
+        MOV     R0,#?V0
+        LCALL   ?L_SHL
+        MOV     R0,#?V4
+        MOV     R1,#?V0
+        LCALL   ?L_IOR
+//  413    sleepTimer += cnts; 
+        MOV     DPL,?XSP + 0
+        MOV     DPH,?XSP + 1
+        MOV     R0,#?V4
+        LCALL   ?L_ADD_X
+//  414    ST2 = (CPU_INT08U)(sleepTimer >> 16); 
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        MOV     ?V2,?V6
+        MOV     ?V3,?V7
+        MOV     A,#0x10
+        MOV     R0,#?V0
+        LCALL   ?UL_SHR
+        MOV     A,?V0
+        MOV     0x97,A
+//  415    ST1 = (CPU_INT08U)(sleepTimer >> 8); 
+        MOV     ?V0,?V4
+        MOV     ?V1,?V5
+        CLR     A
+        XCH     A,?V1
+        MOV     ?V0,A
+        MOV     A,?V0
+        MOV     0x96,A
+//  416    ST0 = (CPU_INT08U) sleepTimer; 
+        MOV     A,?V4
+        MOV     0x95,A
+//  417    
+//  418    STIE = 1;   //SleepTimerinterrupt enable
+        SETB    0xa8.5
+//  419    STIF = 0;   //SleepTimerinterrupt flag 还没处理的
+        CLR     0xc0.7
+//  420 }
+        MOV     A,#0x4
+        LCALL   ?DEALLOC_XSTACK8
+        MOV     R7,#0x8
+        LJMP    ?FUNC_LEAVE_XDATA
+        REQUIRE ST0
+        REQUIRE ST1
+        REQUIRE ST2
+        REQUIRE _A_IEN0
+        REQUIRE _A_IRCON
+
+        END
+//  421 
+// 
+// 1 090 bytes in segment NEAR_CODE
+//     5 bytes in segment SFR_AN
+//     2 bytes in segment XDATA_Z
+// 
+// 1 090 bytes of CODE  memory
+//     0 bytes of DATA  memory (+ 5 bytes shared)
+//     2 bytes of XDATA memory
+//
+//Errors: none
+//Warnings: none
