@@ -66,6 +66,15 @@
     <file>
       <name>$PROJ_DIR$\..\..\BSP\bsp_led.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BSP\bsp_led.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BSP\bsp_uart.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\BSP\bsp_uart.h</name>
+    </file>
   </group>
   <group>
     <name>TI CC2540</name>

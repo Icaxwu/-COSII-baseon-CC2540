@@ -48,7 +48,7 @@
 */
 
 #define  APP_TASK_START_PRIO                        2
-#define  APP_UART_TASK_PRIO                         2
+#define  APP_UART_TASK_PRIO                         1
 
 /*
 *********************************************************************************************************

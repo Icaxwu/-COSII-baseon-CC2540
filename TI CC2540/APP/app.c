@@ -91,11 +91,7 @@ static  void  AppTaskStart  (void *p_arg);
 int  main (void)
 {
     OS_ERR  err;
-
-    SysClkSet_32M();
-    BSP_LED_Init(); 
-    IRQ_register(SLP_TIMER_INT_NUM, OS_CPU_SysTickHandler);
-    OS_CPU_SysTickInit(OSCfg_TickRate_Cnt);
+    BSPInit();
     //BSP_IntDisAll();                                            /* Disable all interrupts.                              */
     
     OSInit(&err);                                               /* Init uC/OS-III.                                      */
@@ -151,8 +147,18 @@ static  void  AppTaskStart (void *p_arg)
 static  void AppUartTask (void *p_arg)
 {
     OS_ERR      err;
+    BSPUARTInfo_t uartInfo;
+    uartInfo.baudRate             = BSP_UART_BR_115200;
+    uartInfo.flowControl          = TRUE;
+    uartInfo.callBackFunc         = (BSPUARTCBack_t)0;
+    
+    BSPUARTOpenDMA(&uartInfo);
+#if 1
+    BSPUARTWriteISR("A", 1);
+#endif
     while (1)
     {
+        BSPUARTWriteISR("A", 1);
         BSP_LED_Toggle(LED2_ID);
         OSTimeDlyHMSM(0, 0, 0, 300,
                       OS_OPT_TIME_HMSM_STRICT,

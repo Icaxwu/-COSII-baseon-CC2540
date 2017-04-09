@@ -4,7 +4,7 @@
 __data unsigned char int_num;
 
 void SYS_TICK_ISR_sys(void);
-
+void UART0_TX_ISR_sys(void);
 struct interrupt_handle_t {
     interrupt_handle_sub_t  handle_for_user;
     interrupt_handle_sub_t  handle_for_sys;
@@ -15,7 +15,7 @@ struct interrupt_handle_t {
                              { 0, 0 },         //  4 
                              { 0, SYS_TICK_ISR_sys },         //  5 
                              { 0, 0 },         //  6 
-                             { 0, 0 },         //  7 
+                             { 0, UART0_TX_ISR_sys },         //  7 
                              { 0, 0 },         //  8 
                              { 0, 0 },         //  9 
                              { 0, 0 },         //  10 
@@ -70,3 +70,14 @@ void SYS_TICK_ISR_sys(void)
     if (handle)
        handle();  
 }
+
+void UART0_TX_ISR_sys(void)
+{
+    interrupt_handle_sub_t handle;
+    EA = 1; // ´ò¿ªÖÐ¶Ï
+    handle = interrupt_handles[UART0_TX_INT_NUM].handle_for_user;
+    if (handle)
+       handle();  
+}
+    
+    
