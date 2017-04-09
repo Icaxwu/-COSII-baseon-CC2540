@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  16:04:47
+// IAR C/C++ Compiler V9.20.1.2476 for 8051               09/Apr/2017  16:54:26
 // Copyright 2004-2015 IAR Systems AB.
 // Standalone license - IAR Embedded Workbench for 8051
 //
@@ -54,6 +54,7 @@
         EXTERN ?XSP
         EXTERN ?XSTACK_DISP0_8
         EXTERN ?XSTACK_DISP100_8
+        EXTERN ?XSTACK_DISP101_8
         EXTERN __INIT_XDATA_I
         EXTERN __INIT_XDATA_Z
 
@@ -63,6 +64,8 @@
 
         EXTERN BSPInit
         EXTERN BSPUARTOpenDMA
+        EXTERN BSPUARTReadDMA
+        EXTERN BSPUARTRxAvailDMA
         EXTERN BSPUARTWriteISR
         EXTERN BSP_LED_Toggle
         EXTERN OSInit
@@ -157,7 +160,7 @@ AppTaskStartStk:
         DATA8
 //   64 static  CPU_STK  AppUartTaskStk[APP_UART_TASK_STK_SIZE];
 AppUartTaskStk:
-        DS 128
+        DS 256
         REQUIRE __INIT_XDATA_Z
 //   65 
 //   66 
@@ -374,22 +377,25 @@ AppUartTask:
         MOV     A,#-0x9
         LCALL   ?FUNC_ENTER_XDATA
         ; Saved register size: 9
-        ; Auto size: 6
-        MOV     A,#-0x6
+        ; Auto size: 134
+        MOV     A,#0x7a
         LCALL   ?ALLOC_XSTACK8
 //  149     OS_ERR      err;
 //  150     BSPUARTInfo_t uartInfo;
-//  151     uartInfo.baudRate             = BSP_UART_BR_115200;
+//  151     CPU_INT08U cnt;
+//  152     CPU_INT08U recTest[128];
+//  153     
+//  154     uartInfo.baudRate             = BSP_UART_BR_115200;
         MOV     DPL,?XSP + 0
         MOV     DPH,?XSP + 1
         MOV     A,#0x4
         MOVX    @DPTR,A
-//  152     uartInfo.flowControl          = TRUE;
+//  155     uartInfo.flowControl          = TRUE;
         MOV     A,#0x1
         LCALL   ?XSTACK_DISP0_8
         MOV     A,#0x1
         MOVX    @DPTR,A
-//  153     uartInfo.callBackFunc         = (BSPUARTCBack_t)0;
+//  156     uartInfo.callBackFunc         = (BSPUARTCBack_t)0;
         MOV     A,#0x2
         LCALL   ?XSTACK_DISP0_8
         MOV     A,#0x0
@@ -397,38 +403,61 @@ AppUartTask:
         INC     DPTR
         MOV     A,#0x0
         MOVX    @DPTR,A
-//  154     
-//  155     BSPUARTOpenDMA(&uartInfo);
+//  157     
+//  158     BSPUARTOpenDMA(&uartInfo);
         ; Setup parameters for call to function BSPUARTOpenDMA
         MOV     R2,?XSP + 0
         MOV     R3,?XSP + 1
         LCALL   BSPUARTOpenDMA
-//  156 #if 1
-//  157     BSPUARTWriteISR("123456789", 9);
+//  159     BSPUARTWriteISR("AppUartTask", sizeof("AppUartTask") - 1);
         ; Setup parameters for call to function BSPUARTWriteISR
-        MOV     R1,#0x9
-        MOV     R2,#`?<Constant "123456789">` & 0xff
-        MOV     R3,#(`?<Constant "123456789">` >> 8) & 0xff
+        MOV     R1,#0xb
+        MOV     R2,#`?<Constant "AppUartTask">` & 0xff
+        MOV     R3,#(`?<Constant "AppUartTask">` >> 8) & 0xff
         LCALL   BSPUARTWriteISR
         MOV     A,R1
-//  158 #endif
-//  159     while (1)
-//  160     {
-//  161         BSPUARTWriteISR("A", 1);
+//  160     while (1)
+//  161     {
+//  162         if (BSPUARTRxAvailDMA() >= 32)
 ??AppUartTask_0:
+        ; Setup parameters for call to function BSPUARTRxAvailDMA
+        LCALL   BSPUARTRxAvailDMA
+        MOV     A,R1
+        CLR     C
+        SUBB    A,#0x20
+        JC      ??AppUartTask_1
+//  163         {
+//  164             if ( (cnt = BSPUARTReadDMA(recTest, 32)) > 0)
+        ; Setup parameters for call to function BSPUARTReadDMA
+        MOV     R1,#0x20
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP101_8
+        LCALL   BSPUARTReadDMA
+        MOV     A,R1
+        MOV     R0,A
+        MOV     A,R0
+        MOV     R6,A
+        MOV     A,R0
+        JZ      ??AppUartTask_1
+//  165             {
+//  166                 BSPUARTWriteISR(recTest, cnt);
         ; Setup parameters for call to function BSPUARTWriteISR
-        MOV     R1,#0x1
-        MOV     R2,#`?<Constant "A">` & 0xff
-        MOV     R3,#(`?<Constant "A">` >> 8) & 0xff
+        MOV     A,R6
+        MOV     R1,A
+        MOV     A,#0x6
+        LCALL   ?XSTACK_DISP101_8
         LCALL   BSPUARTWriteISR
         MOV     A,R1
-//  162         BSP_LED_Toggle(LED2_ID);
+//  167             } 
+//  168         }
+//  169         BSP_LED_Toggle(LED2_ID);
+??AppUartTask_1:
         ; Setup parameters for call to function BSP_LED_Toggle
         MOV     R1,#0x1
         LCALL   BSP_LED_Toggle
-//  163         OSTimeDlyHMSM(0, 0, 0, 300,
-//  164                       OS_OPT_TIME_HMSM_STRICT,
-//  165                       &err);
+//  170         OSTimeDlyHMSM(0, 0, 0, 300,
+//  171                       OS_OPT_TIME_HMSM_STRICT,
+//  172                       &err);
         ; Setup parameters for call to function OSTimeDlyHMSM
         MOV     A,#0x4
         LCALL   ?XSTACK_DISP100_8
@@ -456,27 +485,27 @@ AppUartTask:
         MOV     A,#0xa
         LCALL   ?DEALLOC_XSTACK8
         SJMP    ??AppUartTask_0
-//  166     }
-//  167 }
-//  168 
-//  169 /*
-//  170 *********************************************************************************************************
-//  171 *                                      CREATE APPLICATION TASKS
-//  172 *
-//  173 * Description:  This function creates the application tasks.
-//  174 *
-//  175 * Arguments  :  none
-//  176 *
-//  177 * Returns    :  none
-//  178 *********************************************************************************************************
-//  179 */
-//  180 
+//  173     }
+//  174 }
+//  175 
+//  176 /*
+//  177 *********************************************************************************************************
+//  178 *                                      CREATE APPLICATION TASKS
+//  179 *
+//  180 * Description:  This function creates the application tasks.
+//  181 *
+//  182 * Arguments  :  none
+//  183 *
+//  184 * Returns    :  none
+//  185 *********************************************************************************************************
+//  186 */
+//  187 
 
         RSEG NEAR_CODE:CODE:NOROOT(0)
-//  181 static  void  AppTaskCreate (void)
+//  188 static  void  AppTaskCreate (void)
 AppTaskCreate:
         CODE
-//  182 {
+//  189 {
         REQUIRE ?V0
         REQUIRE ?V1
         MOV     A,#-0x9
@@ -485,20 +514,20 @@ AppTaskCreate:
         ; Auto size: 2
         MOV     A,#-0x2
         LCALL   ?ALLOC_XSTACK8
-//  183    OS_ERR      err;
-//  184    OSTaskCreate((OS_TCB     *)&AppUartTaskTCB,                
-//  185                  (CPU_CHAR   *)"App Uart Task",
-//  186                  (OS_TASK_PTR ) AppUartTask,
-//  187                  (void       *) 0,
-//  188                  (OS_PRIO     ) APP_UART_TASK_PRIO,
-//  189                  (CPU_STK    *)&AppUartTaskStk[0],
-//  190                  (CPU_STK_SIZE) APP_UART_TASK_STK_SIZE / 10,
-//  191                  (CPU_STK_SIZE) APP_UART_TASK_STK_SIZE,
-//  192                  (OS_MSG_QTY  ) 5u,
-//  193                  (OS_TICK     ) 0u,
+//  190    OS_ERR      err;
+//  191    OSTaskCreate((OS_TCB     *)&AppUartTaskTCB,                
+//  192                  (CPU_CHAR   *)"App Uart Task",
+//  193                  (OS_TASK_PTR ) AppUartTask,
 //  194                  (void       *) 0,
-//  195                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-//  196                  (OS_ERR     *)&err);
+//  195                  (OS_PRIO     ) APP_UART_TASK_PRIO,
+//  196                  (CPU_STK    *)&AppUartTaskStk[0],
+//  197                  (CPU_STK_SIZE) APP_UART_TASK_STK_SIZE / 10,
+//  198                  (CPU_STK_SIZE) APP_UART_TASK_STK_SIZE,
+//  199                  (OS_MSG_QTY  ) 5u,
+//  200                  (OS_TICK     ) 0u,
+//  201                  (void       *) 0,
+//  202                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+//  203                  (OS_ERR     *)&err);
         ; Setup parameters for call to function OSTaskCreate
         MOV     R0,?XSP + 0
         MOV     R1,?XSP + 1
@@ -521,11 +550,11 @@ AppTaskCreate:
         MOV     ?V1,#0x0
         MOV     R0,#?V0
         LCALL   ?PUSH_XSTACK_I_TWO
-        MOV     ?V0,#-0x80
-        MOV     ?V1,#0x0
+        MOV     ?V0,#0x0
+        MOV     ?V1,#0x1
         MOV     R0,#?V0
         LCALL   ?PUSH_XSTACK_I_TWO
-        MOV     ?V0,#0xc
+        MOV     ?V0,#0x19
         MOV     ?V1,#0x0
         MOV     R0,#?V0
         LCALL   ?PUSH_XSTACK_I_TWO
@@ -550,34 +579,34 @@ AppTaskCreate:
         LCALL   OSTaskCreate
         MOV     A,#0x16
         LCALL   ?DEALLOC_XSTACK8
-//  197 }
+//  204 }
         MOV     A,#0x2
         LCALL   ?DEALLOC_XSTACK8
         MOV     R7,#0x2
         LJMP    ?FUNC_LEAVE_XDATA
-//  198 
-//  199 
-//  200 /*
-//  201 *********************************************************************************************************
-//  202 *                                      CREATE APPLICATION EVENTS
-//  203 *
-//  204 * Description:  This function creates the application kernel objects.
-//  205 *
-//  206 * Arguments  :  none
-//  207 *
-//  208 * Returns    :  none
-//  209 *********************************************************************************************************
-//  210 */
-//  211 
+//  205 
+//  206 
+//  207 /*
+//  208 *********************************************************************************************************
+//  209 *                                      CREATE APPLICATION EVENTS
+//  210 *
+//  211 * Description:  This function creates the application kernel objects.
+//  212 *
+//  213 * Arguments  :  none
+//  214 *
+//  215 * Returns    :  none
+//  216 *********************************************************************************************************
+//  217 */
+//  218 
 
         RSEG NEAR_CODE:CODE:NOROOT(0)
-//  212 static  void  AppObjCreate (void)
+//  219 static  void  AppObjCreate (void)
 AppObjCreate:
         CODE
-//  213 {
+//  220 {
         ; Saved register size: 0
         ; Auto size: 0
-//  214 }
+//  221 }
         RET
 
         RSEG XDATA_ID:CODE:NOROOT(0)
@@ -585,12 +614,8 @@ AppObjCreate:
         DB "App Task Start"
 
         RSEG XDATA_ID:CODE:NOROOT(0)
-`?<Initializer for <Constant "123456789">>`:
-        DB "123456789"
-
-        RSEG XDATA_ID:CODE:NOROOT(0)
-`?<Initializer for <Constant "A">>`:
-        DB "A"
+`?<Initializer for <Constant "AppUartTask">>`:
+        DB "AppUartTask"
 
         RSEG XDATA_ID:CODE:NOROOT(0)
 `?<Initializer for <Constant "App Uart Task">>`:
@@ -615,16 +640,9 @@ AppObjCreate:
 
         RSEG XDATA_I:XDATA:NOROOT(0)
         DATA8
-`?<Constant "123456789">`:
-        DS 10
-        REQUIRE `?<Initializer for <Constant "123456789">>`
-        REQUIRE __INIT_XDATA_I
-
-        RSEG XDATA_I:XDATA:NOROOT(0)
-        DATA16
-`?<Constant "A">`:
-        DS 2
-        REQUIRE `?<Initializer for <Constant "A">>`
+`?<Constant "AppUartTask">`:
+        DS 12
+        REQUIRE `?<Initializer for <Constant "AppUartTask">>`
         REQUIRE __INIT_XDATA_I
 
         RSEG XDATA_I:XDATA:NOROOT(0)
@@ -650,13 +668,13 @@ __Constant_12c:
 
         END
 // 
-// 506 bytes in segment NEAR_CODE
+// 533 bytes in segment NEAR_CODE
 //  49 bytes in segment XDATA_I
 //  49 bytes in segment XDATA_ID
-// 542 bytes in segment XDATA_Z
+// 670 bytes in segment XDATA_Z
 // 
-// 547 bytes of CODE  memory (+ 8 bytes shared)
-// 583 bytes of XDATA memory (+ 8 bytes shared)
+// 574 bytes of CODE  memory (+ 8 bytes shared)
+// 711 bytes of XDATA memory (+ 8 bytes shared)
 //
 //Errors: none
 //Warnings: none

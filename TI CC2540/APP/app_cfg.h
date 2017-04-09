@@ -58,7 +58,7 @@
 */
 
 #define  APP_TASK_START_STK_SIZE                    128
-#define  APP_UART_TASK_STK_SIZE                     128
+#define  APP_UART_TASK_STK_SIZE                     256
 
 /*
 *********************************************************************************************************

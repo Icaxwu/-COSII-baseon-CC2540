@@ -148,17 +148,24 @@ static  void AppUartTask (void *p_arg)
 {
     OS_ERR      err;
     BSPUARTInfo_t uartInfo;
+    CPU_INT08U cnt;
+    CPU_INT08U recTest[128];
+    
     uartInfo.baudRate             = BSP_UART_BR_115200;
     uartInfo.flowControl          = TRUE;
     uartInfo.callBackFunc         = (BSPUARTCBack_t)0;
     
     BSPUARTOpenDMA(&uartInfo);
-#if 1
-    BSPUARTWriteISR("123456789", 9);
-#endif
+    BSPUARTWriteISR("AppUartTask", sizeof("AppUartTask") - 1);
     while (1)
     {
-        BSPUARTWriteISR("A", 1);
+        if (BSPUARTRxAvailDMA() >= 32)
+        {
+            if ( (cnt = BSPUARTReadDMA(recTest, 32)) > 0)
+            {
+                BSPUARTWriteISR(recTest, cnt);
+            } 
+        }
         BSP_LED_Toggle(LED2_ID);
         OSTimeDlyHMSM(0, 0, 0, 300,
                       OS_OPT_TIME_HMSM_STRICT,
