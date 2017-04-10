@@ -5,7 +5,7 @@ Warning[w46]: External function "OSStartHighRdy" in module os_core ( H:\TI ble环
 #                                                                              #
 #      IAR Universal Linker V6.2.2.68                                          #
 #                                                                              #
-#           Link time     =  09/Apr/2017  16:54:26                             #
+#           Link time     =  10/Apr/2017  23:16:56                             #
 #           Target CPU    =  x51                                               #
 #           List file     =  "H:\TI ble环境搭建\工程\13 μCOS-iii移植2\TI CC25 #
 #                            40\APP\IAR Project\Debug\List\μCOS-III.map"      #
@@ -256,74 +256,74 @@ Absolute parts
   ======================
 XDATA_Z
   Relative segment, address: XDATA 0000017B - 00000209 (0x8f bytes), align: 0
-  Segment part 12.            Intra module refs:   main
+  Segment part 14.            Intra module refs:   main
            LOCAL                   ADDRESS         
            =====                   =======         
            AppTaskStartTCB         0000017B 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 0000020A - 00000298 (0x8f bytes), align: 0
-  Segment part 13.            Intra module refs:   AppTaskCreate
+  Segment part 15.            Intra module refs:   AppTaskCreate
            LOCAL                   ADDRESS         
            =====                   =======         
            AppUartTaskTCB          0000020A 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000299 - 00000318 (0x80 bytes), align: 0
-  Segment part 14.            Intra module refs:   main
+  Segment part 16.            Intra module refs:   main
            LOCAL                   ADDRESS         
            =====                   =======         
            AppTaskStartStk         00000299 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000319 - 00000418 (0x100 bytes), align: 0
-  Segment part 15.            Intra module refs:   AppTaskCreate
+  Segment part 17.            Intra module refs:   AppTaskCreate
            LOCAL                   ADDRESS         
            =====                   =======         
            AppUartTaskStk          00000319 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000081A - 000008B4 (0x9b bytes), align: 0
-  Segment part 20.
+  Relative segment, address: CODE 0000085C - 000008F6 (0x9b bytes), align: 0
+  Segment part 24.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           main                    0000081A        ?call_main (?cmain)
+           main                    0000085C        ?call_main (?cmain)
                calls direct
                XSTACK = 00000000 ( 00000018 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000008B5 - 00000902 (0x4e bytes), align: 0
-  Segment part 21.            Intra module refs:   main
+  Relative segment, address: CODE 000008F7 - 00000944 (0x4e bytes), align: 0
+  Segment part 25.            Intra module refs:   main
            LOCAL                   ADDRESS         
            =====                   =======         
-           AppTaskStart            000008B5 
+           AppTaskStart            000008F7 
                calls direct, is indirectly called
                XSTACK = 00000000 ( 00000015 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000903 - 0000099E (0x9c bytes), align: 0
-  Segment part 22.            Intra module refs:   AppTaskCreate
+  Relative segment, address: CODE 00000945 - 000009D3 (0x8f bytes), align: 0
+  Segment part 26.            Intra module refs:   AppTaskCreate
            LOCAL                   ADDRESS         
            =====                   =======         
-           AppUartTask             00000903 
+           AppUartTask             00000945 
                calls direct, is indirectly called
-               XSTACK = 00000000 ( 00000099 )
+               XSTACK = 00000000 ( 0000004F )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000099F - 00000A2D (0x8f bytes), align: 0
-  Segment part 23.            Intra module refs:   AppTaskStart
+  Relative segment, address: CODE 000009D4 - 00000A62 (0x8f bytes), align: 0
+  Segment part 27.            Intra module refs:   AppTaskStart
            LOCAL                   ADDRESS         
            =====                   =======         
-           AppTaskCreate           0000099F 
+           AppTaskCreate           000009D4 
                calls direct
                XSTACK = 0000000B ( 00000021 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000A2E - 00000A2E (0x1 bytes), align: 0
-  Segment part 24.            Intra module refs:   AppTaskStart
+  Relative segment, address: CODE 00000A63 - 00000A63 (0x1 bytes), align: 0
+  Segment part 28.            Intra module refs:   AppTaskStart
            LOCAL                   ADDRESS         
            =====                   =======         
-           AppObjCreate            00000A2E 
+           AppObjCreate            00000A63 
                XSTACK = 0000000B ( 00000000 )
     -------------------------------------------------------------------------
 XDATA_ID
@@ -331,51 +331,69 @@ XDATA_ID
   Segment part 7.             Intra module refs:   Segment part 6
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000000FB - 00000106 (0xc bytes), align: 0
+  Relative segment, address: CODE 000000FB - 00000130 (0x36 bytes), align: 0
   Segment part 9.             Intra module refs:   Segment part 8
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000107 - 00000114 (0xe bytes), align: 0
+  Relative segment, address: CODE 00000131 - 0000013C (0xc bytes), align: 0
   Segment part 11.            Intra module refs:   Segment part 10
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000115 - 00000118 (0x4 bytes), align: 0
-  Segment part 17.            Intra module refs:   __Constant_0
+  Relative segment, address: CODE 0000013D - 0000014A (0xe bytes), align: 0
+  Segment part 13.            Intra module refs:   Segment part 12
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000119 - 0000011C (0x4 bytes), align: 0
-  Segment part 19.            Intra module refs:   __Constant_12c
+  Relative segment, address: CODE 0000014B - 0000014E (0x4 bytes), align: 0
+  Segment part 19.            Intra module refs:   __Constant_0
+    -------------------------------------------------------------------------
+XDATA_ID
+  Relative segment, address: CODE 0000014F - 00000152 (0x4 bytes), align: 0
+  Segment part 21.            Intra module refs:   __Constant_12c
+    -------------------------------------------------------------------------
+XDATA_ID
+  Relative segment, address: CODE 00000153 - 00000156 (0x4 bytes), align: 0
+  Segment part 23.            Intra module refs:   __Constant_32
     -------------------------------------------------------------------------
 XDATA_I
   Relative segment, address: XDATA 00000E67 - 00000E75 (0xf bytes), align: 0
   Segment part 6.             Intra module refs:   main
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000E76 - 00000E81 (0xc bytes), align: 0
+  Relative segment, address: XDATA 00000E76 - 00000EAB (0x36 bytes), align: 0
   Segment part 8.             Intra module refs:   AppUartTask
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000E82 - 00000E8F (0xe bytes), align: 0
-  Segment part 10.            Intra module refs:   AppTaskCreate
+  Relative segment, address: XDATA 00000EAC - 00000EB7 (0xc bytes), align: 0
+  Segment part 10.            Intra module refs:   AppUartTask
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000E90 - 00000E93 (0x4 bytes), align: 0
-  Segment part 16.            Intra module refs:   AppTaskCreate
+  Relative segment, address: XDATA 00000EB8 - 00000EC5 (0xe bytes), align: 0
+  Segment part 12.            Intra module refs:   AppTaskCreate
+    -------------------------------------------------------------------------
+XDATA_I
+  Relative segment, address: XDATA 00000EC6 - 00000EC9 (0x4 bytes), align: 0
+  Segment part 18.            Intra module refs:   AppTaskCreate
                                                    OS_IdleTaskInit (os_core)
                                                    OS_TickTask (os_tick)
                                                    OS_TickTaskInit (os_tick)
                                                    main
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_0            00000E90 
+           __Constant_0            00000EC6 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000E94 - 00000E97 (0x4 bytes), align: 0
-  Segment part 18.            Intra module refs:   AppTaskStart
-                                                   AppUartTask
+  Relative segment, address: XDATA 00000ECA - 00000ECD (0x4 bytes), align: 0
+  Segment part 20.            Intra module refs:   AppTaskStart
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_12c          00000E94 
+           __Constant_12c          00000ECA 
+    -------------------------------------------------------------------------
+XDATA_I
+  Relative segment, address: XDATA 00000ECE - 00000ED1 (0x4 bytes), align: 0
+  Segment part 22.            Intra module refs:   AppUartTask
+           ENTRY                   ADDRESS         REF BY
+           =====                   =======         ======
+           __Constant_32           00000ECE 
 
     *************************************************************************
 
@@ -407,19 +425,19 @@ DATA_Z
                                                    interrupt_main_entry_a (BSP_A)
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000A2F - 00000A3B (0xd bytes), align: 0
+  Relative segment, address: CODE 00000A64 - 00000A70 (0xd bytes), align: 0
   Segment part 9.             Intra module refs:   BSPInit
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           SysClkSet_32M           00000A2F 
+           SysClkSet_32M           00000A64 
                XSTACK = 00000009 ( 00000000 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000A3C - 00000A76 (0x3b bytes), align: 0
+  Relative segment, address: CODE 00000A71 - 00000AAB (0x3b bytes), align: 0
   Segment part 10.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           BSPInit                 00000A3C        main (app)
+           BSPInit                 00000A71        main (app)
                calls direct
                XSTACK = 00000000 ( 00000009 )
 
@@ -465,20 +483,20 @@ INTVEC
            ??RF_ISR::??INTVEC 83   00000083 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000A77 - 00000B67 (0xf1 bytes), align: 0
+  Relative segment, address: CODE 00000AAC - 00000B9C (0xf1 bytes), align: 0
   Segment part 6.             Intra module refs:   ??RFERR_ISR::??INTVEC 03
            LOCAL                   ADDRESS         
            =====                   =======         
            interrupt_main_entry_a
-                                   00000A77 
-           S_cp_vr_loop            00000AA1 
+                                   00000AAC 
+           S_cp_vr_loop            00000AD6 
            interrupt_main_entry_a_0
-                                   00000AF5 
+                                   00000B2A 
            interrupt_main_entry_a_1
-                                   00000B0D 
-           R_cp_vr_loop            00000B24 
-           R_EA_0                  00000B58 
-           R_EA_1                  00000B60 
+                                   00000B42 
+           R_cp_vr_loop            00000B59 
+           R_EA_0                  00000B8D 
+           R_EA_1                  00000B95 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000419 - 00000419 (0x1 bytes), align: 0
@@ -550,59 +568,59 @@ DATA_Z
            int_num                 00000014        ??RFERR_ISR::??INTVEC 03 (BSP_A)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000E98 - 00000EDF (0x48 bytes), align: 0
+  Relative segment, address: XDATA 00000ED2 - 00000F19 (0x48 bytes), align: 0
   Segment part 12.            Intra module refs:   IRQ_register
                                                    SYS_TICK_ISR_sys
                                                    UART0_TX_ISR_sys
                                                    interrupt_main_entry
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           interrupt_handles       00000E98 
+           interrupt_handles       00000ED2 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000B68 - 00000BA6 (0x3f bytes), align: 0
+  Relative segment, address: CODE 00000B9D - 00000BDB (0x3f bytes), align: 0
   Segment part 14.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           interrupt_main_entry    00000B68        interrupt_main_entry_a (BSP_A)
+           interrupt_main_entry    00000B9D        interrupt_main_entry_a (BSP_A)
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000BA7 - 00000BE9 (0x43 bytes), align: 0
+  Relative segment, address: CODE 00000BDC - 00000C1E (0x43 bytes), align: 0
   Segment part 15.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           IRQ_register            00000BA7        BSPInit (bsp)
+           IRQ_register            00000BDC        BSPInit (bsp)
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000BEA - 00000C7D (0x94 bytes), align: 0
+  Relative segment, address: CODE 00000C1F - 00000CB2 (0x94 bytes), align: 0
   Segment part 16.            Intra module refs:   SYS_TICK_ISR_sys
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           Set_ST_Period           00000BEA 
+           Set_ST_Period           00000C1F 
                XSTACK = 00000000 ( 0000000F )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000C7E - 00000CAA (0x2d bytes), align: 0
+  Relative segment, address: CODE 00000CB3 - 00000CDF (0x2d bytes), align: 0
   Segment part 17.            Intra module refs:   Segment part 13
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           SYS_TICK_ISR_sys        00000C7E 
+           SYS_TICK_ISR_sys        00000CB3 
                calls direct, is indirectly called
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000CAB - 00000CCA (0x20 bytes), align: 0
+  Relative segment, address: CODE 00000CE0 - 00000CFF (0x20 bytes), align: 0
   Segment part 18.            Intra module refs:   Segment part 13
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           UART0_TX_ISR_sys        00000CAB 
+           UART0_TX_ISR_sys        00000CE0 
                is indirectly called
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000011D - 00000164 (0x48 bytes), align: 0
+  Relative segment, address: CODE 00000157 - 0000019E (0x48 bytes), align: 0
   Segment part 13.            Intra module refs:   interrupt_handles
 
     *************************************************************************
@@ -616,8 +634,6 @@ SFR_AN
   Relative segment, address: DATA 00000080 - 00000080 (0x1 bytes), align: 0
   Segment part 1. ROOT        Intra module refs:   BSPUARTInitDMA (bsp_uart)
                                                    BSPUARTOpenDMA (bsp_uart)
-                                                   BSPUARTReadDMA (bsp_uart)
-                                                   BSPUARTRxAvailDMA (bsp_uart)
                                                    BSP_LED_Init
                                                    BSP_LED_Toggle
            ENTRY                   ADDRESS         REF BY
@@ -677,32 +693,32 @@ SFR_AN
            P2DIR                   000000FF 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000EE0 - 00000EE5 (0x6 bytes), align: 0
+  Relative segment, address: XDATA 00000F1A - 00000F1F (0x6 bytes), align: 0
   Segment part 12.            Intra module refs:   BSP_LED_Init
                                                    BSP_LED_Toggle
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           bsp_leds_cfg            00000EE0 
+           bsp_leds_cfg            00000F1A 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000CCB - 00000D55 (0x8b bytes), align: 0
+  Relative segment, address: CODE 00000D00 - 00000D8A (0x8b bytes), align: 0
   Segment part 14.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           BSP_LED_Init            00000CCB        BSPInit (bsp)
+           BSP_LED_Init            00000D00        BSPInit (bsp)
                XSTACK = 00000000 ( 00000009 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000D56 - 00000DD1 (0x7c bytes), align: 0
+  Relative segment, address: CODE 00000D8B - 00000E06 (0x7c bytes), align: 0
   Segment part 15.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           BSP_LED_Toggle          00000D56        AppTaskStart (app)
+           BSP_LED_Toggle          00000D8B        AppTaskStart (app)
                                                    AppUartTask (app)
                XSTACK = 00000000 ( 00000009 )
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000165 - 0000016A (0x6 bytes), align: 0
+  Relative segment, address: CODE 0000019F - 000001A4 (0x6 bytes), align: 0
   Segment part 13.            Intra module refs:   bsp_leds_cfg
 
     *************************************************************************
@@ -740,8 +756,6 @@ SFR_AN
   Relative segment, address: DATA 000000C2 - 000000C2 (0x1 bytes), align: 0
   Segment part 5. ROOT        Intra module refs:   BSPUARTInitDMA
                                                    BSPUARTOpenDMA
-                                                   BSPUARTReadDMA
-                                                   BSPUARTRxAvailDMA
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            U0BAUD                  000000C2 
@@ -750,8 +764,6 @@ SFR_AN
   Relative segment, address: DATA 000000C4 - 000000C4 (0x1 bytes), align: 0
   Segment part 6. ROOT        Intra module refs:   BSPUARTInitDMA
                                                    BSPUARTOpenDMA
-                                                   BSPUARTReadDMA
-                                                   BSPUARTRxAvailDMA
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            U0UCR                   000000C4 
@@ -824,8 +836,6 @@ XDATA_Z
   Relative segment, address: XDATA 0000041A - 000005A0 (0x187 bytes), align: 0
   Segment part 22.            Intra module refs:   BSPUARTInitDMA
                                                    BSPUARTOpenDMA
-                                                   BSPUARTReadDMA
-                                                   BSPUARTRxAvailDMA
                                                    BSPUARTWriteISR
                                                    BSPUart0TxIsr
            LOCAL                   ADDRESS         
@@ -840,55 +850,38 @@ XDATA_Z
            dmaCh1234               000005A1 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000DD2 - 00000E43 (0x72 bytes), align: 0
+  Relative segment, address: CODE 00000E07 - 00000E78 (0x72 bytes), align: 0
   Segment part 24.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           BSPUARTOpenDMA          00000DD2        AppUartTask (app)
+           BSPUARTOpenDMA          00000E07        AppUartTask (app)
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00000E44 - 0000105F (0x21c bytes), align: 0
+  Relative segment, address: CODE 00000E79 - 00001094 (0x21c bytes), align: 0
   Segment part 25.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           BSPUARTInitDMA          00000E44        BSPInit (bsp)
+           BSPUARTInitDMA          00000E79        BSPInit (bsp)
                calls direct
                XSTACK = 00000000 ( 00000014 )
                ISTACK = 00000000 ( 00000001 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001060 - 0000111E (0xbf bytes), align: 0
+  Relative segment, address: CODE 00001095 - 00001153 (0xbf bytes), align: 0
   Segment part 26.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           BSPUARTWriteISR         00001060        AppUartTask (app)
+           BSPUARTWriteISR         00001095        AppUartTask (app)
                XSTACK = 00000000 ( 00000008 )
                ISTACK = 00000000 ( 00000001 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000111F - 0000117E (0x60 bytes), align: 0
-  Segment part 27.
-           ENTRY                   ADDRESS         REF BY
-           =====                   =======         ======
-           BSPUARTRxAvailDMA       0000111F        AppUartTask (app)
-               ISTACK = 00000000 ( 00000002 )
-    -------------------------------------------------------------------------
-NEAR_CODE
-  Relative segment, address: CODE 0000117F - 00001269 (0xeb bytes), align: 0
-  Segment part 28.
-           ENTRY                   ADDRESS         REF BY
-           =====                   =======         ======
-           BSPUARTReadDMA          0000117F        AppUartTask (app)
-               XSTACK = 00000000 ( 00000008 )
-               ISTACK = 00000000 ( 00000001 )
-    -------------------------------------------------------------------------
-NEAR_CODE
-  Relative segment, address: CODE 0000126A - 000012B5 (0x4c bytes), align: 0
+  Relative segment, address: CODE 00001154 - 0000119F (0x4c bytes), align: 0
   Segment part 29.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           BSPUart0TxIsr           0000126A        BSPInit (bsp)
+           BSPUart0TxIsr           00001154        BSPInit (bsp)
                is indirectly called
                ISTACK = 00000000 ( 00000002 )
 
@@ -900,13 +893,13 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 000012B6 - 000012CB (0x16 bytes), align: 0
+  Relative segment, address: CODE 000011A0 - 000011B5 (0x16 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           CPU_IntDis              000012B6 
-           CPU_IntEn               000012B9 
-           CPU_SR_Save             000012BC        OSIntExit (os_core)
+           CPU_IntDis              000011A0 
+           CPU_IntEn               000011A3 
+           CPU_SR_Save             000011A6        OSIntExit (os_core)
                                                    OSSched (os_core)
                                                    OSTaskCreate (os_task)
                                                    OSTaskSemPend (os_task)
@@ -916,7 +909,7 @@ NEAR_CODE
                                                    OS_SchedRoundRobin (os_core)
                                                    OS_TaskSemPost (os_task)
                                                    OS_TickListUpdate (os_tick)
-           CPU_SR_Restore          000012C4        OSIntExit (os_core)
+           CPU_SR_Restore          000011AE        OSIntExit (os_core)
                                                    OSSched (os_core)
                                                    OSTaskCreate (os_task)
                                                    OSTaskSemPend (os_task)
@@ -926,8 +919,8 @@ NEAR_CODE
                                                    OS_SchedRoundRobin (os_core)
                                                    OS_TaskSemPost (os_task)
                                                    OS_TickListUpdate (os_tick)
-           CPU_WaitForInt          000012CA 
-           CPU_WaitForExcept       000012CB 
+           CPU_WaitForInt          000011B4 
+           CPU_WaitForExcept       000011B5 
 
     *************************************************************************
 
@@ -937,14 +930,14 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 XDATA_I
-  Relative segment, address: XDATA 00000EE6 - 00000FE5 (0x100 bytes), align: 0
+  Relative segment, address: XDATA 00000F20 - 0000101F (0x100 bytes), align: 0
   Segment part 6.             Intra module refs:   CPU_CntLeadZeros16
            LOCAL                   ADDRESS         
            =====                   =======         
-           CPU_CntLeadZerosTbl     00000EE6 
+           CPU_CntLeadZerosTbl     00000F20 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FE6 - 00000FE9 (0x4 bytes), align: 0
+  Relative segment, address: XDATA 00001020 - 00001023 (0x4 bytes), align: 0
   Segment part 14.            Intra module refs:   OSIntExit (os_core)
                                                    OSSched (os_core)
                                                    OS_IdleTask (os_core)
@@ -953,31 +946,31 @@ XDATA_I
                                                    OS_TickListUpdate (os_tick)
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_1            00000FE6 
+           __Constant_1            00001020 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000012CC - 000012DF (0x14 bytes), align: 0
+  Relative segment, address: CODE 000011B6 - 000011C9 (0x14 bytes), align: 0
   Segment part 18.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           CPU_CntLeadZeros        000012CC        OS_PrioGetHighest (os_prio)
+           CPU_CntLeadZeros        000011B6        OS_PrioGetHighest (os_prio)
                calls direct
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000012E0 - 00001321 (0x42 bytes), align: 0
+  Relative segment, address: CODE 000011CA - 0000120B (0x42 bytes), align: 0
   Segment part 20.            Intra module refs:   CPU_CntLeadZeros
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           CPU_CntLeadZeros16      000012E0 
+           CPU_CntLeadZeros16      000011CA 
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000016B - 0000026A (0x100 bytes), align: 0
+  Relative segment, address: CODE 000001A5 - 000002A4 (0x100 bytes), align: 0
   Segment part 7.             Intra module refs:   CPU_CntLeadZerosTbl
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000026B - 0000026E (0x4 bytes), align: 0
+  Relative segment, address: CODE 000002A5 - 000002A8 (0x4 bytes), align: 0
   Segment part 15.            Intra module refs:   __Constant_1
 
     *************************************************************************
@@ -1040,186 +1033,186 @@ XDATA_Z
                                                    OS_TickListUpdate (os_tick)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FEA - 00000FEB (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001024 - 00001025 (0x2 bytes), align: 0
   Segment part 11.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSCfg_IdleTaskStkBasePtr
-                                   00000FEA        OS_IdleTaskInit (os_core)
+                                   00001024        OS_IdleTaskInit (os_core)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FEC - 00000FED (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001026 - 00001027 (0x2 bytes), align: 0
   Segment part 13.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSCfg_IdleTaskStkLimit
-                                   00000FEC        OS_IdleTaskInit (os_core)
+                                   00001026        OS_IdleTaskInit (os_core)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FEE - 00000FEF (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001028 - 00001029 (0x2 bytes), align: 0
   Segment part 15.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_IdleTaskStkSize   00000FEE        OS_IdleTaskInit (os_core)
+           OSCfg_IdleTaskStkSize   00001028        OS_IdleTaskInit (os_core)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FF0 - 00000FF1 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000102A - 0000102B (0x2 bytes), align: 0
   Segment part 26.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_ISRStkBasePtr     00000FF0        OSInit (os_core)
+           OSCfg_ISRStkBasePtr     0000102A        OSInit (os_core)
                                                    OSInitHook (os_cpu_c)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FF2 - 00000FF3 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000102C - 0000102D (0x2 bytes), align: 0
   Segment part 28.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_ISRStkSize        00000FF2        OSInit (os_core)
+           OSCfg_ISRStkSize        0000102C        OSInit (os_core)
                                                    OSInitHook (os_cpu_c)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FF4 - 00000FF5 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000102E - 0000102F (0x2 bytes), align: 0
   Segment part 32.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_MsgPoolSize       00000FF4        OS_MsgPoolInit (os_msg)
+           OSCfg_MsgPoolSize       0000102E        OS_MsgPoolInit (os_msg)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FF6 - 00000FF7 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001030 - 00001031 (0x2 bytes), align: 0
   Segment part 36.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_MsgPoolBasePtr    00000FF6        OS_MsgPoolInit (os_msg)
+           OSCfg_MsgPoolBasePtr    00001030        OS_MsgPoolInit (os_msg)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FF8 - 00000FF9 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001032 - 00001033 (0x2 bytes), align: 0
   Segment part 44.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_StkSizeMin        00000FF8        OSTaskCreate (os_task)
+           OSCfg_StkSizeMin        00001032        OSTaskCreate (os_task)
                                                    OS_TickTaskInit (os_tick)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FFA - 00000FFD (0x4 bytes), align: 0
+  Relative segment, address: XDATA 00001034 - 00001037 (0x4 bytes), align: 0
   Segment part 46.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_TickRate_Hz       00000FFA        OSInit (os_core)
+           OSCfg_TickRate_Hz       00001034        OSInit (os_core)
                                                    OSTimeDlyHMSM (os_time)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00000FFE - 00000FFF (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001038 - 00001039 (0x2 bytes), align: 0
   Segment part 48.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_TickRate_Cnt      00000FFE        BSPInit (bsp)
+           OSCfg_TickRate_Cnt      00001038        BSPInit (bsp)
                                                    SYS_TICK_ISR_sys (bsp_interrupt)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001000 - 00001000 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000103A - 0000103A (0x1 bytes), align: 0
   Segment part 50.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_TickTaskPrio      00001000        OS_TickTaskInit (os_tick)
+           OSCfg_TickTaskPrio      0000103A        OS_TickTaskInit (os_tick)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001001 - 00001002 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000103B - 0000103C (0x2 bytes), align: 0
   Segment part 52.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSCfg_TickTaskStkBasePtr
-                                   00001001        OS_TickTaskInit (os_tick)
+                                   0000103B        OS_TickTaskInit (os_tick)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001003 - 00001004 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000103D - 0000103E (0x2 bytes), align: 0
   Segment part 54.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSCfg_TickTaskStkLimit
-                                   00001003        OS_TickTaskInit (os_tick)
+                                   0000103D        OS_TickTaskInit (os_tick)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001005 - 00001006 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000103F - 00001040 (0x2 bytes), align: 0
   Segment part 56.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_TickTaskStkSize   00001005        OS_TickTaskInit (os_tick)
+           OSCfg_TickTaskStkSize   0000103F        OS_TickTaskInit (os_tick)
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001007 - 00001008 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001041 - 00001042 (0x2 bytes), align: 0
   Segment part 60.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_TickWheelSize     00001007        OS_TickListInit (os_tick)
+           OSCfg_TickWheelSize     00001041        OS_TickListInit (os_tick)
                                                    OS_TickListInsert (os_tick)
                                                    OS_TickListUpdate (os_tick)
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001322 - 00001322 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000120C - 0000120C (0x1 bytes), align: 0
   Segment part 74.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSCfg_Init              00001322        OSInit (os_core)
+           OSCfg_Init              0000120C        OSInit (os_core)
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000026F - 00000270 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002A9 - 000002AA (0x2 bytes), align: 0
   Segment part 12.            Intra module refs:   OSCfg_IdleTaskStkBasePtr
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000271 - 00000272 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002AB - 000002AC (0x2 bytes), align: 0
   Segment part 14.            Intra module refs:   OSCfg_IdleTaskStkLimit
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000273 - 00000274 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002AD - 000002AE (0x2 bytes), align: 0
   Segment part 16.            Intra module refs:   OSCfg_IdleTaskStkSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000275 - 00000276 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002AF - 000002B0 (0x2 bytes), align: 0
   Segment part 27.            Intra module refs:   OSCfg_ISRStkBasePtr
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000277 - 00000278 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002B1 - 000002B2 (0x2 bytes), align: 0
   Segment part 29.            Intra module refs:   OSCfg_ISRStkSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000279 - 0000027A (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002B3 - 000002B4 (0x2 bytes), align: 0
   Segment part 33.            Intra module refs:   OSCfg_MsgPoolSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000027B - 0000027C (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002B5 - 000002B6 (0x2 bytes), align: 0
   Segment part 37.            Intra module refs:   OSCfg_MsgPoolBasePtr
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000027D - 0000027E (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002B7 - 000002B8 (0x2 bytes), align: 0
   Segment part 45.            Intra module refs:   OSCfg_StkSizeMin
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000027F - 00000282 (0x4 bytes), align: 0
+  Relative segment, address: CODE 000002B9 - 000002BC (0x4 bytes), align: 0
   Segment part 47.            Intra module refs:   OSCfg_TickRate_Hz
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000283 - 00000284 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002BD - 000002BE (0x2 bytes), align: 0
   Segment part 49.            Intra module refs:   OSCfg_TickRate_Cnt
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000285 - 00000285 (0x1 bytes), align: 0
+  Relative segment, address: CODE 000002BF - 000002BF (0x1 bytes), align: 0
   Segment part 51.            Intra module refs:   OSCfg_TickTaskPrio
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000286 - 00000287 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002C0 - 000002C1 (0x2 bytes), align: 0
   Segment part 53.            Intra module refs:   OSCfg_TickTaskStkBasePtr
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000288 - 00000289 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002C2 - 000002C3 (0x2 bytes), align: 0
   Segment part 55.            Intra module refs:   OSCfg_TickTaskStkLimit
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000028A - 0000028B (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002C4 - 000002C5 (0x2 bytes), align: 0
   Segment part 57.            Intra module refs:   OSCfg_TickTaskStkSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000028C - 0000028D (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002C6 - 000002C7 (0x2 bytes), align: 0
   Segment part 61.            Intra module refs:   OSCfg_TickWheelSize
 
     *************************************************************************
@@ -1239,29 +1232,29 @@ SFR_AN
            WDCTL                   000000C9 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001323 - 000014E0 (0x1be bytes), align: 0
+  Relative segment, address: CODE 0000120D - 000013CA (0x1be bytes), align: 0
   Segment part 25.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSInit                  00001323        main (app)
+           OSInit                  0000120D        main (app)
                calls direct
                XSTACK = 00000000 ( 0000000F )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000014E1 - 000015BB (0xdb bytes), align: 0
+  Relative segment, address: CODE 000013CB - 000014A5 (0xdb bytes), align: 0
   Segment part 27.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSIntExit               000014E1        OS_CPU_SysTickHandler (os_cpu_c)
+           OSIntExit               000013CB        OS_CPU_SysTickHandler (os_cpu_c)
                calls direct
                XSTACK = 00000000 ( 0000000B )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000015BC - 0000166C (0xb1 bytes), align: 0
+  Relative segment, address: CODE 000014A6 - 00001556 (0xb1 bytes), align: 0
   Segment part 28.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSSched                 000015BC        OSTaskCreate (os_task)
+           OSSched                 000014A6        OSTaskCreate (os_task)
                                                    OSTaskSemPend (os_task)
                                                    OSTimeDlyHMSM (os_time)
                                                    OS_TaskSemPost (os_task)
@@ -1269,246 +1262,246 @@ NEAR_CODE
                XSTACK = 0000000B ( 0000000B )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000166D - 000016F6 (0x8a bytes), align: 0
+  Relative segment, address: CODE 00001557 - 000015E0 (0x8a bytes), align: 0
   Segment part 33.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSStart                 0000166D        main (app)
+           OSStart                 00001557        main (app)
                calls direct
                XSTACK = 00000000 ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000016F7 - 0000171A (0x24 bytes), align: 0
+  Relative segment, address: CODE 000015E1 - 00001604 (0x24 bytes), align: 0
   Segment part 35.            Intra module refs:   OS_IdleTaskInit
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_IdleTask             000016F7 
+           OS_IdleTask             000015E1 
                calls direct, is indirectly called
                XSTACK = 00000000 ( 0000000B )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000171B - 000017A1 (0x87 bytes), align: 0
+  Relative segment, address: CODE 00001605 - 0000168B (0x87 bytes), align: 0
   Segment part 36.            Intra module refs:   OSInit
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_IdleTaskInit         0000171B 
+           OS_IdleTaskInit         00001605 
                calls direct
                XSTACK = 0000000F ( 0000001F )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000017A2 - 00001882 (0xe1 bytes), align: 0
+  Relative segment, address: CODE 0000168C - 0000176C (0xe1 bytes), align: 0
   Segment part 37.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_Pend                 000017A2        OSTaskSemPend (os_task)
+           OS_Pend                 0000168C        OSTaskSemPend (os_task)
                calls direct
                XSTACK = 00000004 ( 00000013 )
                ISTACK = 00000000 ( 00000001 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001883 - 00001963 (0xe1 bytes), align: 0
+  Relative segment, address: CODE 0000176D - 0000184D (0xe1 bytes), align: 0
   Segment part 40.            Intra module refs:   OS_Pend
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PendDataInit         00001883 
+           OS_PendDataInit         0000176D 
                XSTACK = 00000011 ( 0000000D )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001964 - 00001A0C (0xa9 bytes), align: 0
+  Relative segment, address: CODE 0000184E - 000018F6 (0xa9 bytes), align: 0
   Segment part 41.            Intra module refs:   OS_Pend
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PendDbgNameAdd       00001964 
+           OS_PendDbgNameAdd       0000184E 
                XSTACK = 0000000F ( 00000000 )
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001A0D - 00001A74 (0x68 bytes), align: 0
+  Relative segment, address: CODE 000018F7 - 0000195E (0x68 bytes), align: 0
   Segment part 42.            Intra module refs:   OS_Post
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PendDbgNameRemove    00001A0D 
+           OS_PendDbgNameRemove    000018F7 
                XSTACK = 0000000F ( 00000000 )
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001A75 - 00001BD8 (0x164 bytes), align: 0
+  Relative segment, address: CODE 0000195F - 00001AC2 (0x164 bytes), align: 0
   Segment part 46.            Intra module refs:   OS_Pend
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PendListInsertPrio   00001A75 
+           OS_PendListInsertPrio   0000195F 
                XSTACK = 0000000F ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001BD9 - 00001C64 (0x8c bytes), align: 0
+  Relative segment, address: CODE 00001AC3 - 00001B4E (0x8c bytes), align: 0
   Segment part 47.            Intra module refs:   OS_Post
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PendListRemove       00001BD9        OS_TickListUpdate (os_tick)
+           OS_PendListRemove       00001AC3        OS_TickListUpdate (os_tick)
                calls direct
                XSTACK = 0000000F ( 0000000B )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001C65 - 00001D51 (0xed bytes), align: 0
+  Relative segment, address: CODE 00001B4F - 00001C3B (0xed bytes), align: 0
   Segment part 48.            Intra module refs:   OS_PendListRemove
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PendListRemove1      00001C65 
+           OS_PendListRemove1      00001B4F 
                XSTACK = 0000000C ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001D52 - 00001EF7 (0x1a6 bytes), align: 0
+  Relative segment, address: CODE 00001C3C - 00001DE1 (0x1a6 bytes), align: 0
   Segment part 51.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_Post                 00001D52        OS_TaskSemPost (os_task)
+           OS_Post                 00001C3C        OS_TaskSemPost (os_task)
                calls direct
                XSTACK = 00000008 ( 00000017 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001EF8 - 00001FA3 (0xac bytes), align: 0
+  Relative segment, address: CODE 00001DE2 - 00001E8D (0xac bytes), align: 0
   Segment part 52.            Intra module refs:   OS_Post
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_Post1                00001EF8 
+           OS_Post1                00001DE2 
                XSTACK = 00000017 ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00001FA4 - 00001FFF (0x5c bytes), align: 0
+  Relative segment, address: CODE 00001E8E - 00001EE9 (0x5c bytes), align: 0
   Segment part 53.            Intra module refs:   OSInit
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_RdyListInit          00001FA4 
+           OS_RdyListInit          00001E8E 
                XSTACK = 0000000F ( 00000000 )
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002000 - 0000203D (0x3e bytes), align: 0
+  Relative segment, address: CODE 00001EEA - 00001F27 (0x3e bytes), align: 0
   Segment part 54.            Intra module refs:   OS_TaskRdy
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_RdyListInsert        00002000 
+           OS_RdyListInsert        00001EEA 
                calls direct
                XSTACK = 00000008 ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000203E - 0000212E (0xf1 bytes), align: 0
+  Relative segment, address: CODE 00001F28 - 00002018 (0xf1 bytes), align: 0
   Segment part 55.            Intra module refs:   OS_RdyListInsert
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_RdyListInsertHead    0000203E 
+           OS_RdyListInsertHead    00001F28 
                XSTACK = 00000008 ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000212F - 00002214 (0xe6 bytes), align: 0
+  Relative segment, address: CODE 00002019 - 000020FE (0xe6 bytes), align: 0
   Segment part 56.            Intra module refs:   OS_RdyListInsert
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_RdyListInsertTail    0000212F        OSTaskCreate (os_task)
+           OS_RdyListInsertTail    00002019        OSTaskCreate (os_task)
                XSTACK = 00000008 ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002215 - 0000232A (0x116 bytes), align: 0
+  Relative segment, address: CODE 000020FF - 00002214 (0x116 bytes), align: 0
   Segment part 57.            Intra module refs:   OS_SchedRoundRobin
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OS_RdyListMoveHeadToTail
-                                   00002215 
+                                   000020FF 
                XSTACK = 0000000D ( 00000009 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000232B - 00002456 (0x12c bytes), align: 0
+  Relative segment, address: CODE 00002215 - 00002340 (0x12c bytes), align: 0
   Segment part 58.            Intra module refs:   OS_TaskBlock
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_RdyListRemove        0000232B        OSTimeDlyHMSM (os_time)
+           OS_RdyListRemove        00002215        OSTimeDlyHMSM (os_time)
                calls direct
                XSTACK = 0000000F ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002457 - 0000255D (0x107 bytes), align: 0
+  Relative segment, address: CODE 00002341 - 00002447 (0x107 bytes), align: 0
   Segment part 59.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_SchedRoundRobin      00002457        OSTimeTick (os_time)
+           OS_SchedRoundRobin      00002341        OSTimeTick (os_time)
                calls direct
                XSTACK = 00000000 ( 0000000D )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000255E - 000025E9 (0x8c bytes), align: 0
+  Relative segment, address: CODE 00002448 - 000024D3 (0x8c bytes), align: 0
   Segment part 60.            Intra module refs:   OS_Pend
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TaskBlock            0000255E 
+           OS_TaskBlock            00002448 
                calls direct
                XSTACK = 00000013 ( 00000015 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000025EA - 00002613 (0x2a bytes), align: 0
+  Relative segment, address: CODE 000024D4 - 000024FD (0x2a bytes), align: 0
   Segment part 61.            Intra module refs:   OS_Post
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TaskRdy              000025EA        OS_TickListUpdate (os_tick)
+           OS_TaskRdy              000024D4        OS_TickListUpdate (os_tick)
                calls direct
                XSTACK = 0000000F ( 00000008 )
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000028E - 000002A1 (0x14 bytes), align: 0
+  Relative segment, address: CODE 000002C8 - 000002DB (0x14 bytes), align: 0
   Segment part 10.            Intra module refs:   Segment part 9
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002A2 - 000002A8 (0x7 bytes), align: 0
+  Relative segment, address: CODE 000002DC - 000002E2 (0x7 bytes), align: 0
   Segment part 12.            Intra module refs:   Segment part 11
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002A9 - 000002B1 (0x9 bytes), align: 0
+  Relative segment, address: CODE 000002E3 - 000002EB (0x9 bytes), align: 0
   Segment part 14.            Intra module refs:   Segment part 13
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002B2 - 000002B3 (0x2 bytes), align: 0
+  Relative segment, address: CODE 000002EC - 000002ED (0x2 bytes), align: 0
   Segment part 16.            Intra module refs:   Segment part 15
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002B4 - 000002B7 (0x4 bytes), align: 0
+  Relative segment, address: CODE 000002EE - 000002F1 (0x4 bytes), align: 0
   Segment part 18.            Intra module refs:   __Constant_a
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002B8 - 000002BB (0x4 bytes), align: 0
+  Relative segment, address: CODE 000002F2 - 000002F5 (0x4 bytes), align: 0
   Segment part 24.            Intra module refs:   __Constant_ffffffff
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001009 - 0000101C (0x14 bytes), align: 0
+  Relative segment, address: XDATA 00001043 - 00001056 (0x14 bytes), align: 0
   Segment part 9.             Intra module refs:   OS_IdleTaskInit
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000101D - 00001023 (0x7 bytes), align: 0
+  Relative segment, address: XDATA 00001057 - 0000105D (0x7 bytes), align: 0
   Segment part 11.            Intra module refs:   OS_PendDbgNameAdd
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001024 - 0000102C (0x9 bytes), align: 0
+  Relative segment, address: XDATA 0000105E - 00001066 (0x9 bytes), align: 0
   Segment part 13.            Intra module refs:   OS_PendDbgNameAdd
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000102D - 0000102E (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001067 - 00001068 (0x2 bytes), align: 0
   Segment part 15.            Intra module refs:   OS_PendDbgNameAdd
                                                    OS_PendDbgNameRemove
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000102F - 00001032 (0x4 bytes), align: 0
+  Relative segment, address: XDATA 00001069 - 0000106C (0x4 bytes), align: 0
   Segment part 17.            Intra module refs:   OSInit
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_a            0000102F 
+           __Constant_a            00001069 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001033 - 00001036 (0x4 bytes), align: 0
+  Relative segment, address: XDATA 0000106D - 00001070 (0x4 bytes), align: 0
   Segment part 23.            Intra module refs:   OSTaskSemPend (os_task)
                                                    OS_SchedRoundRobin
                                                    OS_TaskSemPost (os_task)
                                                    OS_TickListInsert (os_tick)
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_ffffffff     00001033 
+           __Constant_ffffffff     0000106D 
 
     *************************************************************************
 
@@ -1540,24 +1533,24 @@ INTVEC
                                    0000008B 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002614 - 00002726 (0x113 bytes), align: 0
+  Relative segment, address: CODE 000024FE - 00002610 (0x113 bytes), align: 0
   Segment part 12.            Intra module refs:   ??WDT_ISR::??INTVEC 8B
            LOCAL                   ADDRESS         
            =====                   =======         
-           OS_CPU_WTDHandler       00002614 
+           OS_CPU_WTDHandler       000024FE 
            OS_CPU_WTDHandler_save
-                                   00002628 
+                                   00002512 
            OS_CPU_WTDHandler_nosave
-                                   00002699 
-           S_cp_vr_loop            00002654 
-           R_cp_vr_loop            000026EC 
+                                   00002583 
+           S_cp_vr_loop            0000253E 
+           R_cp_vr_loop            000025D6 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002727 - 00002746 (0x20 bytes), align: 0
+  Relative segment, address: CODE 00002611 - 00002630 (0x20 bytes), align: 0
   Segment part 13.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSStartHighRdy          00002727        OSStart (os_core)
+           OSStartHighRdy          00002611        OSStart (os_core)
 
     *************************************************************************
 
@@ -1574,61 +1567,61 @@ XDATA_Z
            OS_CPU_ExceptStkBase    00000B8F 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002747 - 00002769 (0x23 bytes), align: 0
+  Relative segment, address: CODE 00002631 - 00002653 (0x23 bytes), align: 0
   Segment part 12.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSIdleTaskHook          00002747        OS_IdleTask (os_core)
+           OSIdleTaskHook          00002631        OS_IdleTask (os_core)
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000276A - 00002794 (0x2b bytes), align: 0
+  Relative segment, address: CODE 00002654 - 0000267E (0x2b bytes), align: 0
   Segment part 13.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSInitHook              0000276A        OSInit (os_core)
+           OSInitHook              00002654        OSInit (os_core)
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002795 - 000027B7 (0x23 bytes), align: 0
+  Relative segment, address: CODE 0000267F - 000026A1 (0x23 bytes), align: 0
   Segment part 15.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSTaskCreateHook        00002795        OSTaskCreate (os_task)
+           OSTaskCreateHook        0000267F        OSTaskCreate (os_task)
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000027B8 - 0000296D (0x1b6 bytes), align: 0
+  Relative segment, address: CODE 000026A2 - 00002857 (0x1b6 bytes), align: 0
   Segment part 18.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSTaskStkInit           000027B8        OSTaskCreate (os_task)
+           OSTaskStkInit           000026A2        OSTaskCreate (os_task)
                XSTACK = 00000008 ( 00000000 )
                ISTACK = 00000000 ( 00000003 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000296E - 00002990 (0x23 bytes), align: 0
+  Relative segment, address: CODE 00002858 - 0000287A (0x23 bytes), align: 0
   Segment part 20.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSTimeTickHook          0000296E        OSTimeTick (os_time)
+           OSTimeTickHook          00002858        OSTimeTick (os_time)
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002991 - 000029B3 (0x23 bytes), align: 0
+  Relative segment, address: CODE 0000287B - 0000289D (0x23 bytes), align: 0
   Segment part 21.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_CPU_SysTickHandler   00002991        BSPInit (bsp)
+           OS_CPU_SysTickHandler   0000287B        BSPInit (bsp)
                calls direct, is indirectly called
                XSTACK = 00000000 ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000029B4 - 00002A61 (0xae bytes), align: 0
+  Relative segment, address: CODE 0000289E - 0000294B (0xae bytes), align: 0
   Segment part 22.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_CPU_SysTickInit      000029B4        BSPInit (bsp)
+           OS_CPU_SysTickInit      0000289E        BSPInit (bsp)
                XSTACK = 00000000 ( 00000013 )
 
     *************************************************************************
@@ -1639,47 +1632,47 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 XDATA_I
-  Relative segment, address: XDATA 00001037 - 00001037 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001071 - 00001071 (0x1 bytes), align: 0
   Segment part 6.             Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_DbgEn             00001037 
+           OSDbg_DbgEn             00001071 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001038 - 00001038 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001072 - 00001072 (0x1 bytes), align: 0
   Segment part 8.             Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_ArgChkEn          00001038 
+           OSDbg_ArgChkEn          00001072 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001039 - 00001039 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001073 - 00001073 (0x1 bytes), align: 0
   Segment part 10.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_AppHooksEn        00001039 
+           OSDbg_AppHooksEn        00001073 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000103A - 0000103D (0x4 bytes), align: 0
+  Relative segment, address: XDATA 00001074 - 00001077 (0x4 bytes), align: 0
   Segment part 12.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_EndiannessTest    0000103A 
+           OSDbg_EndiannessTest    00001074 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000103E - 0000103E (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001078 - 00001078 (0x1 bytes), align: 0
   Segment part 14.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSDbg_CalledFromISRChkEn
-                                   0000103E 
+                                   00001078 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000103F - 0000103F (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001079 - 00001079 (0x1 bytes), align: 0
   Segment part 16.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_FlagEn            0000103F 
+           OSDbg_FlagEn            00001079 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000B91 - 00000BAA (0x1a bytes), align: 0
@@ -1689,39 +1682,39 @@ XDATA_Z
            OSDbg_FlagGrp           00000B91 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001040 - 00001040 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000107A - 0000107A (0x1 bytes), align: 0
   Segment part 19.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_FlagDelEn         00001040 
+           OSDbg_FlagDelEn         0000107A 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001041 - 00001041 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000107B - 0000107B (0x1 bytes), align: 0
   Segment part 21.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_FlagModeClrEn     00001041 
+           OSDbg_FlagModeClrEn     0000107B 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001042 - 00001042 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000107C - 0000107C (0x1 bytes), align: 0
   Segment part 23.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_FlagPendAbortEn   00001042 
+           OSDbg_FlagPendAbortEn   0000107C 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001043 - 00001044 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000107D - 0000107E (0x2 bytes), align: 0
   Segment part 25.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_FlagGrpSize       00001043 
+           OSDbg_FlagGrpSize       0000107D 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001045 - 00001046 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000107F - 00001080 (0x2 bytes), align: 0
   Segment part 27.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_FlagWidth         00001045 
+           OSDbg_FlagWidth         0000107F 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000BAB - 00000BAB (0x1 bytes), align: 0
@@ -1739,46 +1732,46 @@ XDATA_Z
            OSDbg_Mem               00000BAC 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001047 - 00001047 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001081 - 00001081 (0x1 bytes), align: 0
   Segment part 32.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MemEn             00001047 
+           OSDbg_MemEn             00001081 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001048 - 00001049 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001082 - 00001083 (0x2 bytes), align: 0
   Segment part 34.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MemSize           00001048 
+           OSDbg_MemSize           00001082 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000104A - 0000104A (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001084 - 00001084 (0x1 bytes), align: 0
   Segment part 36.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MsgEn             0000104A 
+           OSDbg_MsgEn             00001084 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000104B - 0000104C (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001085 - 00001086 (0x2 bytes), align: 0
   Segment part 38.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MsgSize           0000104B 
+           OSDbg_MsgSize           00001085 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000104D - 0000104E (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001087 - 00001088 (0x2 bytes), align: 0
   Segment part 40.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MsgPoolSize       0000104D 
+           OSDbg_MsgPoolSize       00001087 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000104F - 00001050 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001089 - 0000108A (0x2 bytes), align: 0
   Segment part 42.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MsgQSize          0000104F 
+           OSDbg_MsgQSize          00001089 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000BC0 - 00000BD9 (0x1a bytes), align: 0
@@ -1788,89 +1781,89 @@ XDATA_Z
            OSDbg_Mutex             00000BC0 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001051 - 00001051 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000108B - 0000108B (0x1 bytes), align: 0
   Segment part 45.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MutexEn           00001051 
+           OSDbg_MutexEn           0000108B 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001052 - 00001052 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000108C - 0000108C (0x1 bytes), align: 0
   Segment part 47.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MutexDelEn        00001052 
+           OSDbg_MutexDelEn        0000108C 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001053 - 00001053 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000108D - 0000108D (0x1 bytes), align: 0
   Segment part 49.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSDbg_MutexPendAbortEn
-                                   00001053 
+                                   0000108D 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001054 - 00001055 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000108E - 0000108F (0x2 bytes), align: 0
   Segment part 51.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_MutexSize         00001054 
+           OSDbg_MutexSize         0000108E 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001056 - 00001056 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001090 - 00001090 (0x1 bytes), align: 0
   Segment part 53.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_ObjTypeChkEn      00001056 
+           OSDbg_ObjTypeChkEn      00001090 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001057 - 00001057 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 00001091 - 00001091 (0x1 bytes), align: 0
   Segment part 55.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_PendMultiEn       00001057 
+           OSDbg_PendMultiEn       00001091 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001058 - 00001059 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001092 - 00001093 (0x2 bytes), align: 0
   Segment part 57.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_PendDataSize      00001058 
+           OSDbg_PendDataSize      00001092 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000105A - 0000105B (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001094 - 00001095 (0x2 bytes), align: 0
   Segment part 59.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_PendListSize      0000105A 
+           OSDbg_PendListSize      00001094 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000105C - 0000105D (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001096 - 00001097 (0x2 bytes), align: 0
   Segment part 61.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_PendObjSize       0000105C 
+           OSDbg_PendObjSize       00001096 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000105E - 0000105F (0x2 bytes), align: 0
+  Relative segment, address: XDATA 00001098 - 00001099 (0x2 bytes), align: 0
   Segment part 63.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_PrioMax           0000105E 
+           OSDbg_PrioMax           00001098 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001060 - 00001061 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000109A - 0000109B (0x2 bytes), align: 0
   Segment part 65.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_PrioTblSize       00001060 
+           OSDbg_PrioTblSize       0000109A 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001062 - 00001063 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 0000109C - 0000109D (0x2 bytes), align: 0
   Segment part 67.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_PtrSize           00001062 
+           OSDbg_PtrSize           0000109C 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000BDA - 00000BF5 (0x1c bytes), align: 0
@@ -1880,47 +1873,47 @@ XDATA_Z
            OSDbg_Q                 00000BDA 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001064 - 00001064 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000109E - 0000109E (0x1 bytes), align: 0
   Segment part 70.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_QEn               00001064 
+           OSDbg_QEn               0000109E 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001065 - 00001065 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 0000109F - 0000109F (0x1 bytes), align: 0
   Segment part 72.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_QDelEn            00001065 
+           OSDbg_QDelEn            0000109F 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001066 - 00001066 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010A0 - 000010A0 (0x1 bytes), align: 0
   Segment part 74.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_QFlushEn          00001066 
+           OSDbg_QFlushEn          000010A0 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001067 - 00001067 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010A1 - 000010A1 (0x1 bytes), align: 0
   Segment part 76.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_QPendAbortEn      00001067 
+           OSDbg_QPendAbortEn      000010A1 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001068 - 00001069 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 000010A2 - 000010A3 (0x2 bytes), align: 0
   Segment part 78.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_QSize             00001068 
+           OSDbg_QSize             000010A2 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000106A - 0000106A (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010A4 - 000010A4 (0x1 bytes), align: 0
   Segment part 80.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSDbg_SchedRoundRobinEn
-                                   0000106A 
+                                   000010A4 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000BF6 - 00000C0F (0x1a bytes), align: 0
@@ -1930,60 +1923,60 @@ XDATA_Z
            OSDbg_Sem               00000BF6 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000106B - 0000106B (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010A5 - 000010A5 (0x1 bytes), align: 0
   Segment part 83.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_SemEn             0000106B 
+           OSDbg_SemEn             000010A5 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000106C - 0000106C (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010A6 - 000010A6 (0x1 bytes), align: 0
   Segment part 85.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_SemDelEn          0000106C 
+           OSDbg_SemDelEn          000010A6 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000106D - 0000106D (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010A7 - 000010A7 (0x1 bytes), align: 0
   Segment part 87.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_SemPendAbortEn    0000106D 
+           OSDbg_SemPendAbortEn    000010A7 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000106E - 0000106E (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010A8 - 000010A8 (0x1 bytes), align: 0
   Segment part 89.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_SemSetEn          0000106E 
+           OSDbg_SemSetEn          000010A8 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000106F - 00001070 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 000010A9 - 000010AA (0x2 bytes), align: 0
   Segment part 91.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_SemSize           0000106F 
+           OSDbg_SemSize           000010A9 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001071 - 00001072 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 000010AB - 000010AC (0x2 bytes), align: 0
   Segment part 93.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_RdyList           00001071 
+           OSDbg_RdyList           000010AB 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001073 - 00001076 (0x4 bytes), align: 0
+  Relative segment, address: XDATA 000010AD - 000010B0 (0x4 bytes), align: 0
   Segment part 95.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_RdyListSize       00001073 
+           OSDbg_RdyListSize       000010AD 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001077 - 00001077 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010B1 - 000010B1 (0x1 bytes), align: 0
   Segment part 97.            Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_StkWidth          00001077 
+           OSDbg_StkWidth          000010B1 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000C10 - 00000C10 (0x1 bytes), align: 0
@@ -1993,99 +1986,99 @@ XDATA_Z
            OSDbg_StatTaskEn        00000C10 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001078 - 00001078 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010B2 - 000010B2 (0x1 bytes), align: 0
   Segment part 100.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSDbg_StatTaskStkChkEn
-                                   00001078 
+                                   000010B2 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001079 - 00001079 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010B3 - 000010B3 (0x1 bytes), align: 0
   Segment part 102.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSDbg_TaskChangePrioEn
-                                   00001079 
+                                   000010B3 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000107A - 0000107A (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010B4 - 000010B4 (0x1 bytes), align: 0
   Segment part 104.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TaskDelEn         0000107A 
+           OSDbg_TaskDelEn         000010B4 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000107B - 0000107B (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010B5 - 000010B5 (0x1 bytes), align: 0
   Segment part 106.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TaskQEn           0000107B 
+           OSDbg_TaskQEn           000010B5 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000107C - 0000107C (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010B6 - 000010B6 (0x1 bytes), align: 0
   Segment part 108.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSDbg_TaskQPendAbortEn
-                                   0000107C 
+                                   000010B6 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000107D - 0000107D (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010B7 - 000010B7 (0x1 bytes), align: 0
   Segment part 110.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TaskProfileEn     0000107D 
+           OSDbg_TaskProfileEn     000010B7 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000107E - 0000107F (0x2 bytes), align: 0
+  Relative segment, address: XDATA 000010B8 - 000010B9 (0x2 bytes), align: 0
   Segment part 112.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TaskRegTblSize    0000107E 
+           OSDbg_TaskRegTblSize    000010B8 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001080 - 00001080 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010BA - 000010BA (0x1 bytes), align: 0
   Segment part 114.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            OSDbg_TaskSemPendAbortEn
-                                   00001080 
+                                   000010BA 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001081 - 00001081 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010BB - 000010BB (0x1 bytes), align: 0
   Segment part 116.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TaskSuspendEn     00001081 
+           OSDbg_TaskSuspendEn     000010BB 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001082 - 00001083 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 000010BC - 000010BD (0x2 bytes), align: 0
   Segment part 118.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TCBSize           00001082 
+           OSDbg_TCBSize           000010BC 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001084 - 00001085 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 000010BE - 000010BF (0x2 bytes), align: 0
   Segment part 120.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TickSpokeSize     00001084 
+           OSDbg_TickSpokeSize     000010BE 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001086 - 00001086 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010C0 - 000010C0 (0x1 bytes), align: 0
   Segment part 122.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TimeDlyHMSMEn     00001086 
+           OSDbg_TimeDlyHMSMEn     000010C0 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001087 - 00001087 (0x1 bytes), align: 0
+  Relative segment, address: XDATA 000010C1 - 000010C1 (0x1 bytes), align: 0
   Segment part 124.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_TimeDlyResumeEn   00001087 
+           OSDbg_TimeDlyResumeEn   000010C1 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000C11 - 00000C35 (0x25 bytes), align: 0
@@ -2102,256 +2095,256 @@ XDATA_Z
            OSDbg_TmrEn             00000C36 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001088 - 00001089 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 000010C2 - 000010C3 (0x2 bytes), align: 0
   Segment part 132.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_VersionNbr        00001088 
+           OSDbg_VersionNbr        000010C2 
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000108A - 0000108D (0x4 bytes), align: 0
+  Relative segment, address: XDATA 000010C4 - 000010C7 (0x4 bytes), align: 0
   Segment part 134.           Intra module refs:   OS_Dbg_Init
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSDbg_DataSize          0000108A 
+           OSDbg_DataSize          000010C4 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002A62 - 00002B6E (0x10d bytes), align: 0
+  Relative segment, address: CODE 0000294C - 00002A58 (0x10d bytes), align: 0
   Segment part 136.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_Dbg_Init             00002A62        OSInit (os_core)
+           OS_Dbg_Init             0000294C        OSInit (os_core)
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002BC - 000002BC (0x1 bytes), align: 0
+  Relative segment, address: CODE 000002F6 - 000002F6 (0x1 bytes), align: 0
   Segment part 7.             Intra module refs:   OSDbg_DbgEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002BD - 000002BD (0x1 bytes), align: 0
+  Relative segment, address: CODE 000002F7 - 000002F7 (0x1 bytes), align: 0
   Segment part 9.             Intra module refs:   OSDbg_ArgChkEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002BE - 000002BE (0x1 bytes), align: 0
+  Relative segment, address: CODE 000002F8 - 000002F8 (0x1 bytes), align: 0
   Segment part 11.            Intra module refs:   OSDbg_AppHooksEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002BF - 000002C2 (0x4 bytes), align: 0
+  Relative segment, address: CODE 000002F9 - 000002FC (0x4 bytes), align: 0
   Segment part 13.            Intra module refs:   OSDbg_EndiannessTest
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002C3 - 000002C3 (0x1 bytes), align: 0
+  Relative segment, address: CODE 000002FD - 000002FD (0x1 bytes), align: 0
   Segment part 15.            Intra module refs:   OSDbg_CalledFromISRChkEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002C4 - 000002C4 (0x1 bytes), align: 0
+  Relative segment, address: CODE 000002FE - 000002FE (0x1 bytes), align: 0
   Segment part 17.            Intra module refs:   OSDbg_FlagEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002C5 - 000002C5 (0x1 bytes), align: 0
+  Relative segment, address: CODE 000002FF - 000002FF (0x1 bytes), align: 0
   Segment part 20.            Intra module refs:   OSDbg_FlagDelEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002C6 - 000002C6 (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000300 - 00000300 (0x1 bytes), align: 0
   Segment part 22.            Intra module refs:   OSDbg_FlagModeClrEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002C7 - 000002C7 (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000301 - 00000301 (0x1 bytes), align: 0
   Segment part 24.            Intra module refs:   OSDbg_FlagPendAbortEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002C8 - 000002C9 (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000302 - 00000303 (0x2 bytes), align: 0
   Segment part 26.            Intra module refs:   OSDbg_FlagGrpSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002CA - 000002CB (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000304 - 00000305 (0x2 bytes), align: 0
   Segment part 28.            Intra module refs:   OSDbg_FlagWidth
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002CC - 000002CC (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000306 - 00000306 (0x1 bytes), align: 0
   Segment part 33.            Intra module refs:   OSDbg_MemEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002CD - 000002CE (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000307 - 00000308 (0x2 bytes), align: 0
   Segment part 35.            Intra module refs:   OSDbg_MemSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002CF - 000002CF (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000309 - 00000309 (0x1 bytes), align: 0
   Segment part 37.            Intra module refs:   OSDbg_MsgEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002D0 - 000002D1 (0x2 bytes), align: 0
+  Relative segment, address: CODE 0000030A - 0000030B (0x2 bytes), align: 0
   Segment part 39.            Intra module refs:   OSDbg_MsgSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002D2 - 000002D3 (0x2 bytes), align: 0
+  Relative segment, address: CODE 0000030C - 0000030D (0x2 bytes), align: 0
   Segment part 41.            Intra module refs:   OSDbg_MsgPoolSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002D4 - 000002D5 (0x2 bytes), align: 0
+  Relative segment, address: CODE 0000030E - 0000030F (0x2 bytes), align: 0
   Segment part 43.            Intra module refs:   OSDbg_MsgQSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002D6 - 000002D6 (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000310 - 00000310 (0x1 bytes), align: 0
   Segment part 46.            Intra module refs:   OSDbg_MutexEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002D7 - 000002D7 (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000311 - 00000311 (0x1 bytes), align: 0
   Segment part 48.            Intra module refs:   OSDbg_MutexDelEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002D8 - 000002D8 (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000312 - 00000312 (0x1 bytes), align: 0
   Segment part 50.            Intra module refs:   OSDbg_MutexPendAbortEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002D9 - 000002DA (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000313 - 00000314 (0x2 bytes), align: 0
   Segment part 52.            Intra module refs:   OSDbg_MutexSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002DB - 000002DB (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000315 - 00000315 (0x1 bytes), align: 0
   Segment part 54.            Intra module refs:   OSDbg_ObjTypeChkEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002DC - 000002DC (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000316 - 00000316 (0x1 bytes), align: 0
   Segment part 56.            Intra module refs:   OSDbg_PendMultiEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002DD - 000002DE (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000317 - 00000318 (0x2 bytes), align: 0
   Segment part 58.            Intra module refs:   OSDbg_PendDataSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002DF - 000002E0 (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000319 - 0000031A (0x2 bytes), align: 0
   Segment part 60.            Intra module refs:   OSDbg_PendListSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002E1 - 000002E2 (0x2 bytes), align: 0
+  Relative segment, address: CODE 0000031B - 0000031C (0x2 bytes), align: 0
   Segment part 62.            Intra module refs:   OSDbg_PendObjSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002E3 - 000002E4 (0x2 bytes), align: 0
+  Relative segment, address: CODE 0000031D - 0000031E (0x2 bytes), align: 0
   Segment part 64.            Intra module refs:   OSDbg_PrioMax
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002E5 - 000002E6 (0x2 bytes), align: 0
+  Relative segment, address: CODE 0000031F - 00000320 (0x2 bytes), align: 0
   Segment part 66.            Intra module refs:   OSDbg_PrioTblSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002E7 - 000002E8 (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000321 - 00000322 (0x2 bytes), align: 0
   Segment part 68.            Intra module refs:   OSDbg_PtrSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002E9 - 000002E9 (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000323 - 00000323 (0x1 bytes), align: 0
   Segment part 71.            Intra module refs:   OSDbg_QEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002EA - 000002EA (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000324 - 00000324 (0x1 bytes), align: 0
   Segment part 73.            Intra module refs:   OSDbg_QDelEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002EB - 000002EB (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000325 - 00000325 (0x1 bytes), align: 0
   Segment part 75.            Intra module refs:   OSDbg_QFlushEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002EC - 000002EC (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000326 - 00000326 (0x1 bytes), align: 0
   Segment part 77.            Intra module refs:   OSDbg_QPendAbortEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002ED - 000002EE (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000327 - 00000328 (0x2 bytes), align: 0
   Segment part 79.            Intra module refs:   OSDbg_QSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002EF - 000002EF (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000329 - 00000329 (0x1 bytes), align: 0
   Segment part 81.            Intra module refs:   OSDbg_SchedRoundRobinEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002F0 - 000002F0 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000032A - 0000032A (0x1 bytes), align: 0
   Segment part 84.            Intra module refs:   OSDbg_SemEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002F1 - 000002F1 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000032B - 0000032B (0x1 bytes), align: 0
   Segment part 86.            Intra module refs:   OSDbg_SemDelEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002F2 - 000002F2 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000032C - 0000032C (0x1 bytes), align: 0
   Segment part 88.            Intra module refs:   OSDbg_SemPendAbortEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002F3 - 000002F3 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000032D - 0000032D (0x1 bytes), align: 0
   Segment part 90.            Intra module refs:   OSDbg_SemSetEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002F4 - 000002F5 (0x2 bytes), align: 0
+  Relative segment, address: CODE 0000032E - 0000032F (0x2 bytes), align: 0
   Segment part 92.            Intra module refs:   OSDbg_SemSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002F6 - 000002F7 (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000330 - 00000331 (0x2 bytes), align: 0
   Segment part 94.            Intra module refs:   OSDbg_RdyList
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002F8 - 000002FB (0x4 bytes), align: 0
+  Relative segment, address: CODE 00000332 - 00000335 (0x4 bytes), align: 0
   Segment part 96.            Intra module refs:   OSDbg_RdyListSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002FC - 000002FC (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000336 - 00000336 (0x1 bytes), align: 0
   Segment part 98.            Intra module refs:   OSDbg_StkWidth
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002FD - 000002FD (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000337 - 00000337 (0x1 bytes), align: 0
   Segment part 101.           Intra module refs:   OSDbg_StatTaskStkChkEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002FE - 000002FE (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000338 - 00000338 (0x1 bytes), align: 0
   Segment part 103.           Intra module refs:   OSDbg_TaskChangePrioEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 000002FF - 000002FF (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000339 - 00000339 (0x1 bytes), align: 0
   Segment part 105.           Intra module refs:   OSDbg_TaskDelEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000300 - 00000300 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000033A - 0000033A (0x1 bytes), align: 0
   Segment part 107.           Intra module refs:   OSDbg_TaskQEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000301 - 00000301 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000033B - 0000033B (0x1 bytes), align: 0
   Segment part 109.           Intra module refs:   OSDbg_TaskQPendAbortEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000302 - 00000302 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000033C - 0000033C (0x1 bytes), align: 0
   Segment part 111.           Intra module refs:   OSDbg_TaskProfileEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000303 - 00000304 (0x2 bytes), align: 0
+  Relative segment, address: CODE 0000033D - 0000033E (0x2 bytes), align: 0
   Segment part 113.           Intra module refs:   OSDbg_TaskRegTblSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000305 - 00000305 (0x1 bytes), align: 0
+  Relative segment, address: CODE 0000033F - 0000033F (0x1 bytes), align: 0
   Segment part 115.           Intra module refs:   OSDbg_TaskSemPendAbortEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000306 - 00000306 (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000340 - 00000340 (0x1 bytes), align: 0
   Segment part 117.           Intra module refs:   OSDbg_TaskSuspendEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000307 - 00000308 (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000341 - 00000342 (0x2 bytes), align: 0
   Segment part 119.           Intra module refs:   OSDbg_TCBSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000309 - 0000030A (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000343 - 00000344 (0x2 bytes), align: 0
   Segment part 121.           Intra module refs:   OSDbg_TickSpokeSize
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000030B - 0000030B (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000345 - 00000345 (0x1 bytes), align: 0
   Segment part 123.           Intra module refs:   OSDbg_TimeDlyHMSMEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000030C - 0000030C (0x1 bytes), align: 0
+  Relative segment, address: CODE 00000346 - 00000346 (0x1 bytes), align: 0
   Segment part 125.           Intra module refs:   OSDbg_TimeDlyResumeEn
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000030D - 0000030E (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000347 - 00000348 (0x2 bytes), align: 0
   Segment part 133.           Intra module refs:   OSDbg_VersionNbr
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000030F - 00000312 (0x4 bytes), align: 0
+  Relative segment, address: CODE 00000349 - 0000034C (0x4 bytes), align: 0
   Segment part 135.           Intra module refs:   OSDbg_DataSize
 
     *************************************************************************
@@ -2362,11 +2355,11 @@ XDATA_ID
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00002B6F - 00002B96 (0x28 bytes), align: 0
+  Relative segment, address: CODE 00002A59 - 00002A80 (0x28 bytes), align: 0
   Segment part 20.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_FlagInit             00002B6F        OSInit (os_core)
+           OS_FlagInit             00002A59        OSInit (os_core)
                ISTACK = 00000000 ( 00000002 )
 
     *************************************************************************
@@ -2380,11 +2373,11 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00002B97 - 00002BBE (0x28 bytes), align: 0
+  Relative segment, address: CODE 00002A81 - 00002AA8 (0x28 bytes), align: 0
   Segment part 10.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_MemInit              00002B97        OSInit (os_core)
+           OS_MemInit              00002A81        OSInit (os_core)
                ISTACK = 00000000 ( 00000002 )
 
     *************************************************************************
@@ -2395,19 +2388,19 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00002BBF - 00002D3D (0x17f bytes), align: 0
+  Relative segment, address: CODE 00002AA9 - 00002C27 (0x17f bytes), align: 0
   Segment part 6.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_MsgPoolInit          00002BBF        OSInit (os_core)
+           OS_MsgPoolInit          00002AA9        OSInit (os_core)
                XSTACK = 00000000 ( 0000000F )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002D3E - 00002D8F (0x52 bytes), align: 0
+  Relative segment, address: CODE 00002C28 - 00002C79 (0x52 bytes), align: 0
   Segment part 8.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_MsgQInit             00002D3E        OSTaskCreate (os_task)
+           OS_MsgQInit             00002C28        OSTaskCreate (os_task)
                                                    OS_TaskInitTCB (os_task)
                ISTACK = 00000000 ( 00000002 )
 
@@ -2419,11 +2412,11 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00002D90 - 00002DB7 (0x28 bytes), align: 0
+  Relative segment, address: CODE 00002C7A - 00002CA1 (0x28 bytes), align: 0
   Segment part 20.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_MutexInit            00002D90        OSInit (os_core)
+           OS_MutexInit            00002C7A        OSInit (os_core)
                ISTACK = 00000000 ( 00000002 )
 
     *************************************************************************
@@ -2447,39 +2440,39 @@ XDATA_Z
            OSPrioTbl               00000C37 
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002DB8 - 00002DFE (0x47 bytes), align: 0
+  Relative segment, address: CODE 00002CA2 - 00002CE8 (0x47 bytes), align: 0
   Segment part 7.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PrioInit             00002DB8        OSInit (os_core)
+           OS_PrioInit             00002CA2        OSInit (os_core)
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002DFF - 00002E39 (0x3b bytes), align: 0
+  Relative segment, address: CODE 00002CE9 - 00002D23 (0x3b bytes), align: 0
   Segment part 8.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PrioGetHighest       00002DFF        OSIntExit (os_core)
+           OS_PrioGetHighest       00002CE9        OSIntExit (os_core)
                                                    OSSched (os_core)
                                                    OSStart (os_core)
                calls direct
                XSTACK = 00000000 ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002E3A - 00002E95 (0x5c bytes), align: 0
+  Relative segment, address: CODE 00002D24 - 00002D7F (0x5c bytes), align: 0
   Segment part 9.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PrioInsert           00002E3A        OSTaskCreate (os_task)
+           OS_PrioInsert           00002D24        OSTaskCreate (os_task)
                                                    OS_RdyListInsert (os_core)
                XSTACK = 00000000 ( 00000009 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00002E96 - 00002EF7 (0x62 bytes), align: 0
+  Relative segment, address: CODE 00002D80 - 00002DE1 (0x62 bytes), align: 0
   Segment part 10.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_PrioRemove           00002E96        OS_RdyListRemove (os_core)
+           OS_PrioRemove           00002D80        OS_RdyListRemove (os_core)
                XSTACK = 00000000 ( 00000009 )
 
     *************************************************************************
@@ -2490,11 +2483,11 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00002EF8 - 00002F1F (0x28 bytes), align: 0
+  Relative segment, address: CODE 00002DE2 - 00002E09 (0x28 bytes), align: 0
   Segment part 21.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_QInit                00002EF8        OSInit (os_core)
+           OS_QInit                00002DE2        OSInit (os_core)
                ISTACK = 00000000 ( 00000002 )
 
     *************************************************************************
@@ -2505,11 +2498,11 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00002F20 - 00002F47 (0x28 bytes), align: 0
+  Relative segment, address: CODE 00002E0A - 00002E31 (0x28 bytes), align: 0
   Segment part 25.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_SemInit              00002F20        OSInit (os_core)
+           OS_SemInit              00002E0A        OSInit (os_core)
                ISTACK = 00000000 ( 00000002 )
 
     *************************************************************************
@@ -2523,11 +2516,11 @@ NEAR_CODE
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00002F48 - 000032E4 (0x39d bytes), align: 0
+  Relative segment, address: CODE 00002E32 - 000031CE (0x39d bytes), align: 0
   Segment part 15.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSTaskCreate            00002F48        AppTaskCreate (app)
+           OSTaskCreate            00002E32        AppTaskCreate (app)
                                                    OS_IdleTaskInit (os_core)
                                                    OS_TickTaskInit (os_tick)
                                                    main (app)
@@ -2536,73 +2529,73 @@ NEAR_CODE
                ISTACK = 00000000 ( 00000001 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000032E5 - 00003700 (0x41c bytes), align: 0
+  Relative segment, address: CODE 000031CF - 000035EA (0x41c bytes), align: 0
   Segment part 25.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSTaskSemPend           000032E5        OS_TickTask (os_tick)
+           OSTaskSemPend           000031CF        OS_TickTask (os_tick)
                calls direct
                XSTACK = 00000006 ( 00000014 )
                ISTACK = 00000000 ( 00000001 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00003701 - 0000377E (0x7e bytes), align: 0
+  Relative segment, address: CODE 000035EB - 00003668 (0x7e bytes), align: 0
   Segment part 27.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSTaskSemPost           00003701        OSTimeTick (os_time)
+           OSTaskSemPost           000035EB        OSTimeTick (os_time)
                calls direct
                XSTACK = 00000002 ( 00000013 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000377F - 000037E9 (0x6b bytes), align: 0
+  Relative segment, address: CODE 00003669 - 000036D3 (0x6b bytes), align: 0
   Segment part 32.            Intra module refs:   OSTaskCreate
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TaskDbgListAdd       0000377F 
+           OS_TaskDbgListAdd       00003669 
                XSTACK = 00000014 ( 00000000 )
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000037EA - 00003828 (0x3f bytes), align: 0
+  Relative segment, address: CODE 000036D4 - 00003712 (0x3f bytes), align: 0
   Segment part 34.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TaskInit             000037EA        OSInit (os_core)
+           OS_TaskInit             000036D4        OSInit (os_core)
                XSTACK = 00000000 ( 00000008 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00003829 - 00003C48 (0x420 bytes), align: 0
+  Relative segment, address: CODE 00003713 - 00003B32 (0x420 bytes), align: 0
   Segment part 35.            Intra module refs:   OSTaskCreate
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TaskInitTCB          00003829 
+           OS_TaskInitTCB          00003713 
                calls direct
                XSTACK = 00000014 ( 0000000B )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00003C49 - 00003E20 (0x1d8 bytes), align: 0
+  Relative segment, address: CODE 00003B33 - 00003D0A (0x1d8 bytes), align: 0
   Segment part 39.            Intra module refs:   OSTaskSemPost
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TaskSemPost          00003C49 
+           OS_TaskSemPost          00003B33 
                calls direct
                XSTACK = 00000013 ( 00000019 )
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000313 - 00000318 (0x6 bytes), align: 0
+  Relative segment, address: CODE 0000034D - 00000352 (0x6 bytes), align: 0
   Segment part 7.             Intra module refs:   Segment part 6
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000319 - 0000031A (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000353 - 00000354 (0x2 bytes), align: 0
   Segment part 9.             Intra module refs:   Segment part 8
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 0000108E - 00001093 (0x6 bytes), align: 0
+  Relative segment, address: XDATA 000010C8 - 000010CD (0x6 bytes), align: 0
   Segment part 6.             Intra module refs:   OS_TaskInitTCB
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001094 - 00001095 (0x2 bytes), align: 0
+  Relative segment, address: XDATA 000010CE - 000010CF (0x2 bytes), align: 0
   Segment part 8.             Intra module refs:   OS_TaskInitTCB
 
     *************************************************************************
@@ -2613,80 +2606,80 @@ XDATA_I
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00003E21 - 00003E91 (0x71 bytes), align: 0
+  Relative segment, address: CODE 00003D0B - 00003D7B (0x71 bytes), align: 0
   Segment part 17.            Intra module refs:   OS_TickTaskInit
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TickTask             00003E21 
+           OS_TickTask             00003D0B 
                calls direct, is indirectly called
                XSTACK = 00000000 ( 00000017 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00003E92 - 00003F92 (0x101 bytes), align: 0
+  Relative segment, address: CODE 00003D7C - 00003E7C (0x101 bytes), align: 0
   Segment part 18.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TickTaskInit         00003E92        OSInit (os_core)
+           OS_TickTaskInit         00003D7C        OSInit (os_core)
                calls direct
                XSTACK = 00000000 ( 0000001F )
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00003F93 - 00003FFD (0x6b bytes), align: 0
+  Relative segment, address: CODE 00003E7D - 00003EE7 (0x6b bytes), align: 0
   Segment part 19.            Intra module refs:   OS_TickTaskInit
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TickListInit         00003F93 
+           OS_TickListInit         00003E7D 
                XSTACK = 00000009 ( 00000000 )
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00003FFE - 0000449A (0x49d bytes), align: 0
+  Relative segment, address: CODE 00003EE8 - 00004384 (0x49d bytes), align: 0
   Segment part 20.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TickListInsert       00003FFE        OSTimeDlyHMSM (os_time)
+           OS_TickListInsert       00003EE8        OSTimeDlyHMSM (os_time)
                                                    OS_TaskBlock (os_core)
                XSTACK = 00000006 ( 00000013 )
                ISTACK = 00000000 ( 00000002 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 0000449B - 000045C8 (0x12e bytes), align: 0
+  Relative segment, address: CODE 00004385 - 000044B2 (0x12e bytes), align: 0
   Segment part 21.            Intra module refs:   OS_TickListUpdate
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TickListRemove       0000449B        OS_Post (os_core)
+           OS_TickListRemove       00004385        OS_Post (os_core)
                                                    OS_TaskRdy (os_core)
                XSTACK = 00000016 ( 00000009 )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 000045C9 - 00004941 (0x379 bytes), align: 0
+  Relative segment, address: CODE 000044B3 - 0000482B (0x379 bytes), align: 0
   Segment part 23.            Intra module refs:   OS_TickTask
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OS_TickListUpdate       000045C9 
+           OS_TickListUpdate       000044B3 
                calls direct
                XSTACK = 00000011 ( 00000016 )
                ISTACK = 00000000 ( 00000001 )
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000031B - 0000032E (0x14 bytes), align: 0
+  Relative segment, address: CODE 00000355 - 00000368 (0x14 bytes), align: 0
   Segment part 8.             Intra module refs:   Segment part 7
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000032F - 00000332 (0x4 bytes), align: 0
+  Relative segment, address: CODE 00000369 - 0000036C (0x4 bytes), align: 0
   Segment part 14.            Intra module refs:   __Constant_ffff0001
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 00001096 - 000010A9 (0x14 bytes), align: 0
+  Relative segment, address: XDATA 000010D0 - 000010E3 (0x14 bytes), align: 0
   Segment part 7.             Intra module refs:   OS_TickTaskInit
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 000010AA - 000010AD (0x4 bytes), align: 0
+  Relative segment, address: XDATA 000010E4 - 000010E7 (0x4 bytes), align: 0
   Segment part 13.            Intra module refs:   OS_TickListInsert
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_ffff0001     000010AA 
+           __Constant_ffff0001     000010E4 
 
     *************************************************************************
 
@@ -2696,56 +2689,56 @@ XDATA_I
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00004942 - 00004CD9 (0x398 bytes), align: 0
+  Relative segment, address: CODE 0000482C - 00004BC3 (0x398 bytes), align: 0
   Segment part 14.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSTimeDlyHMSM           00004942        AppTaskStart (app)
+           OSTimeDlyHMSM           0000482C        AppTaskStart (app)
                                                    AppUartTask (app)
                calls direct
                XSTACK = 0000000A ( 00000019 )
                ISTACK = 00000000 ( 0000000A )
     -------------------------------------------------------------------------
 NEAR_CODE
-  Relative segment, address: CODE 00004CDA - 00004D4C (0x73 bytes), align: 0
+  Relative segment, address: CODE 00004BC4 - 00004C36 (0x73 bytes), align: 0
   Segment part 18.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           OSTimeTick              00004CDA        OS_CPU_SysTickHandler (os_cpu_c)
+           OSTimeTick              00004BC4        OS_CPU_SysTickHandler (os_cpu_c)
                calls direct
                XSTACK = 00000000 ( 0000000F )
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 000010AE - 000010B1 (0x4 bytes), align: 0
+  Relative segment, address: XDATA 000010E8 - 000010EB (0x4 bytes), align: 0
   Segment part 7.             Intra module refs:   OSTimeDlyHMSM
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_3e8          000010AE 
+           __Constant_3e8          000010E8 
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000333 - 00000336 (0x4 bytes), align: 0
+  Relative segment, address: CODE 0000036D - 00000370 (0x4 bytes), align: 0
   Segment part 8.             Intra module refs:   __Constant_3e8
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 000010B2 - 000010B5 (0x4 bytes), align: 0
+  Relative segment, address: XDATA 000010EC - 000010EF (0x4 bytes), align: 0
   Segment part 9.             Intra module refs:   OSTimeDlyHMSM
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_e10          000010B2 
+           __Constant_e10          000010EC 
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 00000337 - 0000033A (0x4 bytes), align: 0
+  Relative segment, address: CODE 00000371 - 00000374 (0x4 bytes), align: 0
   Segment part 10.            Intra module refs:   __Constant_e10
     -------------------------------------------------------------------------
 XDATA_I
-  Relative segment, address: XDATA 000010B6 - 000010B9 (0x4 bytes), align: 0
+  Relative segment, address: XDATA 000010F0 - 000010F3 (0x4 bytes), align: 0
   Segment part 11.            Intra module refs:   OSTimeDlyHMSM
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_3c           000010B6 
+           __Constant_3c           000010F0 
     -------------------------------------------------------------------------
 XDATA_ID
-  Relative segment, address: CODE 0000033B - 0000033E (0x4 bytes), align: 0
+  Relative segment, address: CODE 00000375 - 00000378 (0x4 bytes), align: 0
   Segment part 12.            Intra module refs:   __Constant_3c
 
     *************************************************************************
@@ -3271,6 +3264,7 @@ CSTART
                                                    OSDbg_VersionNbr (os_dbg)
                                                    Segment part 10 (app)
                                                    Segment part 11 (os_core)
+                                                   Segment part 12 (app)
                                                    Segment part 13 (os_core)
                                                    Segment part 15 (os_core)
                                                    Segment part 6 (app)
@@ -3282,6 +3276,7 @@ CSTART
                                                    __Constant_0 (app)
                                                    __Constant_1 (cpu_core)
                                                    __Constant_12c (app)
+                                                   __Constant_32 (app)
                                                    __Constant_3c (os_time)
                                                    __Constant_3e8 (os_time)
                                                    __Constant_a (os_core)
@@ -3372,7 +3367,6 @@ VREG
                                                    AppUartTask (app)
                                                    BSPInit (bsp)
                                                    BSPUARTInitDMA (bsp_uart)
-                                                   BSPUARTReadDMA (bsp_uart)
                                                    BSP_LED_Init (bsp_led)
                                                    BSP_LED_Toggle (bsp_led)
                                                    CPU_CntLeadZeros (cpu_core)
@@ -3605,6 +3599,7 @@ XSP
                                                    ?XSTACK_DISP0_8 (?XSTACK_DISP8)
                                                    ?XSTACK_DISP100_8 (?XSTACK_DISP8_RP)
                                                    ?XSTACK_DISP101_8 (?XSTACK_DISP8_RP)
+                                                   ?XSTACK_DISP102_8 (?XSTACK_DISP8_RP)
                                                    AppTaskCreate (app)
                                                    AppTaskStart (app)
                                                    AppUartTask (app)
@@ -3632,11 +3627,11 @@ XSP
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 0000033F - 00000353 (0x15 bytes), align: 0
+  Relative segment, address: CODE 00000379 - 0000038D (0x15 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_EQ_X                 0000033F        OS_TaskSemPost (os_task)
+           ?L_EQ_X                 00000379        OS_TaskSemPost (os_task)
                                                    OS_TickListUpdate (os_tick)
 
     -------------------------------------------------------------------------
@@ -3645,11 +3640,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000354 - 00000363 (0x10 bytes), align: 0
+  Relative segment, address: CODE 0000038E - 0000039D (0x10 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?UL_GT                  00000354        OS_TickListInsert (os_tick)
+           ?UL_GT                  0000038E        OS_TickListInsert (os_tick)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?UL_GT_X
@@ -3657,11 +3652,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000364 - 00000373 (0x10 bytes), align: 0
+  Relative segment, address: CODE 0000039E - 000003AD (0x10 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?UL_GT_X                00000364        OSTaskSemPend (os_task)
+           ?UL_GT_X                0000039E        OSTaskSemPend (os_task)
                                                    OSTimeDlyHMSM (os_time)
                                                    OS_TickListInsert (os_tick)
                                                    OS_TickListUpdate (os_tick)
@@ -3672,11 +3667,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000374 - 00000392 (0x1f bytes), align: 0
+  Relative segment, address: CODE 000003AE - 000003CC (0x1f bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?UL_GE_X                00000374        OS_TickListInsert (os_tick)
+           ?UL_GE_X                000003AE        OS_TickListInsert (os_tick)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?L_MUL
@@ -3684,18 +3679,18 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000393 - 00000395 (0x3 bytes), align: 0
+  Relative segment, address: CODE 000003CD - 000003CF (0x3 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_MUL                  00000393        OSTimeDlyHMSM (os_time)
+           ?L_MUL                  000003CD        OSTimeDlyHMSM (os_time)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 00000396 - 00000412 (0x7d bytes), align: 0
+  Relative segment, address: CODE 000003D0 - 0000044C (0x7d bytes), align: 0
   Segment part 1.             Intra module refs:   ?L_MUL
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_MUL_REW              00000396 
+           ?L_MUL_REW              000003D0 
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?UL_DIV_MOD
@@ -3703,11 +3698,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000413 - 00000481 (0x6f bytes), align: 0
+  Relative segment, address: CODE 0000044D - 000004BB (0x6f bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?UL_DIV_MOD             00000413        OSInit (os_core)
+           ?UL_DIV_MOD             0000044D        OSInit (os_core)
                                                    OSTimeDlyHMSM (os_time)
                                                    OS_TickListInsert (os_tick)
                                                    OS_TickListUpdate (os_tick)
@@ -3718,11 +3713,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000482 - 00000492 (0x11 bytes), align: 0
+  Relative segment, address: CODE 000004BC - 000004CC (0x11 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_NEG                  00000482        OSTaskSemPend (os_task)
+           ?L_NEG                  000004BC        OSTaskSemPend (os_task)
                                                    OS_TickListUpdate (os_tick)
 
     -------------------------------------------------------------------------
@@ -3731,15 +3726,15 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000493 - 00000497 (0x5 bytes), align: 0
+  Relative segment, address: CODE 000004CD - 000004D1 (0x5 bytes), align: 0
   Segment part 1.             Intra module refs:   Segment part 2
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?UL_SHR                 00000493        OS_CPU_SysTickInit (os_cpu_c)
+           ?UL_SHR                 000004CD        OS_CPU_SysTickInit (os_cpu_c)
                                                    Set_ST_Period (bsp_interrupt)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 00000498 - 000004AB (0x14 bytes), align: 0
+  Relative segment, address: CODE 000004D2 - 000004E5 (0x14 bytes), align: 0
   Segment part 2.             Intra module refs:   ?UL_SHR
 
     -------------------------------------------------------------------------
@@ -3748,22 +3743,22 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000004AC - 000004B1 (0x6 bytes), align: 0
+  Relative segment, address: CODE 000004E6 - 000004EB (0x6 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_SHL                  000004AC        OS_CPU_SysTickInit (os_cpu_c)
+           ?L_SHL                  000004E6        OS_CPU_SysTickInit (os_cpu_c)
                                                    Set_ST_Period (bsp_interrupt)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000004B2 - 000004B6 (0x5 bytes), align: 0
+  Relative segment, address: CODE 000004EC - 000004F0 (0x5 bytes), align: 0
   Segment part 1.             Intra module refs:   Segment part 2
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_SHL_REW              000004B2 
+           ?L_SHL_REW              000004EC 
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000004B7 - 000004CA (0x14 bytes), align: 0
+  Relative segment, address: CODE 000004F1 - 00000504 (0x14 bytes), align: 0
   Segment part 2.             Intra module refs:   ?L_SHL
                                                    ?L_SHL_REW
 
@@ -3773,11 +3768,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000004CB - 000004DD (0x13 bytes), align: 0
+  Relative segment, address: CODE 00000505 - 00000517 (0x13 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_ADD                  000004CB        OSTimeDlyHMSM (os_time)
+           ?L_ADD                  00000505        OSTimeDlyHMSM (os_time)
                                                    Set_ST_Period (bsp_interrupt)
 
     -------------------------------------------------------------------------
@@ -3786,11 +3781,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000004DE - 000004F0 (0x13 bytes), align: 0
+  Relative segment, address: CODE 00000518 - 0000052A (0x13 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_ADD_X                000004DE        OSTimeDlyHMSM (os_time)
+           ?L_ADD_X                00000518        OSTimeDlyHMSM (os_time)
                                                    OS_CPU_SysTickInit (os_cpu_c)
                                                    OS_TickListInsert (os_tick)
 
@@ -3800,11 +3795,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000004F1 - 00000503 (0x13 bytes), align: 0
+  Relative segment, address: CODE 0000052B - 0000053D (0x13 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_ADD_TO_X             000004F1        OSIntExit (os_core)
+           ?L_ADD_TO_X             0000052B        OSIntExit (os_core)
                                                    OSSched (os_core)
                                                    OSTaskSemPend (os_task)
                                                    OS_IdleTask (os_core)
@@ -3818,11 +3813,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000504 - 0000051B (0x18 bytes), align: 0
+  Relative segment, address: CODE 0000053E - 00000555 (0x18 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_SUB_X                00000504        OS_TickListInsert (os_tick)
+           ?L_SUB_X                0000053E        OS_TickListInsert (os_tick)
                                                    OS_TickListUpdate (os_tick)
 
     -------------------------------------------------------------------------
@@ -3831,11 +3826,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 0000051C - 0000052E (0x13 bytes), align: 0
+  Relative segment, address: CODE 00000556 - 00000568 (0x13 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_IOR                  0000051C        OS_CPU_SysTickInit (os_cpu_c)
+           ?L_IOR                  00000556        OS_CPU_SysTickInit (os_cpu_c)
                                                    Set_ST_Period (bsp_interrupt)
 
     -------------------------------------------------------------------------
@@ -3844,11 +3839,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 0000052F - 0000053D (0xf bytes), align: 0
+  Relative segment, address: CODE 00000569 - 00000577 (0xf bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_MOV_X                0000052F        OSInit (os_core)
+           ?L_MOV_X                00000569        OSInit (os_core)
                                                    OSIntExit (os_core)
                                                    OSSched (os_core)
                                                    OSTaskCreate (os_task)
@@ -3868,11 +3863,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 0000053E - 0000054C (0xf bytes), align: 0
+  Relative segment, address: CODE 00000578 - 00000586 (0xf bytes), align: 0
   Segment part 2.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?L_MOV_TO_X             0000053E        OSInit (os_core)
+           ?L_MOV_TO_X             00000578        OSInit (os_core)
                                                    OSTaskCreate (os_task)
                                                    OSTaskSemPend (os_task)
                                                    OS_Post (os_core)
@@ -3887,11 +3882,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 0000054D - 00000558 (0xc bytes), align: 0
+  Relative segment, address: CODE 00000587 - 00000592 (0xc bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?XLOAD_R2345            0000054D        OS_TickTask (os_tick)
+           ?XLOAD_R2345            00000587        OS_TickTask (os_tick)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?XLOAD_R4567
@@ -3899,11 +3894,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000559 - 00000564 (0xc bytes), align: 0
+  Relative segment, address: CODE 00000593 - 0000059E (0xc bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?XLOAD_R4567            00000559        OS_Post1 (os_core)
+           ?XLOAD_R4567            00000593        OS_Post1 (os_core)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?XSTORE_R4567
@@ -3911,11 +3906,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000565 - 00000570 (0xc bytes), align: 0
+  Relative segment, address: CODE 0000059F - 000005AA (0xc bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?XSTORE_R4567           00000565        OS_Post1 (os_core)
+           ?XSTORE_R4567           0000059F        OS_Post1 (os_core)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?XLOAD_R0123
@@ -3923,11 +3918,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000571 - 0000057C (0xc bytes), align: 0
+  Relative segment, address: CODE 000005AB - 000005B6 (0xc bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?XLOAD_R0123            00000571        OSTaskCreate (os_task)
+           ?XLOAD_R0123            000005AB        OSTaskCreate (os_task)
                                                    OSTaskSemPend (os_task)
                                                    OSTimeDlyHMSM (os_time)
                                                    OS_SchedRoundRobin (os_core)
@@ -3939,11 +3934,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 0000057D - 00000588 (0xc bytes), align: 0
+  Relative segment, address: CODE 000005B7 - 000005C2 (0xc bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?XSTORE_R0123           0000057D        OSTaskCreate (os_task)
+           ?XSTORE_R0123           000005B7        OSTaskCreate (os_task)
                                                    OSTaskSemPend (os_task)
                                                    OSTimeDlyHMSM (os_time)
                                                    OS_SchedRoundRobin (os_core)
@@ -3955,12 +3950,12 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000589 - 00000595 (0xd bytes), align: 0
+  Relative segment, address: CODE 000005C3 - 000005CF (0xd bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            ?MOVE_LONG8_XDATA_IDATA
-                                   00000589        ?PUSH_XSTACK_I (?PUSH_XSTACK_I)
+                                   000005C3        ?PUSH_XSTACK_I (?PUSH_XSTACK_I)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?MOVE_LONG8_XDATA_XDATA
@@ -3968,12 +3963,13 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000596 - 000005B6 (0x21 bytes), align: 0
+  Relative segment, address: CODE 000005D0 - 000005F0 (0x21 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            ?MOVE_LONG8_XDATA_XDATA
-                                   00000596        ?PUSH_XSTACK8_X (?PUSH_XSTACK8_X)
+                                   000005D0        ?PUSH_XSTACK8_X (?PUSH_XSTACK8_X)
+                                                   AppUartTask (app)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?S_SHL
@@ -3981,24 +3977,24 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000005B7 - 000005B9 (0x3 bytes), align: 0
+  Relative segment, address: CODE 000005F1 - 000005F3 (0x3 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?S_SHL                  000005B7        BSP_LED_Init (bsp_led)
+           ?S_SHL                  000005F1        BSP_LED_Init (bsp_led)
                                                    BSP_LED_Toggle (bsp_led)
                                                    OS_PrioInsert (os_prio)
                                                    OS_PrioRemove (os_prio)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000005BA - 000005BC (0x3 bytes), align: 0
+  Relative segment, address: CODE 000005F4 - 000005F6 (0x3 bytes), align: 0
   Segment part 1.             Intra module refs:   Segment part 2
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?S_SHL_REW              000005BA 
+           ?S_SHL_REW              000005F4 
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000005BD - 000005C9 (0xd bytes), align: 0
+  Relative segment, address: CODE 000005F7 - 00000603 (0xd bytes), align: 0
   Segment part 2.             Intra module refs:   ?S_SHL
                                                    ?S_SHL_REW
 
@@ -4008,11 +4004,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000005CA - 000005DF (0x16 bytes), align: 0
+  Relative segment, address: CODE 00000604 - 00000619 (0x16 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?ALLOC_XSTACK8          000005CA        AppTaskCreate (app)
+           ?ALLOC_XSTACK8          00000604        AppTaskCreate (app)
                                                    AppTaskStart (app)
                                                    AppUartTask (app)
                                                    BSPUARTInitDMA (bsp_uart)
@@ -4034,11 +4030,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000005E0 - 000005FA (0x1b bytes), align: 0
+  Relative segment, address: CODE 0000061A - 00000634 (0x1b bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?DEALLOC_XSTACK8        000005E0        AppTaskCreate (app)
+           ?DEALLOC_XSTACK8        0000061A        AppTaskCreate (app)
                                                    AppTaskStart (app)
                                                    AppUartTask (app)
                                                    BSPUARTInitDMA (bsp_uart)
@@ -4065,11 +4061,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000005FB - 00000615 (0x1b bytes), align: 0
+  Relative segment, address: CODE 00000635 - 0000064F (0x1b bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?ADD_XSTACK_DISP0_8     000005FB        ?PUSH_XSTACK_I (?PUSH_XSTACK_I)
+           ?ADD_XSTACK_DISP0_8     00000635        ?PUSH_XSTACK_I (?PUSH_XSTACK_I)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?XSTACK_DISP8
@@ -4077,11 +4073,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000616 - 0000061F (0xa bytes), align: 0
+  Relative segment, address: CODE 00000650 - 00000659 (0xa bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?XSTACK_DISP0_8         00000616        AppUartTask (app)
+           ?XSTACK_DISP0_8         00000650        AppUartTask (app)
                                                    OSTaskCreate (os_task)
                                                    OSTaskSemPend (os_task)
                                                    OSTaskSemPost (os_task)
@@ -4102,20 +4098,27 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000620 - 00000627 (0x8 bytes), align: 0
+  Relative segment, address: CODE 0000065A - 00000661 (0x8 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?XSTACK_DISP100_8       00000620        AppUartTask (app)
+           ?XSTACK_DISP100_8       0000065A        AppUartTask (app)
                                                    BSPUARTInitDMA (bsp_uart)
                                                    OS_TickTask (os_tick)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 00000628 - 0000062F (0x8 bytes), align: 0
+  Relative segment, address: CODE 00000662 - 00000669 (0x8 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?XSTACK_DISP101_8       00000628        AppUartTask (app)
+           ?XSTACK_DISP101_8       00000662        AppUartTask (app)
+    -------------------------------------------------------------------------
+RCODE
+  Relative segment, address: CODE 0000066A - 00000671 (0x8 bytes), align: 0
+  Segment part 2.
+           ENTRY                   ADDRESS         REF BY
+           =====                   =======         ======
+           ?XSTACK_DISP102_8       0000066A        AppUartTask (app)
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?CALL_IND
@@ -4123,11 +4126,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000630 - 00000631 (0x2 bytes), align: 0
+  Relative segment, address: CODE 00000672 - 00000673 (0x2 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?CALL_IND               00000630        OSIdleTaskHook (os_cpu_c)
+           ?CALL_IND               00000672        OSIdleTaskHook (os_cpu_c)
                                                    OSTaskCreateHook (os_cpu_c)
                                                    OSTimeTickHook (os_cpu_c)
                                                    SYS_TICK_ISR_sys (bsp_interrupt)
@@ -4140,16 +4143,15 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000632 - 00000697 (0x66 bytes), align: 0
+  Relative segment, address: CODE 00000674 - 000006D9 (0x66 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?FUNC_ENTER_XDATA       00000632        AppTaskCreate (app)
+           ?FUNC_ENTER_XDATA       00000674        AppTaskCreate (app)
                                                    AppTaskStart (app)
                                                    AppUartTask (app)
                                                    BSPInit (bsp)
                                                    BSPUARTInitDMA (bsp_uart)
-                                                   BSPUARTReadDMA (bsp_uart)
                                                    BSPUARTWriteISR (bsp_uart)
                                                    BSP_LED_Init (bsp_led)
                                                    BSP_LED_Toggle (bsp_led)
@@ -4201,14 +4203,13 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000698 - 000006D7 (0x40 bytes), align: 0
+  Relative segment, address: CODE 000006DA - 00000719 (0x40 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?FUNC_LEAVE_XDATA       00000698        AppTaskCreate (app)
+           ?FUNC_LEAVE_XDATA       000006DA        AppTaskCreate (app)
                                                    BSPInit (bsp)
                                                    BSPUARTInitDMA (bsp_uart)
-                                                   BSPUARTReadDMA (bsp_uart)
                                                    BSPUARTWriteISR (bsp_uart)
                                                    BSP_LED_Init (bsp_led)
                                                    BSP_LED_Toggle (bsp_led)
@@ -4258,11 +4259,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000006D8 - 000006DB (0x4 bytes), align: 0
+  Relative segment, address: CODE 0000071A - 0000071D (0x4 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?PUSH_XSTACK_I_FOUR     000006D8        OSTaskSemPend (os_task)
+           ?PUSH_XSTACK_I_FOUR     0000071A        OSTaskSemPend (os_task)
                                                    OSTaskSemPost (os_task)
                                                    OSTimeDlyHMSM (os_time)
                                                    OS_Post (os_core)
@@ -4270,11 +4271,11 @@ RCODE
                                                    OS_TaskSemPost (os_task)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000006DC - 000006DF (0x4 bytes), align: 0
+  Relative segment, address: CODE 0000071E - 00000721 (0x4 bytes), align: 0
   Segment part 2.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?PUSH_XSTACK_I_TWO      000006DC        AppTaskCreate (app)
+           ?PUSH_XSTACK_I_TWO      0000071E        AppTaskCreate (app)
                                                    AppTaskStart (app)
                                                    AppUartTask (app)
                                                    BSPUARTInitDMA (bsp_uart)
@@ -4291,12 +4292,12 @@ RCODE
                                                    main (app)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000006E0 - 000006EC (0xd bytes), align: 0
+  Relative segment, address: CODE 00000722 - 0000072E (0xd bytes), align: 0
   Segment part 4.             Intra module refs:   ?PUSH_XSTACK_I_FOUR
                                                    ?PUSH_XSTACK_I_TWO
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?PUSH_XSTACK_I          000006E0 
+           ?PUSH_XSTACK_I          00000722 
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?PUSH_XSTACK8_X
@@ -4304,11 +4305,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000006ED - 000006F0 (0x4 bytes), align: 0
+  Relative segment, address: CODE 0000072F - 00000732 (0x4 bytes), align: 0
   Segment part 1.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?PUSH_XSTACK8_X_FOUR    000006ED        AppTaskCreate (app)
+           ?PUSH_XSTACK8_X_FOUR    0000072F        AppTaskCreate (app)
                                                    AppTaskStart (app)
                                                    AppUartTask (app)
                                                    OS_IdleTaskInit (os_core)
@@ -4317,22 +4318,22 @@ RCODE
                                                    main (app)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000006F1 - 000006F4 (0x4 bytes), align: 0
+  Relative segment, address: CODE 00000733 - 00000736 (0x4 bytes), align: 0
   Segment part 3.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?PUSH_XSTACK8_X_TWO     000006F1        OSTaskCreate (os_task)
+           ?PUSH_XSTACK8_X_TWO     00000733        OSTaskCreate (os_task)
                                                    OSTimeDlyHMSM (os_time)
                                                    OS_IdleTaskInit (os_core)
                                                    OS_TickTaskInit (os_tick)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000006F5 - 0000071D (0x29 bytes), align: 0
+  Relative segment, address: CODE 00000737 - 0000075F (0x29 bytes), align: 0
   Segment part 5.             Intra module refs:   ?PUSH_XSTACK8_X_FOUR
                                                    ?PUSH_XSTACK8_X_TWO
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?PUSH_XSTACK8_X         000006F5 
+           ?PUSH_XSTACK8_X         00000737 
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?US_SWITCH_DENSE
@@ -4340,23 +4341,23 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 0000071E - 00000724 (0x7 bytes), align: 0
+  Relative segment, address: CODE 00000760 - 00000766 (0x7 bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?US_SWITCH_DENSE        0000071E        OS_RdyListMoveHeadToTail (os_core)
-           ?US_SD_CFI_INV_BEGINS   0000071E 
+           ?US_SWITCH_DENSE        00000760        OS_RdyListMoveHeadToTail (os_core)
+           ?US_SD_CFI_INV_BEGINS   00000760 
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 00000725 - 00000762 (0x3e bytes), align: 0
+  Relative segment, address: CODE 00000767 - 000007A4 (0x3e bytes), align: 0
   Segment part 2.             Intra module refs:   Segment part 0
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 00000763 - 00000763 (0x1 bytes), align: 0
+  Relative segment, address: CODE 000007A5 - 000007A5 (0x1 bytes), align: 0
   Segment part 4.             Intra module refs:   Segment part 0
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?US_SD_CFI_INV_ENDS     00000764 
+           ?US_SD_CFI_INV_ENDS     000007A6 
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?US_SWITCH_SPARSE
@@ -4364,30 +4365,30 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 00000764 - 0000076D (0xa bytes), align: 0
+  Relative segment, address: CODE 000007A6 - 000007AF (0xa bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?US_SWITCH_SPARSE       00000764        OSTaskSemPend (os_task)
+           ?US_SWITCH_SPARSE       000007A6        OSTaskSemPend (os_task)
                                                    OSTaskSemPost (os_task)
                                                    OSTimeDlyHMSM (os_time)
-           ?US_SS_CFI_INV_BEGINS   00000764 
+           ?US_SS_CFI_INV_BEGINS   000007A6 
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 0000076E - 000007AE (0x41 bytes), align: 0
+  Relative segment, address: CODE 000007B0 - 000007F0 (0x41 bytes), align: 0
   Segment part 2.             Intra module refs:   Segment part 0
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            ?US_SWITCH_SPARSE_LEAVE
-                                   000007A0        Segment part 0 (?US_JMP_IF_IN_RANGE)
+                                   000007E2        Segment part 0 (?US_JMP_IF_IN_RANGE)
                                                    Segment part 0 (?US_JMP_IF_VALUE)
     -------------------------------------------------------------------------
 RCODE
-  Relative segment, address: CODE 000007AF - 000007AF (0x1 bytes), align: 0
+  Relative segment, address: CODE 000007F1 - 000007F1 (0x1 bytes), align: 0
   Segment part 4.             Intra module refs:   Segment part 0
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?US_SS_CFI_INV_ENDS     000007B0 
+           ?US_SS_CFI_INV_ENDS     000007F2 
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?US_JMP_IF_IN_RANGE
@@ -4395,13 +4396,13 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000007B0 - 000007EE (0x3f bytes), align: 0
+  Relative segment, address: CODE 000007F2 - 00000830 (0x3f bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?US_JMP_IF_IN_RANGE     000007B0        ?US_SWITCH_SPARSE_LEAVE (?US_SWITCH_SPARSE)
-           ?US_JR_CFI_INV_BEGINS   000007B0 
-           ?US_JR_CFI_INV_ENDS     000007EF 
+           ?US_JMP_IF_IN_RANGE     000007F2        ?US_SWITCH_SPARSE_LEAVE (?US_SWITCH_SPARSE)
+           ?US_JR_CFI_INV_BEGINS   000007F2 
+           ?US_JR_CFI_INV_ENDS     00000831 
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?US_JMP_IF_VALUE
@@ -4409,15 +4410,15 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 RCODE
-  Relative segment, address: CODE 000007EF - 00000819 (0x2b bytes), align: 0
+  Relative segment, address: CODE 00000831 - 0000085B (0x2b bytes), align: 0
   Segment part 0.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ?US_JMP_IF_VALUE        000007EF        ?US_SWITCH_SPARSE_LEAVE (?US_SWITCH_SPARSE)
+           ?US_JMP_IF_VALUE        00000831        ?US_SWITCH_SPARSE_LEAVE (?US_SWITCH_SPARSE)
            ?US_JMP_IF_VALUE_CFI_INV_BEGINS
-                                   000007EF 
+                                   00000831 
            ?US_JMP_IF_VALUE_CFI_INV_ENDS
-                                   0000081A 
+                                   0000085C 
 
     -------------------------------------------------------------------------
   LIBRARY MODULE, NAME : ?memset
@@ -4425,11 +4426,11 @@ RCODE
   SEGMENTS IN THE MODULE
   ======================
 NEAR_CODE
-  Relative segment, address: CODE 00004D4D - 00004D76 (0x2a bytes), align: 0
+  Relative segment, address: CODE 00004C37 - 00004C60 (0x2a bytes), align: 0
   Segment part 6.
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           memset                  00004D4D        BSPUARTInitDMA (bsp_uart)
+           memset                  00004C37        BSPUARTInitDMA (bsp_uart)
                XSTACK = 00000002 ( 00000000 )
                ISTACK = 00000000 ( 00000002 )
 
@@ -4453,12 +4454,12 @@ BIT_ID               CODE               000000EC                     dse    0
 IXDATA_ID            CODE               000000EC                     dse    0
 PDATA_ID             CODE               000000EC                     dse    0
 DATA_ID              CODE               000000EC                     dse    0
-XDATA_ID             CODE          000000EC - 0000033E         253   rel    0
-RCODE                CODE          0000033F - 00000819         4DB   rel    0
-DIFUNCT              CODE               0000081A                     dse    0
-CODE_C               CODE               0000081A                     dse    0
-CODE_N               CODE               0000081A                     dse    0
-NEAR_CODE            CODE          0000081A - 00004D76        455D   rel    0
+XDATA_ID             CODE          000000EC - 00000378         28D   rel    0
+RCODE                CODE          00000379 - 0000085B         4E3   rel    0
+DIFUNCT              CODE               0000085C                     dse    0
+CODE_C               CODE               0000085C                     dse    0
+CODE_N               CODE               0000085C                     dse    0
+NEAR_CODE            CODE          0000085C - 00004C60        4405   rel    0
 REGISTERS            DATA          00000000 - 00000007           8   rel    0
 VREG                 DATA          00000008 - 0000000F           8   rel    0
 PSP                  DATA               00000010                     dse    0
@@ -4486,7 +4487,7 @@ SFR_AN               DATA          00000080 - 00000080           1   rel    0
                      DATA          000000FD - 000000FF           3 
 XSTACK               XDATA         00000001 - 0000017A         17A   rel    0
 XDATA_Z              XDATA         0000017B - 00000E66         CEC   rel    0
-XDATA_I              XDATA         00000E67 - 000010B9         253   rel    0
+XDATA_I              XDATA         00000E67 - 000010F3         28D   rel    0
 ISTACK               IDATA         00000040 - 000000FF          C0   rel    0
 
                 ****************************************
@@ -4495,9 +4496,9 @@ ISTACK               IDATA         00000040 - 000000FF          C0   rel    0
                 *                                      *
                 ****************************************
 
- 19 831 bytes of CODE  memory
+ 19 553 bytes of CODE  memory
      21 bytes of DATA  memory (+ 29 absolute )
-  4 281 bytes of XDATA memory
+  4 339 bytes of XDATA memory
     192 bytes of IDATA memory
       8 bits  of BIT   memory
 

@@ -150,6 +150,7 @@ static  void AppUartTask (void *p_arg)
     BSPUARTInfo_t uartInfo;
     CPU_INT08U cnt;
     CPU_INT08U recTest[128];
+    const CPU_INT08U sendTest[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
     
     uartInfo.baudRate             = BSP_UART_BR_115200;
     uartInfo.flowControl          = TRUE;
@@ -159,6 +160,7 @@ static  void AppUartTask (void *p_arg)
     BSPUARTWriteISR("AppUartTask", sizeof("AppUartTask") - 1);
     while (1)
     {
+#if 0
         if (BSPUARTRxAvailDMA() >= 32)
         {
             if ( (cnt = BSPUARTReadDMA(recTest, 32)) > 0)
@@ -166,8 +168,11 @@ static  void AppUartTask (void *p_arg)
                 BSPUARTWriteISR(recTest, cnt);
             } 
         }
+#else
+        BSPUARTWriteISR(sendTest, sizeof(sendTest)-1);     
+#endif        
         BSP_LED_Toggle(LED2_ID);
-        OSTimeDlyHMSM(0, 0, 0, 300,
+        OSTimeDlyHMSM(0, 0, 0, 50,
                       OS_OPT_TIME_HMSM_STRICT,
                       &err);
     }
